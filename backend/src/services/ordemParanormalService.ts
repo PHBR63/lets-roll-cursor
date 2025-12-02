@@ -270,7 +270,7 @@ export const ordemParanormalService = {
    */
   calculateConditionPenalties(conditions: Condition[]): {
     defense: number // Penalidade na defesa
-    defenseBase: number // Se deve usar apenas base 10 (sem AGI)
+    defenseBase: boolean // Se deve usar apenas base 10 (sem AGI)
     dicePenalty: number // Penalidade em dados (ex: -1D, -2D)
     cannotAct: boolean // Não pode realizar ações
     cannotReact: boolean // Não pode reagir
@@ -449,21 +449,57 @@ export const ordemParanormalService = {
       removeConditions?: Condition[] // Condições que devem ser removidas
     }
   } {
-    const newConditions = [...currentConditions]
+    let newConditions = [...currentConditions]
     const effects = {
       message: '',
       autoConditions: [] as Condition[],
       removeConditions: [] as Condition[],
     }
 
-    // Verificar se condição já está ativa
-    if (newConditions.includes(condition)) {
-      effects.message = `Condição ${condition} já está ativa`
-      return { newConditions, effects }
-    }
+    // Verificar condições derivadas e interações ANTES de aplicar
+    // (algumas condições podem ser transformadas em outras)
+    switch (condition) {
+      case 'ABALADO':
+        // Se já está Abalado, vira Apavorado (não duplica)
+        if (currentConditions.includes('ABALADO')) {
+          const filtered = newConditions.filter((c) => c !== 'ABALADO')
+          filtered.push('APAVORADO')
+          newConditions = filtered
+          effects.removeConditions.push('ABALADO')
+          effects.autoConditions.push('APAVORADO')
+          effects.message = 'Personagem já estava Abalado. Agora está Apavorado!'
+          return { newConditions, effects }
+        }
+        // Se não estava Abalado, aplicar normalmente
+        newConditions.push(condition)
+        effects.message = 'Personagem está Abalado (-1D em todos os testes)'
+        break
 
-    // Aplicar condição
-    newConditions.push(condition)
+      case 'DEBILITADO':
+        // Se já está Debilitado, vira Inconsciente (não duplica)
+        if (currentConditions.includes('DEBILITADO')) {
+          const filtered = newConditions.filter((c) => c !== 'DEBILITADO')
+          filtered.push('INCONSCIENTE')
+          newConditions = filtered
+          effects.removeConditions.push('DEBILITADO')
+          effects.autoConditions.push('INCONSCIENTE')
+          effects.message = 'Personagem já estava Debilitado. Agora está Inconsciente!'
+          return { newConditions, effects }
+        }
+        // Se não estava Debilitado, aplicar normalmente
+        newConditions.push(condition)
+        effects.message = 'Personagem está Debilitado (-2D em testes físicos)'
+        break
+
+      default:
+        // Verificar se condição já está ativa (para outras condições)
+        if (newConditions.includes(condition)) {
+          effects.message = `Condição ${condition} já está ativa`
+          return { newConditions, effects }
+        }
+        // Aplicar condição
+        newConditions.push(condition)
+    }
 
     // Verificar condições derivadas e interações
     switch (condition) {
@@ -473,27 +509,17 @@ export const ordemParanormalService = {
           newConditions.push('INCONSCIENTE')
           effects.autoConditions.push('INCONSCIENTE')
         }
-        effects.message = 'Personagem está morrendo! Inconsciente automaticamente.'
-        break
-
-      case 'ABALADO':
-        // Se já está Abalado, vira Apavorado
-        if (currentConditions.includes('ABALADO')) {
-          newConditions = newConditions.filter((c) => c !== 'ABALADO')
-          newConditions.push('APAVORADO')
-          effects.removeConditions.push('ABALADO')
-          effects.autoConditions.push('APAVORADO')
-          effects.message = 'Personagem já estava Abalado. Agora está Apavorado!'
-        } else {
-          effects.message = 'Personagem está Abalado (-1D em todos os testes)'
+        if (!effects.message) {
+          effects.message = 'Personagem está morrendo! Inconsciente automaticamente.'
         }
         break
 
       case 'DEBILITADO':
         // Se já está Debilitado, vira Inconsciente
         if (currentConditions.includes('DEBILITADO')) {
-          newConditions = newConditions.filter((c) => c !== 'DEBILITADO')
-          newConditions.push('INCONSCIENTE')
+          const filtered = newConditions.filter((c) => c !== 'DEBILITADO')
+          filtered.push('INCONSCIENTE')
+          newConditions = filtered
           effects.removeConditions.push('DEBILITADO')
           effects.autoConditions.push('INCONSCIENTE')
           effects.message = 'Personagem já estava Debilitado. Agora está Inconsciente!'
