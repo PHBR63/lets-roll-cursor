@@ -30,7 +30,36 @@ itemsRouter.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// Obter item por ID
+// Obter itens de uma campanha (rota específica antes da genérica)
+itemsRouter.get('/campaign/:campaignId', async (req: Request, res: Response) => {
+  try {
+    const items = await itemService.getCampaignItems(req.params.campaignId)
+    res.json(items)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Distribuir item para personagem (rota específica antes da genérica)
+itemsRouter.post('/distribute', async (req: Request, res: Response) => {
+  try {
+    const { campaignId, characterId, itemId, quantity } = req.body
+    if (!campaignId || !characterId || !itemId) {
+      return res.status(400).json({ error: 'campaignId, characterId e itemId são obrigatórios' })
+    }
+    const result = await itemService.distributeItem(
+      campaignId,
+      characterId,
+      itemId,
+      quantity || 1
+    )
+    res.status(201).json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Obter item por ID (rota genérica depois das específicas)
 itemsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const item = await itemService.getItemById(req.params.id)
@@ -55,35 +84,6 @@ itemsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     await itemService.deleteItem(req.params.id)
     res.status(204).send()
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Obter itens de uma campanha
-itemsRouter.get('/campaign/:campaignId', async (req: Request, res: Response) => {
-  try {
-    const items = await itemService.getCampaignItems(req.params.campaignId)
-    res.json(items)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Distribuir item para personagem
-itemsRouter.post('/distribute', async (req: Request, res: Response) => {
-  try {
-    const { campaignId, characterId, itemId, quantity } = req.body
-    if (!campaignId || !characterId || !itemId) {
-      return res.status(400).json({ error: 'campaignId, characterId e itemId são obrigatórios' })
-    }
-    const result = await itemService.distributeItem(
-      campaignId,
-      characterId,
-      itemId,
-      quantity || 1
-    )
-    res.status(201).json(result)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }

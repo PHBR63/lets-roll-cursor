@@ -28,7 +28,17 @@ momentsRouter.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// Obter momento por ID
+// Obter momentos de uma sessão (rota específica antes da genérica)
+momentsRouter.get('/session/:sessionId', async (req: Request, res: Response) => {
+  try {
+    const moments = await momentService.getSessionMoments(req.params.sessionId)
+    res.json(moments)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Obter momento por ID (rota genérica depois das específicas)
 momentsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const moment = await momentService.getMomentById(req.params.id)
@@ -52,16 +62,6 @@ momentsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     await momentService.deleteMoment(req.params.id)
     res.status(204).send()
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Obter momentos de uma sessão
-momentsRouter.get('/session/:sessionId', async (req: Request, res: Response) => {
-  try {
-    const moments = await momentService.getSessionMoments(req.params.sessionId)
-    res.json(moments)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }

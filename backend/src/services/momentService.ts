@@ -146,7 +146,9 @@ export const momentService = {
    */
   async updateMoment(id: string, data: any) {
     try {
-      const updateData: any = {}
+      const updateData: any = {
+        updated_at: new Date().toISOString(),
+      }
 
       if (data.title !== undefined) updateData.title = data.title
       if (data.description !== undefined) updateData.description = data.description
@@ -221,4 +223,3 @@ export const momentService = {
     }
   },
 }
-

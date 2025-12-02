@@ -394,14 +394,24 @@ export const characterService = {
         .single()
 
       if (error) {
-        // Se já existe, retornar o existente
+        // Se já existe (erro de chave duplicada 23505), buscar o existente
         if (error.code === '23505') {
-          const { data: existing } = await supabase
+          const { data: existing, error: existingError } = await supabase
             .from('character_abilities')
             .select('*')
             .eq('character_id', characterId)
             .eq('ability_id', abilityId)
             .single()
+
+          // Verificar se a busca do existente também falhou
+          if (existingError) {
+            throw new Error('Erro ao buscar habilidade existente: ' + existingError.message)
+          }
+
+          // Verificar se existing é undefined
+          if (!existing) {
+            throw new Error('Habilidade não encontrada após erro de duplicação')
+          }
 
           return existing
         }
@@ -435,4 +445,3 @@ export const characterService = {
     }
   },
 }
-
