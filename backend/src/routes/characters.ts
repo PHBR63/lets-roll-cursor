@@ -118,6 +118,194 @@ charactersRouter.delete('/:id/abilities/:abilityId', async (req: Request, res: R
   }
 })
 
+// ============================================
+// Rotas do Sistema Ordem Paranormal
+// ============================================
+
+// Rolar teste de perícia
+charactersRouter.post('/:id/roll-skill', async (req: Request, res: Response) => {
+  try {
+    const { skillName, difficulty } = req.body
+    if (!skillName) {
+      return res.status(400).json({ error: 'skillName é obrigatório' })
+    }
+    const result = await characterService.rollSkillTest(
+      req.params.id,
+      skillName,
+      difficulty || 15
+    )
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Rolar ataque
+charactersRouter.post('/:id/roll-attack', async (req: Request, res: Response) => {
+  try {
+    const { skillName, targetDefense } = req.body
+    if (!skillName) {
+      return res.status(400).json({ error: 'skillName é obrigatório' })
+    }
+    if (targetDefense === undefined) {
+      return res.status(400).json({ error: 'targetDefense é obrigatório' })
+    }
+    const result = await characterService.rollAttack(
+      req.params.id,
+      skillName,
+      targetDefense
+    )
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Aplicar dano
+charactersRouter.post('/:id/apply-damage', async (req: Request, res: Response) => {
+  try {
+    const { damage, type } = req.body
+    if (damage === undefined || damage < 0) {
+      return res.status(400).json({ error: 'damage é obrigatório e deve ser >= 0' })
+    }
+    if (type && type !== 'physical' && type !== 'mental') {
+      return res.status(400).json({ error: 'type deve ser "physical" ou "mental"' })
+    }
+    const result = await characterService.applyDamage(
+      req.params.id,
+      damage,
+      type || 'physical'
+    )
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Aplicar condição
+charactersRouter.post('/:id/apply-condition', async (req: Request, res: Response) => {
+  try {
+    const { condition } = req.body
+    if (!condition) {
+      return res.status(400).json({ error: 'condition é obrigatório' })
+    }
+    const result = await characterService.applyCondition(req.params.id, condition)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Remover condição
+charactersRouter.delete('/:id/conditions/:condition', async (req: Request, res: Response) => {
+  try {
+    const character = await characterService.removeCondition(
+      req.params.id,
+      req.params.condition
+    )
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar atributos
+charactersRouter.put('/:id/attributes', async (req: Request, res: Response) => {
+  try {
+    const { attributes } = req.body
+    if (!attributes) {
+      return res.status(400).json({ error: 'attributes é obrigatório' })
+    }
+    const character = await characterService.updateAttributes(req.params.id, attributes)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar perícias
+charactersRouter.put('/:id/skills', async (req: Request, res: Response) => {
+  try {
+    const { skills } = req.body
+    if (!skills) {
+      return res.status(400).json({ error: 'skills é obrigatório' })
+    }
+    const character = await characterService.updateSkills(req.params.id, skills)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar NEX
+charactersRouter.put('/:id/nex', async (req: Request, res: Response) => {
+  try {
+    const { nex } = req.body
+    if (nex === undefined) {
+      return res.status(400).json({ error: 'nex é obrigatório' })
+    }
+    if (nex < 0 || nex > 99) {
+      return res.status(400).json({ error: 'nex deve estar entre 0 e 99' })
+    }
+    const character = await characterService.updateNEX(req.params.id, nex)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar PV
+charactersRouter.put('/:id/pv', async (req: Request, res: Response) => {
+  try {
+    const { pv, isDelta } = req.body
+    if (pv === undefined) {
+      return res.status(400).json({ error: 'pv é obrigatório' })
+    }
+    const result = await characterService.updatePV(req.params.id, pv, isDelta || false)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar SAN
+charactersRouter.put('/:id/san', async (req: Request, res: Response) => {
+  try {
+    const { san, isDelta } = req.body
+    if (san === undefined) {
+      return res.status(400).json({ error: 'san é obrigatório' })
+    }
+    const result = await characterService.updateSAN(req.params.id, san, isDelta || false)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar PE
+charactersRouter.put('/:id/pe', async (req: Request, res: Response) => {
+  try {
+    const { pe, isDelta } = req.body
+    if (pe === undefined) {
+      return res.status(400).json({ error: 'pe é obrigatório' })
+    }
+    const character = await characterService.updatePE(req.params.id, pe, isDelta || false)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Recuperar PE (descanso)
+charactersRouter.post('/:id/recover-pe', async (req: Request, res: Response) => {
+  try {
+    const character = await characterService.recoverPE(req.params.id)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Rotas genéricas devem vir DEPOIS das rotas aninhadas específicas
 // Obter personagem por ID
 charactersRouter.get('/:id', async (req: Request, res: Response) => {
