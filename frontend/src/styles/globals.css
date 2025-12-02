@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-text;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  /* Pattern de icosaedros wireframe no background */
+  .pattern-icosahedrons {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    pointer-events: none;
+    z-index: 0;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L70 30 L50 50 L30 30 Z M50 10 L60 40 L40 40 Z M70 30 L60 40 L80 50 L70 50 Z M50 50 L60 40 L80 50 Z M30 30 L40 40 L20 50 L30 50 Z M50 50 L40 40 L20 50 Z' stroke='white' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    background-position: 0 0;
+    animation: patternMove 60s linear infinite;
+  }
+
+  @keyframes patternMove {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 200px 200px;
+    }
+  }
+}
+

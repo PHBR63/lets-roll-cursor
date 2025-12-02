@@ -1,0 +1,20 @@
+{
+  "name": "letsroll-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Let's Roll - Plataforma de RPG de Mesa",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+

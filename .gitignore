@@ -1,0 +1,22 @@
+node_modules
+dist
+.env
+.env.local
+*.log
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Frontend
+frontend/dist
+frontend/.vite
+
+# Backend
+backend/dist
+backend/.env
+
+# Supabase
+supabase/.temp
+supabase/.branches
+
