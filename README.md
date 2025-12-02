@@ -62,7 +62,11 @@ CORS_ORIGIN=http://localhost:5173
 4. Execute as migrations do Supabase:
    - Acesse o dashboard do Supabase
    - Vá em SQL Editor
-   - Execute o arquivo `supabase/migrations/20241201000000_initial_schema.sql`
+   - Execute os arquivos na seguinte ordem:
+     1. `supabase/migrations/20241201000000_initial_schema.sql`
+     2. `supabase/migrations/20241202000000_add_updated_at_to_campaign_moments.sql`
+     3. `supabase/migrations/20241203000000_add_ordem_paranormal_fields.sql`
+   - Para mais detalhes, consulte `supabase/migrations/README.md`
 
 5. Inicie os servidores:
 
