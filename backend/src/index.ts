@@ -11,6 +11,7 @@ import { sessionsRouter } from './routes/sessions'
 import { diceRouter } from './routes/dice'
 import { inventoryRouter } from './routes/inventory'
 import { momentsRouter } from './routes/moments'
+import { chatRouter } from './routes/chat'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -36,6 +37,7 @@ app.use('/api/sessions', sessionsRouter)
 app.use('/api/dice', diceRouter)
 app.use('/api/inventory', inventoryRouter)
 app.use('/api/moments', momentsRouter)
+app.use('/api/chat', chatRouter)
 
 // Health check
 app.get('/health', (req, res) => {

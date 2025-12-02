@@ -6,6 +6,7 @@ import { Register } from './pages/Auth/Register'
 import { Dashboard } from './pages/Dashboard'
 import { CreateCampaign } from './pages/Campaign/CreateCampaign'
 import { CampaignDetail } from './pages/Campaign/CampaignDetail'
+import { SessionRoom } from './pages/GameSession/SessionRoom'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 /**
@@ -43,6 +44,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CampaignDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/session/:id"
+              element={
+                <ProtectedRoute>
+                  <SessionRoom />
                 </ProtectedRoute>
               }
             />

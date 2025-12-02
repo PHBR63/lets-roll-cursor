@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
+import { diceService } from '../services/diceService'
 
 /**
  * Rotas para sistema de rolagem de dados
@@ -14,18 +15,25 @@ diceRouter.use(authenticateToken)
  */
 diceRouter.post('/roll', async (req: Request, res: Response) => {
   try {
-    const { formula, sessionId, isPrivate } = req.body
     const userId = (req as any).user.id
+    const { formula, sessionId, campaignId, characterId, isPrivate } = req.body
 
-    // TODO: Implementar lógica de rolagem
-    const result = {
-      formula,
-      result: Math.floor(Math.random() * 20) + 1, // Mock
-      userId,
-      sessionId,
-      isPrivate,
-      timestamp: new Date().toISOString(),
+    if (!formula) {
+      return res.status(400).json({ error: 'Fórmula é obrigatória' })
     }
+
+    if (!campaignId) {
+      return res.status(400).json({ error: 'campaignId é obrigatório' })
+    }
+
+    const result = await diceService.rollDice({
+      formula,
+      userId,
+      campaignId,
+      sessionId: sessionId || null,
+      characterId: characterId || null,
+      isPrivate: isPrivate || false,
+    })
 
     res.json(result)
   } catch (error: any) {
@@ -36,12 +44,22 @@ diceRouter.post('/roll', async (req: Request, res: Response) => {
 /**
  * Obtém histórico de rolagens
  */
-diceRouter.get('/history/:sessionId', async (req: Request, res: Response) => {
+diceRouter.get('/history', async (req: Request, res: Response) => {
   try {
-    // TODO: Implementar busca de histórico
-    res.json({ message: 'Roll history - implementar' })
+    const { sessionId, campaignId, limit } = req.query
+
+    if (!sessionId && !campaignId) {
+      return res.status(400).json({ error: 'sessionId ou campaignId é obrigatório' })
+    }
+
+    const history = await diceService.getRollHistory(
+      sessionId as string,
+      campaignId as string,
+      limit ? parseInt(limit as string, 10) : 50
+    )
+
+    res.json(history)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }
 })
-
