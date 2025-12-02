@@ -20,8 +20,19 @@ creaturesRouter.get('/', async (req: Request, res: Response) => {
 
 creaturesRouter.post('/', async (req: Request, res: Response) => {
   try {
-    const creature = await creatureService.createCreature(req.body)
+    const userId = (req as any).user.id
+    const creature = await creatureService.createCreature(userId, req.body)
     res.status(201).json(creature)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Obter criaturas de uma campanha
+creaturesRouter.get('/campaign/:campaignId', async (req: Request, res: Response) => {
+  try {
+    const creatures = await creatureService.getCampaignCreatures(req.params.campaignId)
+    res.json(creatures)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }
