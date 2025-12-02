@@ -23,6 +23,16 @@
 }
 
 @layer utilities {
+  /* Esconder scrollbar */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Pattern de icosaedros wireframe no background */
   .pattern-icosahedrons {
     position: fixed;

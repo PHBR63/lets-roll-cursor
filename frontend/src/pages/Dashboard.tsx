@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState } from 'react'
+import { supabase } from '@/integrations/supabase/client'
 
 /**
  * Dashboard principal
@@ -15,20 +16,71 @@ export function Dashboard() {
   const { user } = useAuth()
   const [masteringCampaigns, setMasteringCampaigns] = useState<any[]>([])
   const [participatingCampaigns, setParticipatingCampaigns] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // TODO: Buscar campanhas do usuário
-    // Por enquanto, dados mockados
-    setMasteringCampaigns([
-      { id: 1, name: 'Nome do RPG', image: null },
-      { id: 2, name: 'Nome do RPG', image: null },
-      { id: 3, name: 'Nome do RPG', image: null },
-    ])
-    setParticipatingCampaigns([
-      { id: 4, name: 'Nome do RPG', image: null },
-      { id: 5, name: 'Nome do RPG', image: null },
-    ])
+    if (user) {
+      loadCampaigns()
+    }
   }, [user])
+
+  /**
+   * Carrega campanhas do usuário da API
+   */
+  const loadCampaigns = async () => {
+    try {
+      if (!user) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/campaigns`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) throw new Error('Erro ao carregar campanhas')
+
+      const campaigns = await response.json()
+
+      // Separar por role
+      const mastering = campaigns.filter((c: any) => c.role === 'master')
+      const participating = campaigns.filter(
+        (c: any) => c.role === 'player' || c.role === 'observer'
+      )
+
+      setMasteringCampaigns(mastering)
+      setParticipatingCampaigns(participating)
+    } catch (error) {
+      console.error('Erro ao carregar campanhas:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Função para scrollar carrossel
+   */
+  const scrollCarousel = (direction: 'left' | 'right', containerId: string) => {
+    const container = document.getElementById(containerId)
+    if (container) {
+      const scrollAmount = 300
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Carregando...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -38,37 +90,77 @@ export function Dashboard() {
         {/* Seção Mestrando */}
         <section>
           <h2 className="text-2xl font-bold text-white mb-6">Mestrando</h2>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-white">
-              <ChevronLeft className="h-8 w-8" />
-            </Button>
-            <div className="flex gap-4 overflow-x-auto flex-1">
-              {masteringCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
-              ))}
+          {masteringCampaigns.length > 0 ? (
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white flex-shrink-0"
+                onClick={() => scrollCarousel('left', 'mastering-carousel')}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+              <div
+                id="mastering-carousel"
+                className="flex gap-4 overflow-x-auto flex-1 scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {masteringCampaigns.map((campaign) => (
+                  <CampaignCard key={campaign.id} campaign={campaign} />
+                ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white flex-shrink-0"
+                onClick={() => scrollCarousel('right', 'mastering-carousel')}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="text-white">
-              <ChevronRight className="h-8 w-8" />
-            </Button>
-          </div>
+          ) : (
+            <p className="text-text-secondary">
+              Você ainda não está mestrando nenhuma campanha
+            </p>
+          )}
         </section>
 
         {/* Seção Participando */}
         <section>
           <h2 className="text-2xl font-bold text-white mb-6">Participando</h2>
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-white">
-              <ChevronLeft className="h-8 w-8" />
-            </Button>
-            <div className="flex gap-4 overflow-x-auto flex-1">
-              {participatingCampaigns.map((campaign) => (
-                <CampaignCard key={campaign.id} campaign={campaign} />
-              ))}
+          {participatingCampaigns.length > 0 ? (
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white flex-shrink-0"
+                onClick={() => scrollCarousel('left', 'participating-carousel')}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+              <div
+                id="participating-carousel"
+                className="flex gap-4 overflow-x-auto flex-1 scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {participatingCampaigns.map((campaign) => (
+                  <CampaignCard key={campaign.id} campaign={campaign} />
+                ))}
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white flex-shrink-0"
+                onClick={() => scrollCarousel('right', 'participating-carousel')}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="text-white">
-              <ChevronRight className="h-8 w-8" />
-            </Button>
-          </div>
+          ) : (
+            <p className="text-text-secondary">
+              Você ainda não está participando de nenhuma campanha
+            </p>
+          )}
         </section>
       </main>
 
@@ -76,4 +168,3 @@ export function Dashboard() {
     </div>
   )
 }
-

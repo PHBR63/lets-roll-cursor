@@ -5,6 +5,7 @@ import { Login } from './pages/Auth/Login'
 import { Register } from './pages/Auth/Register'
 import { Dashboard } from './pages/Dashboard'
 import { CreateCampaign } from './pages/Campaign/CreateCampaign'
+import { CampaignDetail } from './pages/Campaign/CampaignDetail'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 /**
@@ -34,6 +35,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CreateCampaign />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaign/:id"
+              element={
+                <ProtectedRoute>
+                  <CampaignDetail />
                 </ProtectedRoute>
               }
             />
