@@ -27,9 +27,11 @@ export function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Button className="bg-accent hover:bg-accent/90">
-            + Nova Mesa
-          </Button>
+          <Link to="/campaign/create">
+            <Button className="bg-accent hover:bg-accent/90">
+              + Nova Mesa
+            </Button>
+          </Link>
 
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5 text-white" />

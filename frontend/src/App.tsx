@@ -4,6 +4,7 @@ import { Landing } from './pages/Landing'
 import { Login } from './pages/Auth/Login'
 import { Register } from './pages/Auth/Register'
 import { Dashboard } from './pages/Dashboard'
+import { CreateCampaign } from './pages/Campaign/CreateCampaign'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 /**
@@ -25,6 +26,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/campaign/create"
+              element={
+                <ProtectedRoute>
+                  <CreateCampaign />
                 </ProtectedRoute>
               }
             />
