@@ -257,40 +257,67 @@ export const characterService = {
   async addItemToCharacter(characterId: string, itemId: string, quantity: number = 1) {
     try {
       // Verificar se item já existe no inventário
-      const { data: existing } = await supabase
+      // Destruturar tanto data quanto error para tratar erros de banco corretamente
+      const { data: existing, error: queryError } = await supabase
         .from('character_items')
         .select('*')
         .eq('character_id', characterId)
         .eq('item_id', itemId)
         .single()
 
+      // Verificar se houve erro na query
+      if (queryError) {
+        // PGRST116 é o código de erro quando .single() não encontra registro (caso normal)
+        // Qualquer outro erro é um problema real de banco de dados e deve ser propagado
+        if (queryError.code === 'PGRST116') {
+          // Item não existe no inventário, criar novo registro
+          const { data, error: insertError } = await supabase
+            .from('character_items')
+            .insert({
+              character_id: characterId,
+              item_id: itemId,
+              quantity,
+              equipped: false,
+            })
+            .select()
+            .single()
+
+          if (insertError) throw insertError
+          return data
+        } else {
+          // Erro real de banco de dados (permissões, rede, etc.) - propagar erro
+          throw queryError
+        }
+      }
+
+      // Se não houve erro, o item existe no inventário - atualizar quantidade
       if (existing) {
-        // Atualizar quantidade
-        const { data, error } = await supabase
+        const { data, error: updateError } = await supabase
           .from('character_items')
           .update({ quantity: existing.quantity + quantity })
           .eq('id', existing.id)
           .select()
           .single()
 
-        if (error) throw error
-        return data
-      } else {
-        // Criar novo registro
-        const { data, error } = await supabase
-          .from('character_items')
-          .insert({
-            character_id: characterId,
-            item_id: itemId,
-            quantity,
-            equipped: false,
-          })
-          .select()
-          .single()
-
-        if (error) throw error
+        if (updateError) throw updateError
         return data
       }
+
+      // Caso inesperado: não houve erro mas existing é null
+      // Criar novo registro como fallback
+      const { data, error: insertError } = await supabase
+        .from('character_items')
+        .insert({
+          character_id: characterId,
+          item_id: itemId,
+          quantity,
+          equipped: false,
+        })
+        .select()
+        .single()
+
+      if (insertError) throw insertError
+      return data
     } catch (error: any) {
       console.error('Error adding item to character:', error)
       throw new Error('Erro ao adicionar item: ' + error.message)

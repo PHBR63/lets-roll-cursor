@@ -30,36 +30,7 @@ charactersRouter.post('/', async (req: Request, res: Response) => {
   }
 })
 
-// Obter personagem por ID
-charactersRouter.get('/:id', async (req: Request, res: Response) => {
-  try {
-    const character = await characterService.getCharacterById(req.params.id)
-    res.json(character)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Atualizar personagem
-charactersRouter.put('/:id', async (req: Request, res: Response) => {
-  try {
-    const character = await characterService.updateCharacter(req.params.id, req.body)
-    res.json(character)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Deletar personagem
-charactersRouter.delete('/:id', async (req: Request, res: Response) => {
-  try {
-    await characterService.deleteCharacter(req.params.id)
-    res.status(204).send()
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
+// Rotas aninhadas específicas devem vir ANTES da rota genérica /:id
 // Obter inventário do personagem
 charactersRouter.get('/:id/inventory', async (req: Request, res: Response) => {
   try {
@@ -141,6 +112,37 @@ charactersRouter.post('/:id/abilities', async (req: Request, res: Response) => {
 charactersRouter.delete('/:id/abilities/:abilityId', async (req: Request, res: Response) => {
   try {
     await characterService.removeAbilityFromCharacter(req.params.id, req.params.abilityId)
+    res.status(204).send()
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Rotas genéricas devem vir DEPOIS das rotas aninhadas específicas
+// Obter personagem por ID
+charactersRouter.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const character = await characterService.getCharacterById(req.params.id)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Atualizar personagem
+charactersRouter.put('/:id', async (req: Request, res: Response) => {
+  try {
+    const character = await characterService.updateCharacter(req.params.id, req.body)
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Deletar personagem
+charactersRouter.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    await characterService.deleteCharacter(req.params.id)
     res.status(204).send()
   } catch (error: any) {
     res.status(500).json({ error: error.message })
