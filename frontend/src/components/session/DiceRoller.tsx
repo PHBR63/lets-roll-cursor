@@ -149,7 +149,8 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Erro ao rolar dados')
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Erro ao rolar dados')
       }
 
       const result = await response.json()
@@ -158,12 +159,14 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
         ...result,
       })
 
+      toast.success('Dados rolados!', `Resultado: ${result.result}`)
+
       if (customFormula) {
         setFormula('')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao rolar dados:', error)
-      alert('Erro ao rolar dados. Tente novamente.')
+      toast.error('Erro ao rolar dados', error.message || 'Tente novamente.')
     } finally {
       setRolling(false)
     }
@@ -173,8 +176,12 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
    * Rola teste de perícia (sistema Ordem Paranormal)
    */
   const rollSkillTest = async () => {
-    if (!character || !selectedSkill) {
-      alert('Selecione uma perícia')
+    if (!character) {
+      toast.error('Erro', 'Personagem não encontrado')
+      return
+    }
+    if (!selectedSkill) {
+      toast.warning('Aviso', 'Selecione uma perícia')
       return
     }
 
@@ -223,8 +230,12 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
    * Rola ataque (sistema Ordem Paranormal)
    */
   const rollAttack = async () => {
-    if (!character || !selectedSkill) {
-      alert('Selecione uma perícia de ataque (Luta ou Pontaria)')
+    if (!character) {
+      toast.error('Erro', 'Personagem não encontrado')
+      return
+    }
+    if (!selectedSkill) {
+      toast.warning('Aviso', 'Selecione uma perícia de ataque (Luta ou Pontaria)')
       return
     }
 
@@ -394,7 +405,14 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
                 disabled={rolling || !selectedSkill}
                 className="w-full bg-accent hover:bg-accent/90"
               >
-                {rolling ? 'Rolando...' : 'Rolar Teste de Perícia'}
+                {rolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Rolando...
+                  </>
+                ) : (
+                  'Rolar Teste de Perícia'
+                )}
               </Button>
             </>
           )}
@@ -464,7 +482,14 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
                 disabled={rolling || !selectedSkill}
                 className="w-full bg-accent hover:bg-accent/90"
               >
-                {rolling ? 'Rolando...' : 'Rolar Ataque'}
+                {rolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Rolando...
+                  </>
+                ) : (
+                  'Rolar Ataque'
+                )}
               </Button>
             </>
           )}
