@@ -14,10 +14,22 @@ import { Textarea } from '@/components/ui/textarea'
 import { Upload, X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 
+interface Campaign {
+  id: string
+  name: string
+  description?: string | null
+  image_url?: string | null
+  system_rpg?: string | null
+  status?: string
+  created_by?: string
+  created_at?: string
+  updated_at?: string
+}
+
 interface EditCampaignModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  campaign: any
+  campaign: Campaign
   onSuccess: () => void
 }
 
