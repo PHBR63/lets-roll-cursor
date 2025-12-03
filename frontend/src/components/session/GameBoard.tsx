@@ -342,6 +342,39 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   }
 
   /**
+   * Handler para pinch to zoom (touch)
+   */
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+      )
+      setDragStart({ x: distance, y: 0 })
+    }
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && dragStart.x > 0) {
+      const touch1 = e.touches[0]
+      const touch2 = e.touches[1]
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
+          Math.pow(touch2.clientY - touch1.clientY, 2)
+      )
+      const scale = distance / dragStart.x
+      const newZoom = Math.max(0.5, Math.min(3, zoom * scale))
+      setZoom(newZoom)
+    }
+  }, [dragStart, zoom])
+
+  const handleTouchEnd = useCallback(() => {
+    setDragStart({ x: 0, y: 0 })
+  }, [])
+
+  /**
    * Handler para iniciar drag/medir/desenhar
    */
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -560,11 +593,14 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   return (
     <div
       ref={containerRef}
-      className="flex-1 bg-card-secondary border-b border-card-secondary relative overflow-hidden"
+      className="flex-1 bg-card-secondary border-b border-card-secondary relative overflow-hidden touch-none"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {imageUrl ? (
         <>
@@ -803,18 +839,18 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
             ))}
 
           {/* Controles de zoom e ferramentas */}
-          <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-            <div className="flex gap-2 bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+          <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4 flex flex-col gap-2">
+            <div className="flex flex-wrap gap-2 bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={handleZoomOut}
                 disabled={zoom <= 0.5}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="text-white text-sm px-2 flex items-center">
+              <span className="text-white text-xs md:text-sm px-1 md:px-2 flex items-center">
                 {Math.round(zoom * 100)}%
               </span>
               <Button
@@ -822,7 +858,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant="ghost"
                 onClick={handleZoomIn}
                 disabled={zoom >= 3}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
@@ -830,7 +866,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 size="sm"
                 variant="ghost"
                 onClick={handleReset}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
+                title="Resetar"
               >
                 <RotateCcw className="w-4 h-4" />
               </Button>
@@ -838,7 +875,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 size="sm"
                 variant={showGrid ? 'default' : 'ghost'}
                 onClick={() => setShowGrid(!showGrid)}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
+                title="Grid"
               >
                 <Grid className="w-4 h-4" />
               </Button>
@@ -851,20 +889,20 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                     setMeasurement({ start: null, end: null, distance: 0 })
                   }
                 }}
-                className="text-white hover:bg-accent"
-                title="Medição de Distância"
+                className="text-white hover:bg-accent touch-manipulation"
+                title="Medição"
               >
                 <Ruler className="w-4 h-4" />
               </Button>
             </div>
 
-            {/* Ferramentas de desenho */}
-            <div className="flex gap-2 bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+            {/* Ferramentas de desenho (oculto em mobile muito pequeno) */}
+            <div className="hidden sm:flex gap-2 bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
               <Button
                 size="sm"
                 variant={drawingMode === 'line' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'line' ? 'none' : 'line')}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
                 title="Linha"
               >
                 <Minus className="w-4 h-4" />
@@ -873,7 +911,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 size="sm"
                 variant={drawingMode === 'circle' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'circle' ? 'none' : 'circle')}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
                 title="Círculo"
               >
                 <Circle className="w-4 h-4" />
@@ -882,21 +920,21 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 size="sm"
                 variant={drawingMode === 'rect' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'rect' ? 'none' : 'rect')}
-                className="text-white hover:bg-accent"
+                className="text-white hover:bg-accent touch-manipulation"
                 title="Retângulo"
               >
                 <Square className="w-4 h-4" />
               </Button>
             </div>
 
-            {/* Controles de camadas */}
-            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+            {/* Controles de camadas (oculto em mobile muito pequeno) */}
+            <div className="hidden md:block bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
               <div className="flex items-center gap-2 mb-2">
                 <Layers className="w-4 h-4 text-white" />
                 <span className="text-white text-xs font-semibold">Camadas</span>
               </div>
               <div className="space-y-1">
-                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer touch-manipulation">
                   <input
                     type="checkbox"
                     checked={layers.background}
@@ -905,7 +943,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                   />
                   Background
                 </label>
-                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer touch-manipulation">
                   <input
                     type="checkbox"
                     checked={layers.tokens}
@@ -914,7 +952,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                   />
                   Tokens
                 </label>
-                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer touch-manipulation">
                   <input
                     type="checkbox"
                     checked={layers.annotations}
@@ -926,8 +964,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
               </div>
             </div>
 
-            {/* Adicionar tokens */}
-            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+            {/* Adicionar tokens (oculto em mobile muito pequeno) */}
+            <div className="hidden lg:block bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
               <Select
                 onValueChange={(value) => {
                   if (value === 'generic') {
@@ -975,7 +1013,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                   size="sm"
                   variant="ghost"
                   onClick={handleRemoveToken}
-                  className="w-full mt-2 text-white hover:bg-destructive"
+                  className="w-full mt-2 text-white hover:bg-destructive touch-manipulation"
                   title="Remover Token"
                 >
                   <X className="w-4 h-4 mr-2" />

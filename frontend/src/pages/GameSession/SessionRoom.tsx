@@ -9,6 +9,9 @@ import { ChatPanel } from '@/components/session/ChatPanel'
 import { RollHistory } from '@/components/session/RollHistory'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Users, X } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -20,6 +23,7 @@ export function SessionRoom() {
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isMaster, setIsMaster] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (campaignId && user) {
@@ -150,30 +154,48 @@ export function SessionRoom() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden relative">
         {/* Área Principal - Game Board */}
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Botão para abrir sidebar em mobile */}
+          <div className="lg:hidden absolute top-4 right-4 z-10">
+            <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+              <SheetTrigger asChild>
+                <Button size="icon" variant="default" className="bg-accent">
+                  <Users className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-card border-card-secondary w-80 p-0">
+                <PlayerListSidebar
+                  campaignId={campaignId}
+                  sessionId={session?.id}
+                  isMaster={isMaster}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
+
           <GameBoard sessionId={session?.id} campaignId={campaignId} />
           
           {/* Área inferior: Dice Roller, Histórico e Chat */}
-          <div className="grid grid-cols-3 gap-4 p-4 border-t border-card-secondary bg-background">
-            <div className="bg-card border border-card-secondary rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 p-2 md:p-4 border-t border-card-secondary bg-background">
+            <div className="bg-card border border-card-secondary rounded-lg p-3 md:p-4 min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] overflow-y-auto">
               <DiceRoller sessionId={session?.id} campaignId={campaignId} />
             </div>
-            <div className="bg-card border border-card-secondary rounded-lg min-h-[300px] max-h-[400px] flex flex-col">
-              <div className="p-4 border-b border-card-secondary">
-                <h3 className="text-white font-semibold">Histórico de Rolagens</h3>
+            <div className="bg-card border border-card-secondary rounded-lg min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] flex flex-col">
+              <div className="p-3 md:p-4 border-b border-card-secondary">
+                <h3 className="text-white font-semibold text-sm md:text-base">Histórico de Rolagens</h3>
               </div>
               <RollHistory sessionId={session?.id} campaignId={campaignId} />
             </div>
-            <div className="bg-card border border-card-secondary rounded-lg min-h-[300px] max-h-[400px] flex flex-col">
+            <div className="bg-card border border-card-secondary rounded-lg min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] flex flex-col">
               <ChatPanel sessionId={session?.id} campaignId={campaignId} />
             </div>
           </div>
         </div>
 
-        {/* Sidebar Direita - Player List */}
-        <div className="w-80 border-l border-card-secondary bg-card/50">
+        {/* Sidebar Direita - Player List (Desktop) */}
+        <div className="hidden lg:block w-80 border-l border-card-secondary bg-card/50">
           <PlayerListSidebar
             campaignId={campaignId}
             sessionId={session?.id}

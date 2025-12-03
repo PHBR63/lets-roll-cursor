@@ -86,40 +86,42 @@ export function Dashboard() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 container mx-auto px-4 py-8 space-y-12">
+      <main className="flex-1 container mx-auto px-4 py-4 md:py-8 space-y-8 md:space-y-12">
         {/* Seção Mestrando */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">Mestrando</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Mestrando</h2>
           {masteringCampaigns.length > 0 ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white flex-shrink-0"
+                className="text-white flex-shrink-0 hidden sm:flex"
                 onClick={() => scrollCarousel('left', 'mastering-carousel')}
               >
-                <ChevronLeft className="h-8 w-8" />
+                <ChevronLeft className="h-6 w-6 md:h-8 md:w-8" />
               </Button>
               <div
                 id="mastering-carousel"
-                className="flex gap-4 overflow-x-auto flex-1 scrollbar-hide"
+                className="flex gap-3 md:gap-4 overflow-x-auto flex-1 scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {masteringCampaigns.map((campaign) => (
-                  <CampaignCard key={campaign.id} campaign={campaign} />
+                  <div key={campaign.id} className="flex-shrink-0 snap-start">
+                    <CampaignCard campaign={campaign} />
+                  </div>
                 ))}
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white flex-shrink-0"
+                className="text-white flex-shrink-0 hidden sm:flex"
                 onClick={() => scrollCarousel('right', 'mastering-carousel')}
               >
-                <ChevronRight className="h-8 w-8" />
+                <ChevronRight className="h-6 w-6 md:h-8 md:w-8" />
               </Button>
             </div>
           ) : (
-            <p className="text-text-secondary">
+            <p className="text-text-secondary text-sm md:text-base">
               Você ainda não está mestrando nenhuma campanha
             </p>
           )}
@@ -127,37 +129,39 @@ export function Dashboard() {
 
         {/* Seção Participando */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-6">Participando</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Participando</h2>
           {participatingCampaigns.length > 0 ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white flex-shrink-0"
+                className="text-white flex-shrink-0 hidden sm:flex"
                 onClick={() => scrollCarousel('left', 'participating-carousel')}
               >
-                <ChevronLeft className="h-8 w-8" />
+                <ChevronLeft className="h-6 w-6 md:h-8 md:w-8" />
               </Button>
               <div
                 id="participating-carousel"
-                className="flex gap-4 overflow-x-auto flex-1 scrollbar-hide"
+                className="flex gap-3 md:gap-4 overflow-x-auto flex-1 scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {participatingCampaigns.map((campaign) => (
-                  <CampaignCard key={campaign.id} campaign={campaign} />
+                  <div key={campaign.id} className="flex-shrink-0 snap-start">
+                    <CampaignCard campaign={campaign} />
+                  </div>
                 ))}
               </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-white flex-shrink-0"
+                className="text-white flex-shrink-0 hidden sm:flex"
                 onClick={() => scrollCarousel('right', 'participating-carousel')}
               >
-                <ChevronRight className="h-8 w-8" />
+                <ChevronRight className="h-6 w-6 md:h-8 md:w-8" />
               </Button>
             </div>
           ) : (
-            <p className="text-text-secondary">
+            <p className="text-text-secondary text-sm md:text-base">
               Você ainda não está participando de nenhuma campanha
             </p>
           )}

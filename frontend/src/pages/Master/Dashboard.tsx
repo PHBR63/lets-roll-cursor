@@ -117,28 +117,29 @@ export function MasterDashboard() {
     <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-3 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate(`/campaign/${campaignId}`)}
               className="text-white hover:bg-accent"
+              size="sm"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              <ArrowLeft className="w-4 h-4 mr-1 md:mr-2" />
+              <span className="hidden sm:inline">Voltar</span>
             </Button>
-            <h1 className="text-2xl font-bold text-white">Painel do Mestre</h1>
+            <h1 className="text-lg md:text-2xl font-bold text-white">Painel do Mestre</h1>
           </div>
         </div>
 
-        {/* Layout 3 Colunas */}
-        <div className="grid grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+        {/* Layout Responsivo: 1 coluna mobile, 2 tablet, 3 desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 h-[calc(100vh-150px)] md:h-[calc(100vh-200px)]">
           {/* Coluna 1: Roll History + Master Info */}
-          <div className="flex flex-col gap-4">
-            <div className="bg-card rounded-lg border border-card-secondary p-4 flex-1 flex flex-col">
-              <h2 className="text-white font-semibold mb-4">Histórico de Rolagens</h2>
+          <div className="flex flex-col gap-3 md:gap-4">
+            <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4 flex-1 flex flex-col min-h-[300px]">
+              <h2 className="text-white font-semibold mb-3 md:mb-4 text-sm md:text-base">Histórico de Rolagens</h2>
               <RollHistory
                 sessionId={session?.id}
                 campaignId={campaignId}
@@ -147,9 +148,9 @@ export function MasterDashboard() {
             </div>
             
             {/* Master Info (opcional) */}
-            <div className="bg-card rounded-lg border border-card-secondary p-4">
-              <h3 className="text-white font-semibold mb-2">Informações do Mestre</h3>
-              <div className="text-text-secondary text-sm">
+            <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4">
+              <h3 className="text-white font-semibold mb-2 text-sm md:text-base">Informações do Mestre</h3>
+              <div className="text-text-secondary text-xs md:text-sm">
                 <p>Campanha: {campaignId}</p>
                 <p>Sessão: {session?.name || 'Nenhuma sessão ativa'}</p>
               </div>
@@ -157,12 +158,12 @@ export function MasterDashboard() {
           </div>
 
           {/* Coluna 2: Criaturas/NPCs */}
-          <div className="bg-card rounded-lg border border-card-secondary p-4 flex-1 flex flex-col">
+          <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4 flex-1 flex flex-col min-h-[300px]">
             <CreaturesPanel campaignId={campaignId} />
           </div>
 
           {/* Coluna 3: Jogadores */}
-          <div className="bg-card rounded-lg border border-card-secondary p-4 flex-1 flex flex-col">
+          <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4 flex-1 flex flex-col min-h-[300px]">
             <PlayersPanel campaignId={campaignId} sessionId={session?.id} />
           </div>
         </div>

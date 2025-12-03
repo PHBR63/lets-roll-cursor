@@ -215,8 +215,8 @@ export function CampaignDetail() {
             </div>
           </div>
 
-          {/* Sidebar - Jogadores */}
-          <div className="lg:col-span-1">
+          {/* Sidebar - Jogadores (oculta em mobile, mostra em lg+) */}
+          <div className="hidden lg:block lg:col-span-1">
             <PlayersSidebar
               participants={campaign.participants || []}
               currentUserId={user?.id}

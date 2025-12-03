@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Bell, User } from 'lucide-react'
+import { Bell, User, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -8,6 +8,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/context/AuthContext'
+import { useState } from 'react'
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 
 /**
  * Navbar principal
@@ -16,6 +18,7 @@ import { useAuth } from '@/context/AuthContext'
  */
 export function Navbar() {
   const { user, signOut } = useAuth()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <nav className="border-b border-card-secondary bg-card/50 backdrop-blur-sm">
@@ -26,7 +29,8 @@ export function Navbar() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-4">
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-4">
           <Link to="/campaign/create">
             <Button className="bg-accent hover:bg-accent/90">
               + Nova Mesa
@@ -41,7 +45,9 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2">
                 <User className="h-5 w-5 text-white" />
-                <span className="text-white">{user?.email || 'theDevloope'}</span>
+                <span className="text-white hidden lg:inline">
+                  {user?.email || 'theDevloope'}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-accent">
@@ -60,6 +66,71 @@ export function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Mobile Menu */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="md:hidden">
+              <Menu className="h-5 w-5 text-white" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="bg-card border-card-secondary w-80">
+            <div className="flex flex-col gap-4 mt-8">
+              <Link
+                to="/campaign/create"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full"
+              >
+                <Button className="bg-accent hover:bg-accent/90 w-full">
+                  + Nova Mesa
+                </Button>
+              </Link>
+
+              <div className="border-t border-card-secondary pt-4">
+                <Link
+                  to="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-white hover:text-accent"
+                >
+                  Meu perfil
+                </Link>
+                <Link
+                  to="/history"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-white hover:text-accent"
+                >
+                  Histórico
+                </Link>
+                <Link
+                  to="/friends"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 text-white hover:text-accent"
+                >
+                  Amigos
+                </Link>
+              </div>
+
+              <div className="border-t border-card-secondary pt-4">
+                <button
+                  onClick={() => {
+                    signOut()
+                    setMobileMenuOpen(false)
+                  }}
+                  className="block py-2 text-white hover:text-accent w-full text-left"
+                >
+                  Sair
+                </button>
+              </div>
+
+              <div className="border-t border-card-secondary pt-4">
+                <div className="flex items-center gap-2 text-white">
+                  <User className="h-5 w-5" />
+                  <span className="text-sm">{user?.email || 'theDevloope'}</span>
+                </div>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </nav>
   )
