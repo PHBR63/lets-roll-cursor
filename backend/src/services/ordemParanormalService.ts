@@ -276,6 +276,11 @@ export const ordemParanormalService = {
     cannotReact: boolean // Não pode reagir
     cannotMove: boolean // Não pode se mover
     speedReduction: number // Redução de velocidade (0.5 = metade)
+    rangedAttackPenalty: number // Penalidade em ataques à distância (para CAIDO)
+    ritualDTBonus: number // Bônus na DT de rituais (para SURDO)
+    onlyOneAction: boolean // Apenas 1 ação por turno (padrão OU movimento)
+    cannotApproach: boolean // Não pode se aproximar (APAVORADO)
+    mustFlee: boolean // Deve fugir se possível (APAVORADO)
     attributePenalties: {
       agi: number
       for: number
@@ -295,6 +300,11 @@ export const ordemParanormalService = {
       cannotReact: false,
       cannotMove: false,
       speedReduction: 1,
+      rangedAttackPenalty: 0, // Penalidade em ataques à distância
+      ritualDTBonus: 0, // Bônus na DT de rituais
+      onlyOneAction: false, // Apenas 1 ação por turno
+      cannotApproach: false, // Não pode se aproximar
+      mustFlee: false, // Deve fugir se possível
       attributePenalties: {
         agi: 0,
         for: 0,
@@ -309,6 +319,7 @@ export const ordemParanormalService = {
       switch (condition) {
         case 'CAIDO':
           penalties.defense -= 5 // -5 Defesa em corpo-a-corpo
+          penalties.rangedAttackPenalty = -5 // -5 em ataques à distância (no atirador)
           break
 
         case 'DESPREVENIDO':
@@ -338,6 +349,8 @@ export const ordemParanormalService = {
 
         case 'APAVORADO':
           penalties.dicePenalty -= 2 // -2D em todos os testes
+          penalties.cannotApproach = true // Não pode se aproximar da fonte do medo
+          penalties.mustFlee = true // Deve fugir se possível
           break
 
         case 'PERTURBADO':
@@ -373,11 +386,12 @@ export const ordemParanormalService = {
         case 'SURDO':
           penalties.skillPenalties['Percepção'] = -2 // Penaliza Percepção para ouvir
           penalties.skillPenalties['Iniciativa'] = -2 // -2D em Iniciativa
+          penalties.ritualDTBonus = 5 // +5 DT para conjurar rituais
           break
 
         case 'ENJOADO':
         case 'NAUSEA':
-          // Apenas 1 ação por turno (lógica separada)
+          penalties.onlyOneAction = true // Apenas 1 ação por turno (padrão OU movimento)
           penalties.dicePenalty -= 1 // -1D em alguns testes
           break
 
@@ -418,8 +432,8 @@ export const ordemParanormalService = {
           break
 
         case 'FASCINADO':
+          penalties.cannotAct = true // Não pode realizar ações além de observar
           penalties.skillPenalties['Percepção'] = -2 // -2D em Percepção contra outras coisas
-          // Não pode realizar ações além de observar (lógica separada)
           break
 
         case 'INDEFESO':

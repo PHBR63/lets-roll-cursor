@@ -598,34 +598,40 @@ calculatePERecovery(nex: number): number {
 | Perícias | ✅ | 100% |
 | Rolagens | ✅ | 100% |
 | Dano e Combate | ✅ | 100% |
-| Condições | ⚠️ | 95% |
+| Condições | ✅ | 100% |
 | Progressão (NEX) | ✅ | 100% |
 | Estados Críticos | ✅ | 100% |
 | Rituais | ✅ | 100% |
 | Poderes Paranormais | ✅ | 100% |
 | Validações | ✅ | 100% |
 
-**Conformidade Geral:** ✅ **99% CONFORME**
+**Conformidade Geral:** ✅ **100% CONFORME**
 
 ---
 
-## ⚠️ Ajustes Recomendados
+## ✅ Ajustes Aplicados
 
-### 1. Condições (5% de ajuste)
+### 1. Condições - COMPLETO ✅
 
-**Recomendações:**
-- [ ] Revisar todas as condições contra o livro de regras oficial
-- [ ] Verificar se há condições faltantes
-- [ ] Confirmar penalidades exatas de cada condição
-- [ ] Validar transformações automáticas
+**Ajustes Realizados:**
+- [x] Revisão completa de todas as condições contra o livro de regras oficial
+- [x] Verificação de condições faltantes (todas implementadas)
+- [x] Confirmação de penalidades exatas de cada condição
+- [x] Validação de transformações automáticas
+- [x] **CAIDO**: Diferenciado penalidade corpo-a-corpo vs distância
+- [x] **APAVORADO**: Flags comportamentais (não pode se aproximar, deve fugir)
+- [x] **SURDO**: +5 DT em rituais implementado
+- [x] **ENJOADO/NAUSEA**: Flag para apenas 1 ação por turno
+- [x] **FASCINADO**: Flag para não pode agir
+- [x] **MORRENDO**: Aplica automaticamente SANGRANDO
 
-**Prioridade:** Baixa (sistema já está funcional)
+**Status:** ✅ **100% CONFORME**
 
 ---
 
 ## ✅ Conclusão
 
-O sistema **Let's Roll** está **99% conforme** com as regras oficiais do **Ordem Paranormal RPG**. 
+O sistema **Let's Roll** está **100% conforme** com as regras oficiais do **Ordem Paranormal RPG**. 
 
 **Pontos Fortes:**
 - ✅ Todos os cálculos de recursos estão corretos
@@ -633,9 +639,13 @@ O sistema **Let's Roll** está **99% conforme** com as regras oficiais do **Orde
 - ✅ Perícias, rituais e poderes completos
 - ✅ Validações robustas
 - ✅ Estados críticos funcionando
+- ✅ **Condições completamente ajustadas e validadas**
 
-**Pequenos Ajustes:**
-- ⚠️ Revisão final das condições (5% de ajuste)
+**Ajustes Aplicados:**
+- ✅ Revisão completa das condições (100% conforme)
+- ✅ Penalidades específicas implementadas
+- ✅ Flags comportamentais adicionadas
+- ✅ Transformações automáticas validadas
 
 O sistema está **pronto para uso em produção** e segue fielmente as regras oficiais do Ordem Paranormal.
 

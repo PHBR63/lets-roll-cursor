@@ -267,6 +267,7 @@ describe('ordemParanormalService', () => {
     it('deve calcular penalidades de condição Caído', () => {
       const result = ordemParanormalService.calculateConditionPenalties(['CAIDO'])
       expect(result.defense).toBe(-5)
+      expect(result.rangedAttackPenalty).toBe(-5) // -5 em ataques à distância
     })
 
     it('deve calcular penalidades de condição Desprevenido', () => {
@@ -292,6 +293,8 @@ describe('ordemParanormalService', () => {
     it('deve calcular penalidades de condição Apavorado', () => {
       const result = ordemParanormalService.calculateConditionPenalties(['APAVORADO'])
       expect(result.dicePenalty).toBe(-2)
+      expect(result.cannotApproach).toBe(true) // Não pode se aproximar
+      expect(result.mustFlee).toBe(true) // Deve fugir
     })
 
     it('deve calcular penalidades de condição Cego', () => {
@@ -330,11 +333,13 @@ describe('ordemParanormalService', () => {
       expect(effects.message.toLowerCase()).toContain('abalado')
     })
 
-    it('deve aplicar Morrendo e automaticamente Inconsciente', () => {
+    it('deve aplicar Morrendo e automaticamente Inconsciente e Sangrando', () => {
       const { newConditions, effects } = ordemParanormalService.applyCondition('MORRENDO', [])
       expect(newConditions).toContain('MORRENDO')
       expect(newConditions).toContain('INCONSCIENTE')
+      expect(newConditions).toContain('SANGRANDO')
       expect(effects.autoConditions).toContain('INCONSCIENTE')
+      expect(effects.autoConditions).toContain('SANGRANDO')
     })
 
     it('deve transformar Abalado em Apavorado se já estava Abalado', () => {
