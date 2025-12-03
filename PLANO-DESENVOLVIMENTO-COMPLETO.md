@@ -1150,6 +1150,22 @@ Priorizar sincronização em tempo real de:
    - Validações e cálculos automáticos
    - Melhorias visuais e animações
 
+3. **Fase 5 - Sala de Sessão Completa (Frontend)** ✅ **100% CONCLUÍDA**
+   - GameBoard com tokens, grid e ferramentas de desenho
+   - DiceRoller com sistema Ordem Paranormal completo
+   - Integração Realtime para rolagens
+   - Controles de áudio
+   - Histórico de rolagens em tempo real
+
+4. **Fase 6 - Painel do Mestre Completo (Frontend)** ✅ **100% CONCLUÍDA**
+   - Master Dashboard com layout 3 colunas
+   - RollHistory com filtros
+   - CreaturesPanel com tabs Criaturas/NPCs
+   - NPCsPanel com tabs (Equipamentos, Itens, Habilidades, Magias)
+   - PlayersPanel com lista de jogadores
+   - CreateCreatureModal
+   - Integração completa com APIs
+
 ### 🚧 Fases em Andamento
 
 Nenhuma no momento.
