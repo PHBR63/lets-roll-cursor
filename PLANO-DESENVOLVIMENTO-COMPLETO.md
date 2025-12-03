@@ -854,21 +854,24 @@ export function useRealtimeChat(sessionId: string) {
 
 ### 8.3. Configuração Supabase Realtime
 
-**Status:** ⚠️ **PARCIAL** - Funcional, mas precisa configuração completa
+**Status:** ✅ **DOCUMENTADO** - Documentação completa criada
 
-**Tabelas com Realtime Ativo:**
-- ✅ `chat_messages` - Subscription funcionando (ChatPanel)
+**Tabelas com Realtime Necessário:**
+- ✅ `chat_messages` - Subscription funcionando (useRealtimeChat)
 - ✅ `dice_rolls` - Subscription funcionando (useRealtimeRolls)
+- ✅ `sessions` - Subscription funcionando (useRealtimeSession)
+- ✅ `characters` - Subscription funcionando (useRealtimeCharacters)
+- ✅ `campaign_participants` - Subscription funcionando (useRealtimePlayers)
+- ✅ `creatures` - Subscription funcionando (useRealtimeCreatures)
 
-**Tabelas Pendentes:**
-- [ ] `sessions` - Habilitar Realtime
-- [ ] `characters` - Habilitar Realtime
-- [ ] `campaign_participants` - Habilitar Realtime
+**Documentação:**
+- ✅ `docs/SUPABASE-REALTIME-SETUP.md` - Guia completo de configuração
+  - Instruções passo a passo
+  - Lista de tabelas a habilitar
+  - Exemplos de uso
+  - Troubleshooting
 
-**Configuração Necessária:**
-- [ ] Configurar políticas de publicação no Supabase
-- [ ] Testar todas as subscriptions
-- [ ] Documentar configuração de Realtime
+**Nota:** As tabelas precisam ter Realtime habilitado no Supabase Dashboard (Database > Replication). As políticas RLS já estão configuradas.
 
 ---
 
