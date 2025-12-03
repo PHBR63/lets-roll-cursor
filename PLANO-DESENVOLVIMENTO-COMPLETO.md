@@ -1164,9 +1164,22 @@ export function useRealtimeChat(sessionId: string) {
   - Suporta navegação, exibição de range, ellipsis
   - Pronto para uso em listas longas
 - ✅ Debounce em buscas (já implementado em alguns lugares)
-- [ ] Memoização de componentes pesados
-- [ ] Virtualização de listas longas
-- [ ] Cache de dados frequentes
+- ✅ Memoização de componentes pesados
+  - `RollItem` - Item de rolagem memoizado
+  - `MessageItem` - Item de mensagem memoizado
+  - `SkillItem` - Item de perícia memoizado
+  - `CreatureCard` - Card de criatura memoizado
+  - `useMemo` para cálculos pesados (filtros, agrupamentos)
+- ✅ Virtualização de listas longas
+  - `react-window` instalado e integrado
+  - `RollHistory` - Virtualização para >10 itens
+  - `ChatPanel` - Virtualização para >20 mensagens
+  - Componente `VirtualizedList` reutilizável criado
+- ✅ Cache de dados frequentes
+  - Hook `useCache` criado (TTL configurável, tamanho máximo)
+  - Cache de campanhas no Dashboard (TTL 2 minutos)
+  - Função `getOrFetch` para cache automático
+  - Limpeza automática de itens expirados
 
 ### 11.4. Animações
 
