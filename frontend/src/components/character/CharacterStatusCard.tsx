@@ -1,4 +1,4 @@
-import { ProgressBar } from '@/components/ui/progress-bar'
+import { AnimatedProgressBar } from '@/components/ui/animated-progress'
 import { Card } from '@/components/ui/card'
 import {
   Tooltip,
@@ -105,30 +105,38 @@ export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
 
           {/* Barras de Progresso */}
           <div className="space-y-3">
-            <ProgressBar
+            <AnimatedProgressBar
               label="PV"
               current={vida.current}
               max={vida.max}
-              variant="life"
+              color="red"
+              duration={0.5}
+              delay={0}
             />
-            <ProgressBar
+            <AnimatedProgressBar
               label="NEX"
               current={xp}
               max={99}
-              variant="xp"
+              color="purple"
               showValues={false}
+              duration={0.5}
+              delay={0.1}
             />
-            <ProgressBar
+            <AnimatedProgressBar
               label="PE"
               current={energia.current}
               max={energia.max}
-              variant="energy"
+              color="green"
+              duration={0.5}
+              delay={0.2}
             />
-            <ProgressBar
+            <AnimatedProgressBar
               label="SAN"
               current={saude.current}
               max={saude.max}
-              variant="health"
+              color="yellow"
+              duration={0.5}
+              delay={0.3}
             />
               </div>
             </Card>

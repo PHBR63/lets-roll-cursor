@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Card } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
+import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash2, Heart, Zap, Shield, Award } from 'lucide-react'
 
@@ -68,9 +68,12 @@ export const CreatureCard = memo(({
               {vida.current}/{vida.max}
             </span>
           </div>
-          <Progress
-            value={(vida.current / vida.max) * 100}
+          <AnimatedProgress
+            value={vida.current}
+            max={vida.max}
+            color="red"
             className="h-2"
+            duration={0.4}
           />
         </div>
 
@@ -84,9 +87,12 @@ export const CreatureCard = memo(({
               {energia.current}/{energia.max}
             </span>
           </div>
-          <Progress
-            value={(energia.current / energia.max) * 100}
+          <AnimatedProgress
+            value={energia.current}
+            max={energia.max}
+            color="yellow"
             className="h-2"
+            duration={0.4}
           />
         </div>
 
@@ -100,9 +106,12 @@ export const CreatureCard = memo(({
               {saude.current}/{saude.max}
             </span>
           </div>
-          <Progress
-            value={(saude.current / saude.max) * 100}
+          <AnimatedProgress
+            value={saude.current}
+            max={saude.max}
+            color="blue"
             className="h-2"
+            duration={0.4}
           />
         </div>
 
@@ -116,9 +125,12 @@ export const CreatureCard = memo(({
               {xp.current}/{xp.max}
             </span>
           </div>
-          <Progress
-            value={(xp.current / xp.max) * 100}
+          <AnimatedProgress
+            value={xp.current}
+            max={xp.max}
+            color="purple"
             className="h-2"
+            duration={0.4}
           />
         </div>
       </div>

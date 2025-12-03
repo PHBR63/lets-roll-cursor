@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Progress } from '@/components/ui/progress'
+import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -76,9 +76,12 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {pv.current} / {pv.max}
           </span>
         </div>
-        <Progress 
-          value={pvPercent} 
-          className="h-3 bg-red-900/30 transition-all duration-500" 
+        <AnimatedProgress 
+          value={pv.current} 
+          max={pv.max}
+          color="red"
+          className="h-3"
+          duration={0.6}
         />
         <div className="flex gap-2">
           <Button
@@ -127,9 +130,12 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {san.current} / {san.max}
           </span>
         </div>
-        <Progress 
-          value={sanPercent} 
-          className="h-3 bg-blue-900/30 transition-all duration-500" 
+        <AnimatedProgress 
+          value={san.current} 
+          max={san.max}
+          color="blue"
+          className="h-3"
+          duration={0.6}
         />
         <div className="flex gap-2">
           <Button
@@ -178,9 +184,12 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {pe.current} / {pe.max}
           </span>
         </div>
-        <Progress 
-          value={pePercent} 
-          className="h-3 bg-green-900/30 transition-all duration-500" 
+        <AnimatedProgress 
+          value={pe.current} 
+          max={pe.max}
+          color="green"
+          className="h-3"
+          duration={0.6}
         />
         <div className="flex gap-2">
           <Button
