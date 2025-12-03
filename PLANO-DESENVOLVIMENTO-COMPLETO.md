@@ -648,15 +648,23 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ---
 
-## 🔄 Fase 8 - Integração Supabase Realtime (PRIORIDADE ALTA)
+## 🔄 Fase 8 - Integração Supabase Realtime (PRIORIDADE ALTA) ✅ **PARCIALMENTE CONCLUÍDA**
 
 ### 8.1. Realtime Hook
 
-**Arquivo:** `frontend/src/hooks/useRealtime.ts` (criar)
+**Arquivo:** `frontend/src/hooks/useRealtimeRolls.ts`
 
-**Hooks Necessários:**
-- [ ] `useRealtimeChat(sessionId)` - Hook para chat em tempo real
-- [ ] `useRealtimeRolls(sessionId)` - Hook para rolagens em tempo real
+**Status:** ✅ **IMPLEMENTADO** - Hook para rolagens em tempo real
+
+**Hooks Implementados:**
+- ✅ `useRealtimeRolls(sessionId, campaignId)` - Hook para rolagens em tempo real
+  - Subscription ativa no Supabase Realtime
+  - Carregamento de rolagens iniciais
+  - Atualização automática em tempo real
+  - Filtro por campanha (apenas rolagens públicas)
+
+**Hooks Pendentes:**
+- [ ] `useRealtimeChat(sessionId)` - Hook para chat em tempo real (ChatPanel já tem subscription direta)
 - [ ] `useRealtimeSession(sessionId)` - Hook para atualizações de sessão
 - [ ] `useRealtimeCharacters(campaignId)` - Hook para atualizações de personagens
 - [ ] `useRealtimePlayers(campaignId)` - Hook para status de jogadores
@@ -690,25 +698,35 @@ export function useRealtimeChat(sessionId: string) {
 
 ### 8.2. Atualizar Componentes com Realtime
 
-**Componentes a Atualizar:**
-- [ ] `ChatPanel` - Usar `useRealtimeChat`
-- [ ] `DiceRoller` - Usar `useRealtimeRolls`
-- [ ] `PlayerListSidebar` - Usar `useRealtimePlayers`
-- [ ] `SessionRoom` - Integrar todos os hooks
-- [ ] `RollHistory` - Usar `useRealtimeRolls`
-- [ ] `PlayersPanel` - Usar `useRealtimePlayers`
+**Status:** ✅ **PARCIALMENTE CONCLUÍDO**
+
+**Componentes Atualizados:**
+- ✅ `ChatPanel` - Subscription direta no Supabase Realtime (já implementado)
+- ✅ `DiceRoller` - Integrado com `useRealtimeRolls` (carrega rolagens em tempo real)
+- ✅ `RollHistory` - Usa `useRealtimeRolls` para exibir histórico atualizado
+- ✅ `SessionRoom` - Integra RollHistory com Realtime
+
+**Componentes Pendentes:**
+- [ ] `PlayerListSidebar` - Usar `useRealtimePlayers` (atualizar stats em tempo real)
+- [ ] `PlayersPanel` - Usar `useRealtimePlayers` (quando criado)
 
 ### 8.3. Configuração Supabase Realtime
 
-**Necessário:**
-- [ ] Habilitar Realtime nas tabelas:
-  - `chat_messages`
-  - `dice_rolls`
-  - `sessions`
-  - `characters`
-  - `campaign_participants`
-- [ ] Configurar políticas de publicação
-- [ ] Testar subscriptions
+**Status:** ⚠️ **PARCIAL** - Funcional, mas precisa configuração completa
+
+**Tabelas com Realtime Ativo:**
+- ✅ `chat_messages` - Subscription funcionando (ChatPanel)
+- ✅ `dice_rolls` - Subscription funcionando (useRealtimeRolls)
+
+**Tabelas Pendentes:**
+- [ ] `sessions` - Habilitar Realtime
+- [ ] `characters` - Habilitar Realtime
+- [ ] `campaign_participants` - Habilitar Realtime
+
+**Configuração Necessária:**
+- [ ] Configurar políticas de publicação no Supabase
+- [ ] Testar todas as subscriptions
+- [ ] Documentar configuração de Realtime
 
 ---
 
@@ -944,15 +962,17 @@ export function useRealtimeChat(sessionId: string) {
 - [ ] Sistema de convites funcional
 - [ ] Edição de campanha
 
-### Fase 8 - Realtime
-- [ ] useRealtime hook
-- [ ] useRealtimeChat hook
-- [ ] useRealtimeRolls hook
+### Fase 8 - Realtime ✅ **PARCIALMENTE CONCLUÍDA**
+- [x] useRealtimeRolls hook (implementado e funcionando)
+- [x] Integração no DiceRoller
+- [x] Integração no RollHistory
+- [x] ChatPanel com Realtime (subscription direta)
+- [ ] useRealtimeChat hook (ChatPanel já tem, mas pode ser extraído)
 - [ ] useRealtimeSession hook
 - [ ] useRealtimeCharacters hook
 - [ ] useRealtimePlayers hook
-- [ ] Atualizar todos os componentes
-- [ ] Configurar Supabase Realtime
+- [ ] Atualizar PlayerListSidebar com Realtime
+- [ ] Configurar Supabase Realtime completamente
 
 ### Fase 9 - Funcionalidades Avançadas
 - [ ] AdvancedDiceRoller
@@ -1095,23 +1115,65 @@ Priorizar sincronização em tempo real de:
 
 Nenhuma no momento.
 
+### ✅ Fases Concluídas (100%)
+
+3. **Fase 5 - Sala de Sessão Completa** ✅ **100% CONCLUÍDA**
+   - GameBoard com tokens, grid e ferramentas de desenho
+   - DiceRoller com sistema Ordem Paranormal completo
+   - Integração Realtime para rolagens
+   - Controles de áudio
+   - Histórico de rolagens em tempo real
+
 ### 📋 Próximas Fases Prioritárias
 
-1. **Fase 5 - Sala de Sessão Completa** (PRIORIDADE ALTA)
-   - Melhorias no GameBoard (mapas, zoom, tokens)
-   - DiceRoller com sistema Ordem Paranormal
-   - Integração Realtime completa
-
-2. **Fase 8 - Integração Supabase Realtime** (PRIORIDADE ALTA)
-   - Hooks de Realtime
-   - Sincronização em tempo real
-   - Atualização de componentes
-
-3. **Fase 6 - Painel do Mestre** (PRIORIDADE MÉDIA)
+1. **Fase 6 - Painel do Mestre** (PRIORIDADE MÉDIA)
    - Master Dashboard
-   - RollHistory
+   - RollHistory (reutilizar componente existente)
    - CreaturesPanel
    - PlayersPanel
+
+2. **Fase 8 - Integração Supabase Realtime** (PRIORIDADE ALTA - Parcial)
+   - Hooks adicionais de Realtime (Characters, Players, Session)
+   - Sincronização completa de stats em tempo real
+   - Configuração completa no Supabase
+
+3. **Fase 7 - Detalhes da Campanha** (PRIORIDADE MÉDIA)
+   - Integração completa com API
+   - Sistema de convites funcional
+   - Edição de campanha
+
+---
+
+---
+
+## 📊 Resumo das Implementações Recentes
+
+### Funcionalidades Avançadas da Fase 5 - Implementadas ✅
+
+**Tokens e Ferramentas no GameBoard:**
+- ✅ Sistema de tokens arrastáveis
+- ✅ Grid opcional com toggle
+- ✅ Ferramentas de desenho (linha, círculo, retângulo)
+- ✅ Tokens com nomes e cores customizáveis
+
+**Integração Realtime:**
+- ✅ Hook `useRealtimeRolls` implementado
+- ✅ Componente `RollHistory` com atualização em tempo real
+- ✅ Sincronização automática de rolagens entre jogadores
+
+**Controles de Áudio:**
+- ✅ Componente `AudioControls` (mute/unmute)
+- ✅ Integrado no PlayerListSidebar
+
+**Histórico de Rolagens:**
+- ✅ Componente `RollHistory` completo
+- ✅ Exibição de rolagens recentes
+- ✅ Atualização em tempo real via Realtime
+- ✅ Integrado no SessionRoom (3ª coluna)
+
+**Melhorias no Layout:**
+- ✅ Layout 3 colunas no SessionRoom (DiceRoller, RollHistory, Chat)
+- ✅ Melhor organização visual
 
 ---
 
