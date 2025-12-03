@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -6,52 +5,73 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { useToast } from '@/hooks/useToast'
+import { Loader2 } from 'lucide-react'
+
+/**
+ * Schema de validação para registro
+ */
+const registerSchema = z
+  .object({
+    username: z
+      .string()
+      .min(3, 'Usuário deve ter no mínimo 3 caracteres')
+      .max(20, 'Usuário deve ter no máximo 20 caracteres')
+      .regex(/^[a-zA-Z0-9_]+$/, 'Usuário pode conter apenas letras, números e _'),
+    email: z.string().email('E-mail inválido').min(1, 'E-mail é obrigatório'),
+    password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
+    confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas não coincidem',
+    path: ['confirmPassword'],
+  })
+
+type RegisterFormData = z.infer<typeof registerSchema>
 
 /**
  * Página de Registro
  * Similar ao login, com campos adicionais
  */
 export function Register() {
-  const [username, setUsername] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
+  const toast = useToast()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  })
 
   /**
    * Função para criar conta
    */
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    if (password !== confirmPassword) {
-      setError('As senhas não coincidem')
-      setLoading(false)
-      return
-    }
-
+  const onSubmit = async (data: RegisterFormData) => {
     try {
       const { error } = await supabase.auth.signUp({
-        email,
-        password,
+        email: data.email,
+        password: data.password,
         options: {
           data: {
-            username,
+            username: data.username,
           },
         },
       })
 
       if (error) throw error
 
+      toast.success('Conta criada com sucesso!')
       navigate('/dashboard')
     } catch (error: any) {
-      setError(error.message || 'Erro ao criar conta')
-    } finally {
-      setLoading(false)
+      const errorMessage =
+        error.message === 'User already registered'
+          ? 'Este e-mail já está cadastrado'
+          : error.message || 'Erro ao criar conta'
+      toast.error('Erro ao criar conta', errorMessage)
     }
   }
 
@@ -74,17 +94,21 @@ export function Register() {
                 </div>
               </div>
 
-              <form onSubmit={handleRegister} className="space-y-4">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="username">Usuário</Label>
                   <Input
                     id="username"
                     type="text"
                     placeholder="seu_usuario"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
+                    {...register('username')}
+                    className={errors.username ? 'border-red-500' : ''}
                   />
+                  {errors.username && (
+                    <p className="text-red-500 text-sm animate-in fade-in-50">
+                      {errors.username.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -93,10 +117,14 @@ export function Register() {
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    {...register('email')}
+                    className={errors.email ? 'border-red-500' : ''}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm animate-in fade-in-50">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -105,10 +133,14 @@ export function Register() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                    {...register('password')}
+                    className={errors.password ? 'border-red-500' : ''}
                   />
+                  {errors.password && (
+                    <p className="text-red-500 text-sm animate-in fade-in-50">
+                      {errors.password.message}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -117,22 +149,29 @@ export function Register() {
                     id="confirmPassword"
                     type="password"
                     placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
+                    {...register('confirmPassword')}
+                    className={errors.confirmPassword ? 'border-red-500' : ''}
                   />
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm animate-in fade-in-50">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
                 </div>
-
-                {error && (
-                  <div className="text-red-500 text-sm">{error}</div>
-                )}
 
                 <Button
                   type="submit"
                   className="w-full bg-accent hover:bg-accent/90"
-                  disabled={loading}
+                  disabled={isSubmitting}
                 >
-                  {loading ? 'Criando conta...' : 'Criar Conta'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : (
+                    'Criar Conta'
+                  )}
                 </Button>
               </form>
             </TabsContent>

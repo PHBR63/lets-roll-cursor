@@ -10,6 +10,7 @@ import { SessionRoom } from './pages/GameSession/SessionRoom'
 import { CharacterSheet } from './pages/Character/CharacterSheet'
 import { MasterDashboard } from './pages/Master/Dashboard'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { Toaster } from './components/ui/toaster'
 
 /**
  * Componente principal da aplicação
@@ -75,6 +76,7 @@ function App() {
             />
           </Routes>
         </BrowserRouter>
+        <Toaster />
       </div>
     </AuthProvider>
   )

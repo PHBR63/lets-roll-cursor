@@ -15,6 +15,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { ALL_SKILLS } from '@/types/ordemParanormal'
 import { useRealtimeRolls } from '@/hooks/useRealtimeRolls'
+import { useToast } from '@/hooks/useToast'
+import { validateDiceFormula } from '@/utils/diceValidation'
+import { Loader2 } from 'lucide-react'
 
 /**
  * Componente de rolagem de dados com sistema Ordem Paranormal
@@ -37,8 +40,10 @@ const DICE_TYPES = [
 
 export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
   const { user } = useAuth()
+  const toast = useToast()
   const [activeTab, setActiveTab] = useState('basic')
   const [formula, setFormula] = useState('')
+  const [formulaError, setFormulaError] = useState<string | null>(null)
   const [isPrivate, setIsPrivate] = useState(false)
   const [lastResult, setLastResult] = useState<any>(null)
   const [rolling, setRolling] = useState(false)
@@ -100,11 +105,26 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
    * Rola dados baseado na fórmula (rolagem básica)
    */
   const rollFormula = async (customFormula?: string) => {
-    if (!campaignId || !user) return
+    if (!campaignId || !user) {
+      toast.error('Erro', 'Você precisa estar em uma campanha para rolar dados')
+      return
+    }
 
     const rollFormula = customFormula || formula.trim()
-    if (!rollFormula) return
+    if (!rollFormula) {
+      toast.warning('Aviso', 'Digite uma fórmula de dados')
+      return
+    }
 
+    // Validar fórmula
+    const validation = validateDiceFormula(rollFormula)
+    if (!validation.valid) {
+      setFormulaError(validation.error || 'Fórmula inválida')
+      toast.error('Fórmula inválida', validation.error || 'Use formato: 1d20, 2d6+3, etc.')
+      return
+    }
+
+    setFormulaError(null)
     setRolling(true)
 
     try {
