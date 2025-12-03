@@ -519,12 +519,15 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 **Funcionalidades Implementadas:**
 - ✅ Criar nova criatura (modal `CreateCreatureModal`)
+- ✅ Editar criatura (modal `EditCreatureModal`)
 - ✅ Remover criatura
+- ✅ Aplicar dano/cura (modal `ApplyDamageModal`)
+- ✅ Aplicar condições (modal `ApplyConditionModal`)
 - ✅ Integração com API de criaturas
 - ✅ Carregamento de criaturas da campanha
-- ⚠️ Clique para editar/detalhar (preparado, precisa modal)
-- ⚠️ Editar stats diretamente (preparado, precisa modal)
-- ⚠️ Aplicar condições (preparado, precisa implementar)
+- ✅ Integração Realtime (hook `useRealtimeCreatures`)
+- ✅ Busca e filtros avançados (componente `SearchAndFilters`)
+- ✅ Edição direta de stats (via EditCreatureModal)
 
 ### 6.4. NPCs Panel (Mesma área, via Tabs)
 
@@ -566,11 +569,10 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Carregamento de jogadores da campanha
 - ✅ Exibição de personagens e stats
 - ✅ Botão para abrir ficha (navega para `/character/:id`)
-- ✅ Botões de ação rápida (Dano/Cura, Condição - preparados)
-- ⚠️ Mestre pode editar stats diretamente (preparado, precisa modal)
-- ⚠️ Aplicar condições (preparado, precisa implementar)
-- ⚠️ Aplicar dano/cura (preparado, precisa implementar)
-- ⚠️ Integração com Realtime (preparado)
+- ✅ Aplicar dano/cura (modal `ApplyDamageModal`)
+- ✅ Aplicar condições (modal `ApplyConditionModal`)
+- ✅ Integração Realtime (hook `useRealtimeCharacters`)
+- ✅ Atualização automática de stats em tempo real
 
 ### 6.6. Rota no Frontend
 
@@ -592,16 +594,56 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ### 6.7. Componentes Auxiliares
 
-**Arquivo:** `frontend/src/components/master/CreateCreatureModal.tsx`
+**Status:** ✅ **TODOS CONCLUÍDOS**
 
-**Status:** ✅ **CONCLUÍDO**
-
-**Funcionalidades:**
+**CreateCreatureModal:**
 - ✅ Modal para criar nova criatura/NPC
 - ✅ Campos: Nome, Tipo, Descrição
 - ✅ Campos de stats: Vida Máxima, Energia Máxima, Saúde Máxima
 - ✅ Validação de campos obrigatórios
 - ✅ Integração com API
+
+**EditCreatureModal:**
+- ✅ Modal para editar criatura/NPC existente
+- ✅ Edição de todos os campos (nome, tipo, descrição)
+- ✅ Edição direta de stats (atual e máximo)
+- ✅ Validação de limites (atual não pode exceder máximo)
+- ✅ Integração com API
+
+**ApplyDamageModal:**
+- ✅ Modal para aplicar dano/cura
+- ✅ Suporte para dano físico (PV/Vida) e mental (SAN/Saúde)
+- ✅ Suporte para cura
+- ✅ Preview do novo valor antes de aplicar
+- ✅ Integração com API (personagens e criaturas)
+
+**ApplyConditionModal:**
+- ✅ Modal para aplicar/remover condições
+- ✅ Lista de condições ativas
+- ✅ Seleção de nova condição
+- ✅ Remoção de condições existentes
+- ✅ Integração com API
+
+**SearchAndFilters:**
+- ✅ Componente reutilizável de busca
+- ✅ Filtros por tipo (Criatura/NPC)
+- ✅ Filtros por status (Vivo/Morrendo/Inconsciente)
+- ✅ Botão de limpar filtros
+- ✅ Integrado no CreaturesPanel
+
+### 6.8. Integração Realtime
+
+**Status:** ✅ **CONCLUÍDO**
+
+**Hooks Implementados:**
+- ✅ `useRealtimeCharacters` - Sincroniza personagens em tempo real
+- ✅ `useRealtimeCreatures` - Sincroniza criaturas em tempo real
+
+**Integração:**
+- ✅ CreaturesPanel usa `useRealtimeCreatures`
+- ✅ PlayersPanel usa `useRealtimeCharacters`
+- ✅ Atualização automática quando dados mudam
+- ✅ Subscription ativa no Supabase Realtime
 
 ---
 
@@ -1001,14 +1043,17 @@ export function useRealtimeChat(sessionId: string) {
 - [ ] Sistema de convites funcional
 - [ ] Edição de campanha
 
-### Fase 8 - Realtime ✅ **PARCIALMENTE CONCLUÍDA**
+### Fase 8 - Realtime ✅ **MAIORIA CONCLUÍDA**
 - [x] useRealtimeRolls hook (implementado e funcionando)
+- [x] useRealtimeCharacters hook (implementado)
+- [x] useRealtimeCreatures hook (implementado)
 - [x] Integração no DiceRoller
 - [x] Integração no RollHistory
+- [x] Integração no CreaturesPanel
+- [x] Integração no PlayersPanel
 - [x] ChatPanel com Realtime (subscription direta)
 - [ ] useRealtimeChat hook (ChatPanel já tem, mas pode ser extraído)
 - [ ] useRealtimeSession hook
-- [ ] useRealtimeCharacters hook
 - [ ] useRealtimePlayers hook
 - [ ] Atualizar PlayerListSidebar com Realtime
 - [ ] Configurar Supabase Realtime completamente
