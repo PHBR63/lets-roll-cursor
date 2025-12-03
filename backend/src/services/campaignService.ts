@@ -192,7 +192,7 @@ export const campaignService = {
         throw new Error('Apenas o mestre pode atualizar a campanha')
       }
 
-      let imageUrl: string | null = undefined
+      let imageUrl: string | null = null
 
       // Upload de nova imagem se houver
       if (data.image) {

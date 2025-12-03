@@ -201,7 +201,7 @@ charactersRouter.delete('/:id/conditions/:condition', async (req: Request, res: 
   try {
     const character = await characterService.removeCondition(
       req.params.id,
-      req.params.condition
+      req.params.condition as any // Condition type
     )
     res.json(character)
   } catch (error: any) {
