@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { AudioControls } from './AudioControls'
+import { useRealtimePlayers } from '@/hooks/useRealtimePlayers'
+import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 
 /**
  * Sidebar com grid de cards de jogadores (2x3)
@@ -22,72 +24,29 @@ export function PlayerListSidebar({
   isMaster,
 }: PlayerListSidebarProps) {
   const { user } = useAuth()
+  const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
+  const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
   const [players, setPlayers] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
 
+  // Combinar participantes com personagens
   useEffect(() => {
-    if (campaignId) {
-      loadPlayers()
-    }
-  }, [campaignId])
+    if (!participants || !characters) return
 
-  /**
-   * Carrega jogadores da campanha
-   */
-  const loadPlayers = async () => {
-    try {
-      if (!campaignId) return
-
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(
-        `${apiUrl}/api/campaigns/${campaignId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
-        }
+    const playersWithCharacters = participants.map((participant: any) => {
+      const character = characters.find(
+        (char: any) => char.user_id === participant.user?.id
       )
 
-      if (response.ok) {
-        const campaign = await response.json()
-        const participants = campaign.participants || []
-        
-        // Buscar personagens de cada participante
-        const playersWithCharacters = await Promise.all(
-          participants.map(async (participant: any) => {
-            const charResponse = await fetch(
-              `${apiUrl}/api/characters?userId=${participant.user?.id}&campaignId=${campaignId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${session.session.access_token}`,
-                },
-              }
-            )
-            
-            let character = null
-            if (charResponse.ok) {
-              const chars = await charResponse.json()
-              character = chars[0] || null
-            }
-
-            return {
-              ...participant,
-              character,
-            }
-          })
-        )
-
-        setPlayers(playersWithCharacters)
+      return {
+        ...participant,
+        character,
       }
-    } catch (error) {
-      console.error('Erro ao carregar jogadores:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    })
+
+    setPlayers(playersWithCharacters)
+  }, [participants, characters])
+
+  const loading = participantsLoading || charactersLoading
 
   if (loading) {
     return (

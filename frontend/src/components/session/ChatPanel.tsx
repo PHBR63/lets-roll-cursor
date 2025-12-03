@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { useRealtimeChat } from '@/hooks/useRealtimeChat'
 
 /**
  * Painel de chat estilo Discord
@@ -31,82 +32,14 @@ interface Message {
 
 export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const { user } = useAuth()
-  const [messages, setMessages] = useState<Message[]>([])
+  const { messages, loading: messagesLoading } = useRealtimeChat(sessionId, campaignId)
   const [newMessage, setNewMessage] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (campaignId) {
-      loadMessages()
-      subscribeToMessages()
-    }
-
-    return () => {
-      // Cleanup subscription
-    }
-  }, [campaignId, sessionId])
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
-
-  /**
-   * Carrega mensagens iniciais
-   */
-  const loadMessages = async () => {
-    try {
-      if (!campaignId) return
-
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      
-      const response = await fetch(
-        `${apiUrl}/api/chat?campaignId=${campaignId}&sessionId=${sessionId || ''}`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        setMessages(data)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar mensagens:', error)
-    }
-  }
-
-  /**
-   * Subscribe para mensagens em tempo real
-   */
-  const subscribeToMessages = () => {
-    if (!campaignId) return
-
-    const channel = supabase
-      .channel(`chat:${campaignId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'chat_messages',
-          filter: `campaign_id=eq.${campaignId}`,
-        },
-        (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message])
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }
 
   /**
    * Envia mensagem
@@ -115,7 +48,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
     e.preventDefault()
     if (!newMessage.trim() || !campaignId || !user) return
 
-    setLoading(true)
+    setSending(true)
 
     try {
       const { data: session } = await supabase.auth.getSession()
@@ -163,7 +96,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
       console.error('Erro ao enviar mensagem:', error)
       alert('Erro ao enviar mensagem. Tente novamente.')
     } finally {
-      setLoading(false)
+      setSending(false)
     }
   }
 
@@ -238,14 +171,14 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             className="bg-input border-white/20 flex-1"
-            disabled={loading}
+            disabled={sending}
           />
           <Button
             type="submit"
-            disabled={loading || !newMessage.trim()}
+            disabled={sending || !newMessage.trim()}
             className="bg-accent hover:bg-accent/90"
           >
-            Enviar
+            {sending ? 'Enviando...' : 'Enviar'}
           </Button>
         </div>
       </form>

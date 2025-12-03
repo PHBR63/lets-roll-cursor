@@ -772,13 +772,11 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ---
 
-## 🔄 Fase 8 - Integração Supabase Realtime (PRIORIDADE ALTA) ✅ **PARCIALMENTE CONCLUÍDA**
+## 🔄 Fase 8 - Integração Supabase Realtime (PRIORIDADE ALTA) ✅ **CONCLUÍDA**
 
-### 8.1. Realtime Hook
+### 8.1. Realtime Hooks
 
-**Arquivo:** `frontend/src/hooks/useRealtimeRolls.ts`
-
-**Status:** ✅ **IMPLEMENTADO** - Hook para rolagens em tempo real
+**Status:** ✅ **TODOS IMPLEMENTADOS**
 
 **Hooks Implementados:**
 - ✅ `useRealtimeRolls(sessionId, campaignId)` - Hook para rolagens em tempo real
@@ -786,12 +784,19 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
   - Carregamento de rolagens iniciais
   - Atualização automática em tempo real
   - Filtro por campanha (apenas rolagens públicas)
-
-**Hooks Pendentes:**
-- [ ] `useRealtimeChat(sessionId)` - Hook para chat em tempo real (ChatPanel já tem subscription direta)
-- [ ] `useRealtimeSession(sessionId)` - Hook para atualizações de sessão
-- [ ] `useRealtimeCharacters(campaignId)` - Hook para atualizações de personagens
-- [ ] `useRealtimePlayers(campaignId)` - Hook para status de jogadores
+- ✅ `useRealtimeChat(sessionId, campaignId)` - Hook para chat em tempo real
+  - Subscription para novas mensagens
+  - Carregamento de mensagens iniciais
+  - Busca automática de dados de usuário e personagem
+- ✅ `useRealtimeSession(sessionId)` - Hook para atualizações de sessão
+  - Subscription para UPDATE na tabela sessions
+  - Atualização automática quando board_state muda
+- ✅ `useRealtimeCharacters(campaignId)` - Hook para atualizações de personagens
+  - Subscription para INSERT/UPDATE/DELETE
+  - Atualização automática quando stats mudam
+- ✅ `useRealtimePlayers(campaignId)` - Hook para status de jogadores
+  - Subscription para INSERT/UPDATE/DELETE em campaign_participants
+  - Atualização quando jogadores entram/saem
 
 **Implementação:**
 ```typescript
@@ -822,11 +827,24 @@ export function useRealtimeChat(sessionId: string) {
 
 ### 8.2. Atualizar Componentes com Realtime
 
-**Status:** ✅ **PARCIALMENTE CONCLUÍDO**
+**Status:** ✅ **CONCLUÍDO**
 
 **Componentes Atualizados:**
-- ✅ `ChatPanel` - Subscription direta no Supabase Realtime (já implementado)
-- ✅ `DiceRoller` - Integrado com `useRealtimeRolls` (carrega rolagens em tempo real)
+- ✅ `ChatPanel` - Refatorado para usar `useRealtimeChat`
+  - Removida subscription direta
+  - Usa hook centralizado
+  - Melhor gerenciamento de estado
+- ✅ `DiceRoller` - Integrado com `useRealtimeRolls`
+  - Carrega rolagens em tempo real
+  - Sincronização automática
+- ✅ `PlayerListSidebar` - Integrado com `useRealtimePlayers` e `useRealtimeCharacters`
+  - Atualização automática de participantes
+  - Stats de personagens atualizam em tempo real
+  - Sincronização quando jogadores entram/saem
+- ✅ `RollHistory` - Usa `useRealtimeRolls`
+  - Histórico atualiza automaticamente
+- ✅ `Master Dashboard` - Usa `useRealtimeRolls`, `useRealtimeCharacters`, `useRealtimeCreatures`
+  - Todos os painéis atualizam em tempo real
 - ✅ `RollHistory` - Usa `useRealtimeRolls` para exibir histórico atualizado
 - ✅ `SessionRoom` - Integra RollHistory com Realtime
 
