@@ -518,13 +518,17 @@ export const ordemParanormalService = {
     // Verificar condições derivadas e interações
     switch (condition) {
       case 'MORRENDO':
-        // Morrendo automaticamente inclui Inconsciente
+        // Morrendo automaticamente inclui Inconsciente e Sangrando
         if (!newConditions.includes('INCONSCIENTE')) {
           newConditions.push('INCONSCIENTE')
           effects.autoConditions.push('INCONSCIENTE')
         }
+        if (!newConditions.includes('SANGRANDO')) {
+          newConditions.push('SANGRANDO')
+          effects.autoConditions.push('SANGRANDO')
+        }
         if (!effects.message) {
-          effects.message = 'Personagem está morrendo! Inconsciente automaticamente.'
+          effects.message = 'Personagem está morrendo! Inconsciente e sangrando automaticamente.'
         }
         break
 
