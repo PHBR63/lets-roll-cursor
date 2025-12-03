@@ -868,6 +868,30 @@ export function useRealtimeChat(sessionId: string) {
 
 **Nota:** As tabelas precisam ter Realtime habilitado no Supabase Dashboard (Database > Replication). As políticas RLS já estão configuradas.
 
+### 8.4. Sistema de Presence (Status Online/Offline)
+
+**Status:** ✅ **IMPLEMENTADO**
+
+**Hook Implementado:**
+- ✅ `usePresence(campaignId, sessionId)` - Hook para rastrear presença de usuários
+  - Usa Supabase Realtime Presence
+  - Rastreia quem está online na campanha/sessão
+  - Heartbeat automático a cada 30 segundos
+  - Atualização em tempo real quando usuários entram/saem
+  - Função `checkUserOnline(userId)` para verificar status
+
+**Integração:**
+- ✅ `PlayerListSidebar` - Mostra status online/offline de cada jogador
+- ✅ `PlayersSidebar` - Mostra status online/offline na página de campanha
+- ✅ Indicadores visuais (bolinha verde/vermelha)
+- ✅ Texto "Conectado"/"Desconectado"
+
+**Funcionalidades:**
+- ✅ Rastreamento automático de presença
+- ✅ Sincronização em tempo real entre todos os clientes
+- ✅ Cleanup automático ao desmontar componente
+- ✅ Atualização de página atual (session/campaign)
+
 ---
 
 ## 🛠️ Fase 9 - Melhorias e Funcionalidades Avançadas ✅ **PARCIALMENTE CONCLUÍDA**
@@ -1310,20 +1334,23 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Edição de campanha (mestre)
 - [x] Upload/troca de imagem
 
-### Fase 8 - Realtime ✅ **MAIORIA CONCLUÍDA**
+### Fase 8 - Realtime ✅ **100% CONCLUÍDA**
 - [x] useRealtimeRolls hook (implementado e funcionando)
 - [x] useRealtimeCharacters hook (implementado)
 - [x] useRealtimeCreatures hook (implementado)
+- [x] useRealtimeChat hook (implementado)
+- [x] useRealtimeSession hook (implementado)
+- [x] useRealtimePlayers hook (implementado)
+- [x] usePresence hook (implementado - sistema de status online/offline)
 - [x] Integração no DiceRoller
 - [x] Integração no RollHistory
 - [x] Integração no CreaturesPanel
 - [x] Integração no PlayersPanel
-- [x] ChatPanel com Realtime (subscription direta)
-- [ ] useRealtimeChat hook (ChatPanel já tem, mas pode ser extraído)
-- [ ] useRealtimeSession hook
-- [ ] useRealtimePlayers hook
-- [ ] Atualizar PlayerListSidebar com Realtime
-- [ ] Configurar Supabase Realtime completamente
+- [x] Integração no ChatPanel
+- [x] Integração no GameBoard (board_state em tempo real)
+- [x] Integração no PlayerListSidebar (status online/offline)
+- [x] Integração no PlayersSidebar (status online/offline)
+- [x] Configuração Supabase Realtime documentada
 
 ### Fase 9 - Funcionalidades Avançadas
 - [ ] AdvancedDiceRoller
