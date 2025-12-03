@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { AudioControls } from './AudioControls'
 import { useRealtimePlayers } from '@/hooks/useRealtimePlayers'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
+import { usePresence } from '@/hooks/usePresence'
 
 /**
  * Sidebar com grid de cards de jogadores (2x3)
@@ -26,6 +27,7 @@ export function PlayerListSidebar({
   const { user } = useAuth()
   const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
   const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
+  const { checkUserOnline } = usePresence(campaignId, sessionId)
   const [players, setPlayers] = useState<any[]>([])
 
   // Combinar participantes com personagens

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useRealtimeSession } from '@/hooks/useRealtimeSession'
 
 /**
  * Componente Game Board
@@ -111,12 +112,34 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
     1000
   )
 
+  // Integração Realtime - sincronizar board_state em tempo real
+  const { session: realtimeSession } = useRealtimeSession(sessionId)
+
   useEffect(() => {
     if (sessionId) {
       loadBoardState()
       loadCharactersAndCreatures()
     }
   }, [sessionId, campaignId])
+
+  // Atualizar board quando session mudar via Realtime
+  useEffect(() => {
+    if (realtimeSession?.board_state) {
+      const boardState = realtimeSession.board_state
+      // Só atualizar se for diferente do estado atual (evitar loops)
+      if (boardState.imageUrl !== imageUrl) setImageUrl(boardState.imageUrl || null)
+      if (boardState.zoom !== zoom) setZoom(boardState.zoom || 1)
+      if (boardState.position && (
+        boardState.position.x !== position.x || 
+        boardState.position.y !== position.y
+      )) {
+        setPosition(boardState.position)
+      }
+      if (boardState.tokens) setTokens(boardState.tokens || [])
+      if (boardState.drawings) setDrawings(boardState.drawings || [])
+      if (boardState.layers) setLayers(boardState.layers)
+    }
+  }, [realtimeSession?.board_state])
 
   // Salvar estado quando mudar (com debounce)
   useEffect(() => {

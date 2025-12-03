@@ -20,13 +20,17 @@ export function PlayersSidebar({
   participants,
   currentUserId,
 }: PlayersSidebarProps) {
+  // Obter campaignId dos participantes
+  const campaignId = participants[0]?.campaign_id
+  const { checkUserOnline } = usePresence(campaignId)
+
   return (
     <Card className="bg-card border-card-secondary p-6">
       <h2 className="text-xl font-bold text-white mb-4">Jogadores</h2>
       <div className="space-y-3">
         {participants.length > 0 ? (
           participants.map((participant, index) => {
-            const isOnline = true // TODO: Implementar status real
+            const isOnline = checkUserOnline(participant.user?.id || '')
             const isCurrentUser = participant.user?.id === currentUserId
 
             return (
