@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { AudioControls } from './AudioControls'
 
 /**
  * Sidebar com grid de cards de jogadores (2x3)
@@ -106,6 +107,14 @@ export function PlayerListSidebar({
           </Button>
         </div>
       )}
+
+      {/* Controles de Áudio */}
+      <div className="p-4 border-b border-card-secondary">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-white text-sm font-semibold">Áudio</span>
+        </div>
+        <AudioControls />
+      </div>
 
       {/* Grid de Players (2x3) */}
       <div className="flex-1 overflow-y-auto p-4">

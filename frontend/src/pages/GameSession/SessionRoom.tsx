@@ -6,6 +6,7 @@ import { GameBoard } from '@/components/session/GameBoard'
 import { PlayerListSidebar } from '@/components/session/PlayerListSidebar'
 import { DiceRoller } from '@/components/session/DiceRoller'
 import { ChatPanel } from '@/components/session/ChatPanel'
+import { RollHistory } from '@/components/session/RollHistory'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 
@@ -154,10 +155,16 @@ export function SessionRoom() {
         <div className="flex-1 flex flex-col min-w-0">
           <GameBoard sessionId={session?.id} />
           
-          {/* Área inferior: Dice Roller e Chat */}
-          <div className="grid grid-cols-2 gap-4 p-4 border-t border-card-secondary bg-background">
+          {/* Área inferior: Dice Roller, Histórico e Chat */}
+          <div className="grid grid-cols-3 gap-4 p-4 border-t border-card-secondary bg-background">
             <div className="bg-card border border-card-secondary rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
               <DiceRoller sessionId={session?.id} campaignId={campaignId} />
+            </div>
+            <div className="bg-card border border-card-secondary rounded-lg min-h-[300px] max-h-[400px] flex flex-col">
+              <div className="p-4 border-b border-card-secondary">
+                <h3 className="text-white font-semibold">Histórico de Rolagens</h3>
+              </div>
+              <RollHistory sessionId={session?.id} campaignId={campaignId} />
             </div>
             <div className="bg-card border border-card-secondary rounded-lg min-h-[300px] max-h-[400px] flex flex-col">
               <ChatPanel sessionId={session?.id} campaignId={campaignId} />

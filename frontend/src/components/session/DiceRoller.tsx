@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { ALL_SKILLS } from '@/types/ordemParanormal'
+import { useRealtimeRolls } from '@/hooks/useRealtimeRolls'
 
 /**
  * Componente de rolagem de dados com sistema Ordem Paranormal
@@ -47,6 +48,9 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
   const [targetDefense, setTargetDefense] = useState(10)
   const [weaponDice, setWeaponDice] = useState('1d6')
   const [isMelee, setIsMelee] = useState(true)
+  
+  // Integração Realtime - carrega rolagens em tempo real
+  const { rolls: recentRolls } = useRealtimeRolls(sessionId, campaignId)
 
   useEffect(() => {
     if (campaignId && user) {
