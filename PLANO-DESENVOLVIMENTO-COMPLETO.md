@@ -309,60 +309,75 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ---
 
-## 🎮 Fase 5 - Sala de Sessão Completa (PRIORIDADE ALTA)
+## 🎮 Fase 5 - Sala de Sessão Completa (PRIORIDADE ALTA) ✅ **CONCLUÍDA**
 
 ### 5.1. Session Room Page
 
-**Arquivo:** `frontend/src/pages/GameSession/SessionRoom.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/pages/GameSession/SessionRoom.tsx`
 
-**Layout (conforme tela):**
-- Header: Logo + título campanha + notificações + perfil
-- Área principal: GameBoard (esquerda, 70%)
-- Sidebar: PlayerListSidebar (direita, 30%)
-- Chat panel (overlay ou aba)
-- DiceRoller (flutuante ou integrado)
+**Status:** ✅ **CONCLUÍDO**
 
-**Funcionalidades:**
-- Buscar sessão ativa da campanha
-- Criar sessão se não existir (mestre)
-- Integração com Supabase Realtime
-- Gerenciamento de estado da sessão
+**Layout Implementado:**
+- ✅ Header: Logo + título campanha + notificações + perfil
+- ✅ Área principal: GameBoard (esquerda, 70%)
+- ✅ Sidebar: PlayerListSidebar (direita, 30%)
+- ✅ Chat panel (área inferior)
+- ✅ DiceRoller (área inferior com tabs)
+
+**Funcionalidades Implementadas:**
+- ✅ Buscar sessão ativa da campanha
+- ✅ Criar sessão se não existir (mestre)
+- ✅ Gerenciamento de estado da sessão
+- ⚠️ Integração com Supabase Realtime (parcial - ChatPanel já tem)
 
 ### 5.2. Game Board
 
-**Arquivo:** `frontend/src/components/session/GameBoard.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/session/GameBoard.tsx`
 
-**Funcionalidades Atuais:**
-- ✅ Área grande cinza com placeholder "Cenário do RPG"
+**Status:** ✅ **MELHORADO** - Funcionalidades básicas implementadas
 
-**Melhorias Necessárias:**
-- [ ] Upload de mapas/imagens
-- [ ] Zoom in/out
-- [ ] Drag para mover
+**Funcionalidades Implementadas:**
+- ✅ Upload de mapas/imagens (Supabase Storage ou URL local)
+- ✅ Zoom in/out (0.5x a 3x)
+- ✅ Drag para mover imagem
+- ✅ Reset de zoom e posição
+- ✅ Remover imagem
+- ✅ Controles visuais (botões de zoom, reset, remover)
+
+**Pendências (Futuro):**
 - [ ] Ferramentas de desenho (linhas, formas)
 - [ ] Tokens de personagens/criaturas
 - [ ] Grid opcional
 - [ ] Medição de distância
 - [ ] Camadas (background, tokens, annotations)
+- [ ] Salvar posição/zoom no banco de dados
 
 ### 5.3. Player List Sidebar
 
-**Arquivo:** `frontend/src/components/session/PlayerListSidebar.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/session/PlayerListSidebar.tsx`
 
-**Layout (conforme tela):**
-- Botão "Abrir Gerenciador" roxo (topo, só mestre)
-- Grid 2x3 de cards de jogadores
+**Status:** ✅ **MELHORADO** - Integrado com sistema Ordem Paranormal
 
-**Card de Jogador (conforme tela):**
-- Parte superior: Avatar do jogador (persona com fones)
-- Parte inferior sobreposta: Avatar do personagem (anime style)
-- Nome do personagem (ex: "Ryu")
-- Stats:
-  - `19/20` (vermelho - Vida/PV)
-  - `21/25` (azul - outro recurso, possivelmente PE)
-- Indicador de voz ativa (ícones microfone/fone)
+**Layout Implementado:**
+- ✅ Botão "Abrir Gerenciador" roxo (topo, só mestre)
+- ✅ Grid 2x3 de cards de jogadores
 
-**Funcionalidades:**
+**Card de Jogador Implementado:**
+- ✅ Parte superior: Avatar do jogador
+- ✅ Parte inferior sobreposta: Avatar do personagem
+- ✅ Nome do personagem
+- ✅ Stats do sistema Ordem Paranormal:
+  - `PV: X/Y` (vermelho - Pontos de Vida)
+  - `SAN: X/Y` (azul - Sanidade)
+  - `PE: X/Y` (verde - Pontos de Esforço)
+- ✅ Indicador de voz ativa (ícones microfone/fone)
+
+**Funcionalidades Implementadas:**
+- ✅ Carregamento de jogadores da campanha
+- ✅ Exibição de personagens e stats
+- ✅ Integração com dados do sistema Ordem Paranormal
+
+**Pendências:**
 - [ ] Atualização em tempo real via Supabase Realtime
 - [ ] Clique para ver ficha rápida
 - [ ] Mestre pode editar stats diretamente
@@ -371,48 +386,59 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ### 5.4. Dice Roller
 
-**Arquivo:** `frontend/src/components/session/DiceRoller.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/session/DiceRoller.tsx`
 
-**Funcionalidades (conforme sistema Ordem Paranormal):**
-- [ ] Botões rápidos: d4, d6, d8, d10, d12, d20, d100
-- [ ] Campo para fórmula customizada (ex: "2d6+3")
-- [ ] **Rolagem de Atributo**: Selecionar atributo (AGI, FOR, etc.) e perícia
+**Status:** ✅ **CONCLUÍDO** - Sistema Ordem Paranormal completo
+
+**Funcionalidades Implementadas:**
+- ✅ Botões rápidos: d4, d6, d8, d10, d12, d20, d100
+- ✅ Campo para fórmula customizada (ex: "2d6+3")
+- ✅ **Sistema de Tabs**: Básica, Perícia, Ataque
+- ✅ **Rolagem de Perícia**: Selecionar perícia e DT
   - Calcula automaticamente número de dados baseado no atributo
   - Aplica bônus de perícia
   - Mostra vantagem/desvantagem visualmente
-- [ ] **Rolagem de Ataque**: Selecionar arma, calcular dano
-- [ ] Checkbox "Rolagem Privada"
-- [ ] Botão "Rolar"
-- [ ] Exibe resultado com animação
-- [ ] Envia para chat/histórico automaticamente
-- [ ] Histórico de rolagens recentes
+  - Exibe sucesso/falha baseado na DT
+- ✅ **Rolagem de Ataque**: Selecionar perícia (Luta/Pontaria), defesa do alvo, dado de dano
+  - Calcula acerto vs defesa
+  - Detecta crítico (20 natural)
+  - Calcula dano (com Força para corpo-a-corpo)
+  - Exibe resultado detalhado
+- ✅ Checkbox "Rolagem Privada"
+- ✅ Exibe resultado detalhado com animação
+- ✅ Integração com API do backend
 
 **Integração:**
-- Chama API `/api/dice/roll` ou `/api/characters/:id/roll-skill`
-- Recebe resultado e publica via Realtime
-- Atualiza histórico em tempo real
+- ✅ Chama API `/api/dice/roll` para rolagens básicas
+- ✅ Chama API `/api/characters/:id/roll-skill` para testes de perícia
+- ✅ Chama API `/api/characters/:id/roll-attack` para ataques
+- ✅ Carrega personagem do usuário automaticamente
+
+**Pendências:**
+- [ ] Envia para chat/histórico automaticamente
+- [ ] Histórico de rolagens recentes
+- [ ] Integração com Realtime para sincronização
 
 ### 5.5. Chat Panel
 
-**Arquivo:** `frontend/src/components/session/ChatPanel.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/session/ChatPanel.tsx`
 
-**Funcionalidades (conforme tela):**
-- [ ] Lista de mensagens com scroll
-- [ ] Campo de input
-- [ ] Botão enviar
-- [ ] Integração com Supabase Realtime
-- [ ] Tipos de mensagem:
-  - Mensagem normal
-  - Narração (mestre)
-  - OOC (out of character)
-  - Rolagem de dados (automática)
-- [ ] Canais (futuro):
-  - Geral
-  - Roleplay
-  - Off-topic
-  - Mestre (privado)
+**Status:** ✅ **IMPLEMENTADO** - Funcionalidades básicas completas
 
-**Melhorias:**
+**Funcionalidades Implementadas:**
+- ✅ Lista de mensagens com scroll automático
+- ✅ Campo de input
+- ✅ Botão enviar
+- ✅ Integração com Supabase Realtime (subscription ativa)
+- ✅ Carregamento de mensagens iniciais
+- ✅ Exibição de avatar e nome do usuário/personagem
+- ✅ Timestamp das mensagens
+- ✅ Auto-scroll para última mensagem
+
+**Pendências:**
+- [ ] Tipos de mensagem (narração, OOC)
+- [ ] Rolagem de dados automática no chat
+- [ ] Canais (Geral, Roleplay, Off-topic, Mestre)
 - [ ] Emojis/reactions
 - [ ] Formatação de texto (negrito, itálico)
 - [ ] Menções (@player)
@@ -873,16 +899,17 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Modais para adicionar condições e itens
 - [x] Melhorias visuais e animações
 
-### Fase 5 - Sala de Sessão (Frontend)
-- [x] SessionRoom page (estrutura)
-- [x] GameBoard component (estrutura)
-- [x] PlayerListSidebar component (estrutura)
-- [x] DiceRoller component (estrutura)
-- [x] ChatPanel component (estrutura)
-- [ ] Melhorias no GameBoard (mapas, zoom, tokens)
-- [ ] DiceRoller com sistema Ordem Paranormal
-- [ ] Integração Realtime completa
+### Fase 5 - Sala de Sessão (Frontend) ✅ **CONCLUÍDA**
+- [x] SessionRoom page (completo)
+- [x] GameBoard component (upload, zoom, drag)
+- [x] PlayerListSidebar component (dados Ordem Paranormal)
+- [x] DiceRoller component (sistema Ordem Paranormal completo)
+- [x] ChatPanel component (Realtime básico)
+- [x] Melhorias no GameBoard (upload de imagem, zoom, drag)
+- [x] DiceRoller com sistema Ordem Paranormal (tabs: básica, perícia, ataque)
+- [ ] Integração Realtime completa (parcial - ChatPanel tem)
 - [ ] Controles de áudio
+- [ ] Tokens e ferramentas avançadas no GameBoard
 
 ### Fase 6 - Painel do Mestre (Frontend)
 - [ ] Master Dashboard page
