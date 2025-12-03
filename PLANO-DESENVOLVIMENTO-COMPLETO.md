@@ -647,83 +647,118 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 ---
 
-## 🎨 Fase 7 - Detalhes da Campanha Completa (PRIORIDADE MÉDIA)
+## 🎨 Fase 7 - Detalhes da Campanha Completa (PRIORIDADE MÉDIA) ✅ **CONCLUÍDA**
 
 ### 7.1. Campaign Detail Page
 
-**Arquivo:** `frontend/src/pages/Campaign/CampaignDetail.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/pages/Campaign/CampaignDetail.tsx`
 
-**Layout (conforme tela):**
-- Breadcrumbs: "Hem > Nome do RPG"
-- Header: Logo + título da campanha centralizado
-- Seção principal:
+**Status:** ✅ **CONCLUÍDO**
+
+**Layout Implementado:**
+- ✅ Breadcrumbs: "Hem > Nome do RPG"
+- ✅ Header: Título da campanha centralizado
+- ✅ Seção principal:
   - Imagem da campanha (esquerda)
   - Descrição (direita)
   - Botão "Entrar na Sessão" roxo
-- Seção "Ações":
+- ✅ Seção "Ações" (apenas mestre):
   - Botão "Convidar Jogadores" roxo
-- Seção "Status":
+  - Botão "Editar Campanha"
+  - Botão "Painel do Mestre"
+- ✅ Seção "Status":
   - Grid de cards de personagens
-- Sidebar direita:
+- ✅ Sidebar direita:
   - Lista de jogadores com status
 
-**Melhorias Necessárias:**
-- [ ] Integração completa com API
-- [ ] Listar personagens da campanha
-- [ ] Listar participantes
-- [ ] Sistema de convites funcional
-- [ ] Edição de campanha (mestre)
-- [ ] Upload/troca de imagem
+**Funcionalidades Implementadas:**
+- ✅ Integração completa com API
+- ✅ Listar personagens da campanha
+- ✅ Listar participantes
+- ✅ Sistema de convites funcional
+- ✅ Edição de campanha (mestre)
+- ✅ Upload/troca de imagem
 
 ### 7.2. Character Status Card
 
-**Arquivo:** `frontend/src/components/character/CharacterStatusCard.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/character/CharacterStatusCard.tsx`
 
-**Layout (conforme tela):**
-- Card cinza escuro
-- Placeholder "Char" (avatar)
-- Nome do personagem
-- 4 barras de progresso:
-  - Vida (vermelho): `10/20`
-  - XP (roxo): `30%`
-  - Energia (verde): `20/20`
-  - Saúde (amarelo): `15/20`
-- Link para ficha completa
+**Status:** ✅ **MELHORADO**
 
-**Melhorias:**
-- [ ] Usar dados reais do sistema Ordem Paranormal
-- [ ] Mostrar PV, SAN, PE, NEX corretamente
+**Layout Implementado:**
+- ✅ Card com hover effect
+- ✅ Avatar do personagem
+- ✅ Nome do personagem
+- ✅ Nome do jogador (se disponível)
+- ✅ 4 barras de progresso:
+  - PV (vermelho): `current/max`
+  - NEX (roxo): percentual (0-99%)
+  - PE (verde): `current/max`
+  - SAN (amarelo): `current/max`
+- ✅ Link para ficha completa
+
+**Melhorias Implementadas:**
+- ✅ Usa dados reais do sistema Ordem Paranormal (PV, SAN, PE, NEX)
+- ✅ Suporta dados antigos (vida, energia, saude, xp) para compatibilidade
+- ✅ Clique para abrir ficha (`/character/:id`)
+
+**Pendências (Futuro):**
 - [ ] Indicador de condições ativas
-- [ ] Clique para abrir ficha
+- [ ] Tooltip com informações adicionais
 
 ### 7.3. Players Sidebar
 
-**Arquivo:** `frontend/src/components/campaign/PlayersSidebar.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/campaign/PlayersSidebar.tsx`
 
-**Layout (conforme tela):**
-- Lista vertical de jogadores
-- Cada item mostra:
-  - Avatar placeholder "Perfil"
+**Status:** ✅ **IMPLEMENTADO**
+
+**Layout Implementado:**
+- ✅ Lista vertical de jogadores
+- ✅ Cada item mostra:
+  - Avatar do usuário (ou placeholder "Perfil")
   - Nome do jogador
   - Status: bolinha verde (Conectado) / vermelha (Desconectado)
   - Role destacado "(mestre)" se for mestre
 
-**Melhorias:**
-- [ ] Atualização em tempo real (futuro)
-- [ ] Avatar real do usuário
-- [ ] Ações rápidas (remover, promover)
+**Funcionalidades Implementadas:**
+- ✅ Exibição de participantes da campanha
+- ✅ Destaque para mestre
+- ✅ Avatar real do usuário (se disponível)
+
+**Pendências (Futuro):**
+- [ ] Atualização em tempo real (status online/offline)
+- [ ] Ações rápidas (remover, promover) - apenas mestre
 
 ### 7.4. Invite Players Component
 
-**Arquivo:** `frontend/src/components/campaign/InvitePlayers.tsx` (estrutura básica existe)
+**Arquivo:** `frontend/src/components/campaign/InvitePlayers.tsx`
 
-**Funcionalidades:**
-- [ ] Modal com formulário
-- [ ] Campo de e-mail
-- [ ] Botão "Enviar Convite"
-- [ ] Integração com API
-- [ ] Validação de e-mail
-- [ ] Feedback de sucesso/erro
+**Status:** ✅ **CONCLUÍDO**
+
+**Funcionalidades Implementadas:**
+- ✅ Modal com formulário
+- ✅ Campo de e-mail
+- ✅ Botão "Enviar Convite"
+- ✅ Integração com API (`/api/campaigns/:id/invite`)
+- ✅ Validação de e-mail
+- ✅ Feedback de erro
+- ✅ Limpa campo após sucesso
+
+### 7.5. Edit Campaign Modal
+
+**Arquivo:** `frontend/src/components/campaign/EditCampaignModal.tsx`
+
+**Status:** ✅ **CONCLUÍDO**
+
+**Funcionalidades Implementadas:**
+- ✅ Modal para editar campanha
+- ✅ Campos: Nome, Descrição
+- ✅ Upload/troca de imagem
+- ✅ Preview da imagem antes de salvar
+- ✅ Remover imagem selecionada
+- ✅ Validação de campos obrigatórios
+- ✅ Integração com API (`PUT /api/campaigns/:id`)
+- ✅ Suporte para FormData (upload de imagem)
 
 ---
 
@@ -1034,14 +1069,16 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Verificação de role de mestre
 - [x] Layout 3 colunas responsivo
 
-### Fase 7 - Detalhes da Campanha (Frontend)
-- [x] CampaignDetail page (estrutura)
-- [x] CharacterStatusCard component (estrutura)
-- [x] PlayersSidebar component (estrutura)
-- [x] InvitePlayers component (estrutura)
-- [ ] Integração completa com API
-- [ ] Sistema de convites funcional
-- [ ] Edição de campanha
+### Fase 7 - Detalhes da Campanha (Frontend) ✅ **CONCLUÍDA**
+- [x] CampaignDetail page (completo)
+- [x] CharacterStatusCard component (melhorado com dados Ordem Paranormal)
+- [x] PlayersSidebar component (completo)
+- [x] InvitePlayers component (completo)
+- [x] EditCampaignModal component (novo)
+- [x] Integração completa com API
+- [x] Sistema de convites funcional
+- [x] Edição de campanha (mestre)
+- [x] Upload/troca de imagem
 
 ### Fase 8 - Realtime ✅ **MAIORIA CONCLUÍDA**
 - [x] useRealtimeRolls hook (implementado e funcionando)
@@ -1209,6 +1246,14 @@ Priorizar sincronização em tempo real de:
    - NPCsPanel com tabs (Equipamentos, Itens, Habilidades, Magias)
    - PlayersPanel com lista de jogadores
    - CreateCreatureModal
+   - Integração completa com APIs
+
+5. **Fase 7 - Detalhes da Campanha Completa (Frontend)** ✅ **100% CONCLUÍDA**
+   - CampaignDetail page completa
+   - CharacterStatusCard com dados Ordem Paranormal
+   - PlayersSidebar funcional
+   - InvitePlayers funcional
+   - EditCampaignModal com upload de imagem
    - Integração completa com APIs
 
 ### 🚧 Fases em Andamento
