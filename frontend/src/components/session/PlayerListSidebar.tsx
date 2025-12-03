@@ -112,9 +112,11 @@ export function PlayerListSidebar({
         <div className="grid grid-cols-2 gap-4">
           {players.slice(0, 6).map((player, index) => {
             const character = player.character
+            // Usar dados do sistema Ordem Paranormal
             const stats = character?.stats || {}
-            const vida = stats.vida || { current: 19, max: 20 }
-            const outroRecurso = stats.energia || stats.mana || { current: 21, max: 25 }
+            const pv = stats.pv || { current: 0, max: 0 }
+            const san = stats.san || { current: 0, max: 0 }
+            const pe = stats.pe || { current: 0, max: 0 }
 
             return (
               <Card
@@ -163,13 +165,16 @@ export function PlayerListSidebar({
                     </div>
                   )}
 
-                  {/* Stats */}
+                  {/* Stats - Sistema Ordem Paranormal */}
                   <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 space-y-1">
                     <div className="text-red-500 text-xs font-bold text-center bg-black/50 px-2 py-0.5 rounded">
-                      {vida.current}/{vida.max}
+                      PV: {pv.current}/{pv.max}
                     </div>
                     <div className="text-blue-500 text-xs font-bold text-center bg-black/50 px-2 py-0.5 rounded">
-                      {outroRecurso.current}/{outroRecurso.max}
+                      SAN: {san.current}/{san.max}
+                    </div>
+                    <div className="text-green-500 text-xs font-bold text-center bg-black/50 px-2 py-0.5 rounded">
+                      PE: {pe.current}/{pe.max}
                     </div>
                   </div>
 

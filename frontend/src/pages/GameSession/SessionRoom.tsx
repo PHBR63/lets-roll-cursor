@@ -22,8 +22,10 @@ export function SessionRoom() {
 
   useEffect(() => {
     if (campaignId && user) {
-      loadSession()
-      checkMasterRole()
+      // Verificar role primeiro, depois carregar sessão
+      checkMasterRole().then(() => {
+        loadSession()
+      })
     }
   }, [campaignId, user])
 
@@ -55,6 +57,8 @@ export function SessionRoom() {
           setSession(sessions[0])
         } else {
           // Criar nova sessão se não existir (apenas mestre)
+          // Aguardar verificação de mestre antes de criar
+          await checkMasterRole()
           if (isMaster) {
             await createSession()
           }
@@ -105,10 +109,10 @@ export function SessionRoom() {
    */
   const checkMasterRole = async () => {
     try {
-      if (!user || !campaignId) return
+      if (!user || !campaignId) return false
 
       const { data: sessionData } = await supabase.auth.getSession()
-      if (!sessionData.session) return
+      if (!sessionData.session) return false
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
@@ -124,9 +128,12 @@ export function SessionRoom() {
           (p: any) => p.user?.id === user.id && p.role === 'master'
         )
         setIsMaster(!!participant)
+        return !!participant
       }
+      return false
     } catch (error) {
       console.error('Erro ao verificar role:', error)
+      return false
     }
   }
 
@@ -144,15 +151,15 @@ export function SessionRoom() {
 
       <main className="flex-1 flex overflow-hidden">
         {/* Área Principal - Game Board */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <GameBoard sessionId={session?.id} />
           
           {/* Área inferior: Dice Roller e Chat */}
-          <div className="grid grid-cols-2 gap-4 p-4 border-t border-card-secondary">
-            <div className="bg-card border border-card-secondary rounded-lg p-4">
+          <div className="grid grid-cols-2 gap-4 p-4 border-t border-card-secondary bg-background">
+            <div className="bg-card border border-card-secondary rounded-lg p-4 min-h-[300px] max-h-[400px] overflow-y-auto">
               <DiceRoller sessionId={session?.id} campaignId={campaignId} />
             </div>
-            <div className="bg-card border border-card-secondary rounded-lg">
+            <div className="bg-card border border-card-secondary rounded-lg min-h-[300px] max-h-[400px] flex flex-col">
               <ChatPanel sessionId={session?.id} campaignId={campaignId} />
             </div>
           </div>
