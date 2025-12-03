@@ -1098,6 +1098,14 @@ export function useRealtimeChat(sessionId: string) {
   - Snap scroll para cards
   - Controles do GameBoard adaptados para mobile
   - Ocultação de controles avançados em telas pequenas
+- ✅ Gestos de swipe e ações rápidas
+  - Hook `useSwipe` para detectar gestos (left, right, up, down)
+  - Componente `SwipeableCard` para cards deslizáveis
+  - Componente `QuickActions` para ações rápidas em mobile
+  - Integrado em `CharacterStatusCard` com gestos swipe
+  - Feedback visual durante swipe
+  - Botões otimizados para toque (mínimo 40x40px)
+  - Classe `touch-manipulation` em todos os botões
 
 ---
 
