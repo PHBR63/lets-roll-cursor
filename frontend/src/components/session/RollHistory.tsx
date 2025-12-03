@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
+import { useMemo, memo } from 'react'
+import { FixedSizeList as List } from 'react-window'
 
 /**
  * Componente de histórico de rolagens
@@ -14,12 +16,56 @@ interface RollHistoryProps {
   maxRolls?: number
 }
 
+/**
+ * Item de rolagem memoizado
+ */
+const RollItem = memo(({ roll, style }: { roll: any; style: React.CSSProperties }) => {
+  const userName = roll.user?.username || 'Jogador'
+  const characterName = roll.character?.name
+  const displayName = characterName
+    ? `${userName} (${characterName})`
+    : userName
+
+  return (
+    <div style={style}>
+      <Card className="bg-white/5 border-card-secondary hover:border-accent transition-colors p-3 m-2">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <div className="text-white font-bold text-2xl text-center">
+              {roll.result}
+            </div>
+            <div className="text-text-secondary text-xs text-center mt-1">
+              {displayName}
+            </div>
+            <div className="text-text-secondary text-xs text-center mt-1">
+              {roll.formula}
+            </div>
+            {roll.details?.rolls && (
+              <div className="text-text-secondary text-xs text-center mt-1">
+                [{roll.details.rolls.join(', ')}]
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
+  )
+})
+
+RollItem.displayName = 'RollItem'
+
 export function RollHistory({
   sessionId,
   campaignId,
   maxRolls = 20,
 }: RollHistoryProps) {
   const { rolls, loading } = useRealtimeRolls(sessionId, campaignId)
+
+  // Memoizar rolagens limitadas
+  const limitedRolls = useMemo(
+    () => rolls.slice(0, maxRolls),
+    [rolls, maxRolls]
+  )
 
   /**
    * Exporta histórico de rolagens para CSV
@@ -90,43 +136,31 @@ export function RollHistory({
           Exportar CSV
         </Button>
       </div>
-      <ScrollArea className="flex-1">
-        <div className="space-y-3 p-2">
-        {rolls.slice(0, maxRolls).map((roll) => {
-          const userName = roll.user?.username || 'Jogador'
-          const characterName = roll.character?.name
-          const displayName = characterName
-            ? `${userName} (${characterName})`
-            : userName
-
-          return (
-            <Card
-              key={roll.id}
-              className="bg-white/5 border-card-secondary hover:border-accent transition-colors p-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="text-white font-bold text-2xl text-center">
-                    {roll.result}
-                  </div>
-                  <div className="text-text-secondary text-xs text-center mt-1">
-                    {displayName}
-                  </div>
-                  <div className="text-text-secondary text-xs text-center mt-1">
-                    {roll.formula}
-                  </div>
-                  {roll.details?.rolls && (
-                    <div className="text-text-secondary text-xs text-center mt-1">
-                      [{roll.details.rolls.join(', ')}]
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          )
-        })}
-        </div>
-      </ScrollArea>
+      <div className="flex-1">
+        {limitedRolls.length > 10 ? (
+          // Virtualização para listas longas (>10 itens)
+          <List
+            height={400}
+            itemCount={limitedRolls.length}
+            itemSize={120}
+            width="100%"
+            overscanCount={3}
+          >
+            {({ index, style }) => (
+              <RollItem roll={limitedRolls[index]} style={style} />
+            )}
+          </List>
+        ) : (
+          // Renderização normal para listas pequenas
+          <ScrollArea className="flex-1">
+            <div className="space-y-3 p-2">
+              {limitedRolls.map((roll) => (
+                <RollItem key={roll.id} roll={roll} style={{}} />
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+      </div>
     </div>
   )
 }

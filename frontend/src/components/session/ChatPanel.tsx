@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useRealtimeChat } from '@/hooks/useRealtimeChat'
+import { FixedSizeList as List } from 'react-window'
 
 /**
  * Painel de chat estilo Discord
@@ -30,16 +31,68 @@ interface Message {
   created_at: string
 }
 
+/**
+ * Item de mensagem memoizado
+ */
+const MessageItem = memo(({ message, style }: { message: Message; style: React.CSSProperties }) => (
+  <div style={style}>
+    <div className="flex gap-3 hover:bg-card-secondary/50 p-2 rounded transition-colors mx-2">
+      {/* Avatar */}
+      <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center">
+        {message.user?.avatar_url ? (
+          <img
+            src={message.user.avatar_url}
+            alt={message.user.username}
+            className="w-full h-full object-cover rounded-full"
+          />
+        ) : (
+          <span className="text-white text-xs">
+            {message.user?.username?.charAt(0).toUpperCase() || 'U'}
+          </span>
+        )}
+      </div>
+
+      {/* Conteúdo */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2">
+          <span className="text-white font-semibold text-sm">
+            {message.character?.name || message.user?.username || 'Usuário'}
+          </span>
+          <span className="text-text-secondary text-xs">
+            {new Date(message.created_at).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        </div>
+        <p className="text-text-secondary text-sm mt-1 whitespace-pre-wrap">
+          {message.content}
+        </p>
+      </div>
+    </div>
+  </div>
+))
+
+MessageItem.displayName = 'MessageItem'
+
 export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const { user } = useAuth()
   const { messages, loading: messagesLoading } = useRealtimeChat(sessionId, campaignId)
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<List>(null)
+
+  // Memoizar mensagens para evitar re-renders desnecessários
+  const memoizedMessages = useMemo(() => messages, [messages])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+    // Scroll para o final quando novas mensagens chegarem
+    if (listRef.current && memoizedMessages.length > 0) {
+      listRef.current.scrollToItem(memoizedMessages.length - 1, 'end')
+    }
+  }, [memoizedMessages])
 
   /**
    * Envia mensagem
@@ -114,53 +167,36 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
       </div>
 
       {/* Lista de Mensagens */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length > 0 ? (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className="flex gap-3 hover:bg-card-secondary/50 p-2 rounded transition-colors"
+      <div className="flex-1 overflow-hidden">
+        {memoizedMessages.length > 0 ? (
+          memoizedMessages.length > 20 ? (
+            // Virtualização para listas longas (>20 mensagens)
+            <List
+              ref={listRef}
+              height={400}
+              itemCount={memoizedMessages.length}
+              itemSize={80}
+              width="100%"
+              overscanCount={5}
             >
-              {/* Avatar */}
-              <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center">
-                {message.user?.avatar_url ? (
-                  <img
-                    src={message.user.avatar_url}
-                    alt={message.user.username}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <span className="text-white text-xs">
-                    {message.user?.username?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                )}
-              </div>
-
-              {/* Conteúdo */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-white font-semibold text-sm">
-                    {message.character?.name || message.user?.username || 'Usuário'}
-                  </span>
-                  <span className="text-text-secondary text-xs">
-                    {new Date(message.created_at).toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
-                </div>
-                <p className="text-text-secondary text-sm mt-1 whitespace-pre-wrap">
-                  {message.content}
-                </p>
-              </div>
+              {({ index, style }) => (
+                <MessageItem message={memoizedMessages[index]} style={style} />
+              )}
+            </List>
+          ) : (
+            // Renderização normal para listas pequenas
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {memoizedMessages.map((message) => (
+                <MessageItem key={message.id} message={message} style={{}} />
+              ))}
+              <div ref={messagesEndRef} />
             </div>
-          ))
+          )
         ) : (
           <div className="text-text-secondary text-sm text-center py-8">
             Nenhuma mensagem ainda. Seja o primeiro a falar!
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input de Mensagem */}

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useMemo, memo } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { ALL_SKILLS, SkillTraining, TRAINING_BONUS } from '@/types/ordemParanormal'
+import { SkillItem } from './SkillItem'
 
 interface SkillsGridProps {
   character: any
@@ -48,20 +49,24 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   }
 
   /**
-   * Agrupa perícias por atributo
+   * Agrupa perícias por atributo (memoizado)
    */
-  const skillsByAttribute: Record<string, string[]> = {
-    AGI: [],
-    FOR: [],
-    INT: [],
-    PRE: [],
-    VIG: [],
-  }
+  const skillsByAttribute = useMemo(() => {
+    const grouped: Record<string, string[]> = {
+      AGI: [],
+      FOR: [],
+      INT: [],
+      PRE: [],
+      VIG: [],
+    }
 
-  Object.keys(ALL_SKILLS).forEach((skillName) => {
-    const skillInfo = ALL_SKILLS[skillName]
-    skillsByAttribute[skillInfo.attribute].push(skillName)
-  })
+    Object.keys(ALL_SKILLS).forEach((skillName) => {
+      const skillInfo = ALL_SKILLS[skillName]
+      grouped[skillInfo.attribute].push(skillName)
+    })
+
+    return grouped
+  }, [])
 
   return (
     <div className="bg-card rounded-lg p-6">
@@ -95,33 +100,12 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
                 }
 
                 return (
-                  <div key={skillName} className="flex items-center gap-2">
-                    <Label className="flex-1 text-sm text-muted-foreground">
-                      {skillName}
-                      {skillInfo.requiresTraining && (
-                        <span className="text-xs text-yellow-400 ml-1">*</span>
-                      )}
-                    </Label>
-                    <Select
-                      value={currentSkill.training}
-                      onValueChange={(value) =>
-                        handleSkillChange(skillName, value as SkillTraining)
-                      }
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="UNTRAINED">Destreinado (+0)</SelectItem>
-                        <SelectItem value="TRAINED">Treinado (+5)</SelectItem>
-                        <SelectItem value="COMPETENT">Competente (+10)</SelectItem>
-                        <SelectItem value="EXPERT">Expert (+15)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="w-12 text-right text-sm font-bold text-white">
-                      +{currentSkill.bonus}
-                    </div>
-                  </div>
+                  <SkillItem
+                    key={skillName}
+                    skillName={skillName}
+                    currentSkill={currentSkill}
+                    onSkillChange={handleSkillChange}
+                  />
                 )
               })}
             </div>

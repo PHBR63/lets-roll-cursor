@@ -4,10 +4,11 @@ import { CampaignCard } from '@/components/campaign/CampaignCard'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useNavigate } from 'react-router-dom'
+import { useCache } from '@/hooks/useCache'
 
 /**
  * Dashboard principal
@@ -20,6 +21,7 @@ export function Dashboard() {
   const [masteringCampaigns, setMasteringCampaigns] = useState<any[]>([])
   const [participatingCampaigns, setParticipatingCampaigns] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const cache = useCache<any[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
 
   useEffect(() => {
     if (user) {
@@ -28,11 +30,26 @@ export function Dashboard() {
   }, [user])
 
   /**
-   * Carrega campanhas do usuário da API
+   * Carrega campanhas do usuário da API (com cache)
    */
   const loadCampaigns = async () => {
     try {
       if (!user) return
+
+      const cacheKey = `campaigns:${user.id}`
+      
+      // Tentar obter do cache primeiro
+      const cached = cache.get(cacheKey)
+      if (cached) {
+        const mastering = cached.filter((c: any) => c.role === 'master')
+        const participating = cached.filter(
+          (c: any) => c.role === 'player' || c.role === 'observer'
+        )
+        setMasteringCampaigns(mastering)
+        setParticipatingCampaigns(participating)
+        setLoading(false)
+        return
+      }
 
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
@@ -47,6 +64,9 @@ export function Dashboard() {
       if (!response.ok) throw new Error('Erro ao carregar campanhas')
 
       const campaigns = await response.json()
+
+      // Salvar no cache
+      cache.set(cacheKey, campaigns)
 
       // Separar por role
       const mastering = campaigns.filter((c: any) => c.role === 'master')

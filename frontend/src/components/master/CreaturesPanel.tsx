@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { useRealtimeCreatures } from '@/hooks/useRealtimeCreatures'
+import { supabase } from '@/integrations/supabase/client'
 import { CreateCreatureModal } from './CreateCreatureModal'
 import { EditCreatureModal } from './EditCreatureModal'
 import { ApplyDamageModal } from './ApplyDamageModal'
@@ -18,6 +19,7 @@ import { ApplyConditionModal } from './ApplyConditionModal'
 import { NPCsPanel } from './NPCsPanel'
 import { SearchAndFilters } from './SearchAndFilters'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { CreatureCard } from './CreatureCard'
 
 /**
  * Painel de criaturas e NPCs
@@ -37,6 +39,30 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
   const [viewMode, setViewMode] = useState<'creatures' | 'list'>('creatures')
   const [searchValue, setSearchValue] = useState('')
   const [filterType, setFilterType] = useState<string>('all')
+
+  /**
+   * Filtrar criaturas (memoizado)
+   */
+  const filteredCreatures = useMemo(() => {
+    let result = creatures
+    
+    if (searchValue) {
+      result = result.filter((c) =>
+        c.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+        c.type?.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    }
+    
+    if (filterType !== 'all') {
+      result = result.filter((c) => {
+        if (filterType === 'creature') return c.type && c.type !== 'NPC'
+        if (filterType === 'npc') return c.type === 'NPC' || !c.type
+        return true
+      })
+    }
+    
+    return result
+  }, [creatures, searchValue, filterType])
 
   /**
    * Remove criatura
@@ -111,26 +137,7 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            {(() => {
-              // Filtrar criaturas
-              let filtered = creatures
-              
-              if (searchValue) {
-                filtered = filtered.filter((c) =>
-                  c.name.toLowerCase().includes(searchValue.toLowerCase()) ||
-                  c.type?.toLowerCase().includes(searchValue.toLowerCase())
-                )
-              }
-              
-              if (filterType !== 'all') {
-                filtered = filtered.filter((c) => {
-                  if (filterType === 'creature') return c.type && c.type !== 'NPC'
-                  if (filterType === 'npc') return c.type === 'NPC' || !c.type
-                  return true
-                })
-              }
-
-              return filtered.length === 0 ? (
+            {filteredCreatures.length === 0 ? (
               <div className="text-text-secondary text-sm text-center py-8">
                 Nenhuma criatura criada ainda
                 <br />
@@ -145,101 +152,28 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                {filtered.map((creature) => {
-                  const stats = creature.stats || {}
-                  const vida = stats.vida || stats.pv || { current: 0, max: 0 }
-                  const energia = stats.energia || stats.pe || { current: 0, max: 0 }
-                  const saude = stats.saude || stats.san || { current: 0, max: 0 }
-                  const exp = stats.exp || stats.nex || 0
-
-                  const vidaPercent = vida.max > 0 ? (vida.current / vida.max) * 100 : 0
-                  const energiaPercent = energia.max > 0 ? (energia.current / energia.max) * 100 : 0
-                  const saudePercent = saude.max > 0 ? (saude.current / saude.max) * 100 : 0
-
-                  return (
-                <Card
-                  key={creature.id}
-                  className="bg-white/5 border-card-secondary hover:border-accent transition-colors p-3"
-                >
-                      <div className="space-y-2">
-                        {/* Nome e Avatar */}
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-white font-semibold">{creature.name}</h3>
-                          <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedCreature(creature)
-                            setShowEditModal(true)
-                          }}
-                          className="h-6 w-6 p-0 text-white hover:bg-accent"
-                          title="Editar"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedCreature(creature)
-                            setShowDamageModal(true)
-                          }}
-                          className="h-6 w-6 p-0 text-yellow-400 hover:bg-yellow-900/30"
-                          title="Dano/Cura"
-                        >
-                          ⚔️
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleDeleteCreature(creature.id)
-                          }}
-                          className="h-6 w-6 p-0 text-red-400 hover:bg-destructive"
-                          title="Remover"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                          </div>
-                        </div>
-
-                        {/* Avatar placeholder */}
-                        <div className="w-16 h-16 bg-card-secondary rounded-full mx-auto flex items-center justify-center">
-                          <span className="text-text-secondary text-xs">Char</span>
-                        </div>
-
-                        {/* Barras de Recursos */}
-                        <div className="space-y-2">
-                          {/* Vida */}
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-red-400">Vida</span>
-                              <span className="text-white">
-                                {vida.current}/{vida.max} ({Math.round(vidaPercent)}%)
-                              </span>
-                            </div>
-                            <Progress value={vidaPercent} className="h-2 bg-red-900/30" />
-                          </div>
-
-                          {/* EXP */}
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-text-secondary">EXP</span>
-                              <span className="text-white">{exp}%</span>
-                            </div>
-                            <Progress value={exp} className="h-2 bg-gray-700" />
-                          </div>
-
-                          {/* Energia */}
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-green-400">Energia</span>
-                              <span className="text-white">
-                                {energia.current}/{energia.max}
+                {filteredCreatures.map((creature) => (
+                  <CreatureCard
+                    key={creature.id}
+                    creature={creature}
+                    onEdit={(c) => {
+                      setSelectedCreature(c)
+                      setShowEditModal(true)
+                    }}
+                    onDelete={handleDeleteCreature}
+                    onDamage={(c) => {
+                      setSelectedCreature(c)
+                      setShowDamageModal(true)
+                    }}
+                    onCondition={(c) => {
+                      setSelectedCreature(c)
+                      setShowConditionModal(true)
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
                               </span>
                             </div>
                             <Progress value={energiaPercent} className="h-2 bg-green-900/30" />
