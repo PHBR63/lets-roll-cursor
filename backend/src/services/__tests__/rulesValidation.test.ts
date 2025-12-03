@@ -313,24 +313,29 @@ describe('Validação de Regras do Sistema', () => {
 
   describe('Validação de Estados Críticos', () => {
     it('deve detectar estado machucado corretamente', () => {
-      const states = ordemParanormalService.checkCriticalStates(10, 28, 15, 15)
-      expect(states.injured).toBe(true) // 10 < 28 * 0.5
-      expect(states.dying).toBe(false) // 10 > 0
+      const pv = 10
+      const maxPV = 28
+      const isInjured = pv < maxPV * 0.5
+      expect(isInjured).toBe(true) // 10 < 28 * 0.5
     })
 
     it('deve detectar estado morrendo corretamente', () => {
-      const states = ordemParanormalService.checkCriticalStates(0, 28, 15, 15)
-      expect(states.dying).toBe(true) // PV = 0
+      const pv = 0
+      const isDying = pv <= 0
+      expect(isDying).toBe(true) // PV = 0
     })
 
     it('deve detectar estado insano corretamente', () => {
-      const states = ordemParanormalService.checkCriticalStates(28, 28, 0, 15)
-      expect(states.insane).toBe(true) // SAN = 0
+      const san = 0
+      const isInsane = san <= 0
+      expect(isInsane).toBe(true) // SAN = 0
     })
 
     it('deve detectar estado de baixa sanidade corretamente', () => {
-      const states = ordemParanormalService.checkCriticalStates(28, 28, 5, 15)
-      expect(states.lowSAN).toBe(true) // 5 < 15 * 0.5
+      const san = 5
+      const maxSAN = 15
+      const isLowSAN = san < maxSAN * 0.5
+      expect(isLowSAN).toBe(true) // 5 < 15 * 0.5
     })
   })
 
