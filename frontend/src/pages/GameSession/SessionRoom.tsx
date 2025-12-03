@@ -12,6 +12,9 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Users, X } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { useApiError } from '@/hooks/useApiError'
+import { useRetry } from '@/hooks/useRetry'
+import { NotFoundState } from '@/components/common/EmptyState'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -24,57 +27,75 @@ export function SessionRoom() {
   const [loading, setLoading] = useState(true)
   const [isMaster, setIsMaster] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { handleErrorWithToast, handleResponseError } = useApiError()
 
   useEffect(() => {
     if (campaignId && user) {
       // Verificar role primeiro, depois carregar sessão
       checkMasterRole().then(() => {
-        loadSession()
+        loadSession().then(() => {
+          setLoading(false)
+        })
       })
     }
   }, [campaignId, user])
 
   /**
-   * Carrega ou cria sessão ativa
+   * Carrega ou cria sessão ativa (com retry)
    */
-  const loadSession = async () => {
-    try {
-      if (!user || !campaignId) return
+  const loadSessionFn = async () => {
+    if (!user || !campaignId) return null
 
-      const { data: sessionData } = await supabase.auth.getSession()
-      if (!sessionData.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      
-      // Tentar buscar sessão ativa
-      const response = await fetch(
-        `${apiUrl}/api/sessions?campaignId=${campaignId}&active=true`,
-        {
-          headers: {
-            Authorization: `Bearer ${sessionData.session.access_token}`,
-          },
-        }
-      )
-
-      if (response.ok) {
-        const sessions = await response.json()
-        if (sessions.length > 0) {
-          setSession(sessions[0])
-        } else {
-          // Criar nova sessão se não existir (apenas mestre)
-          // Aguardar verificação de mestre antes de criar
-          await checkMasterRole()
-          if (isMaster) {
-            await createSession()
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar sessão:', error)
-    } finally {
-      setLoading(false)
+    const { data: sessionData } = await supabase.auth.getSession()
+    if (!sessionData.session) {
+      throw new Error('Sessão não encontrada')
     }
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    
+    // Tentar buscar sessão ativa
+    const response = await fetch(
+      `${apiUrl}/api/sessions?campaignId=${campaignId}&active=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // Não é erro, apenas não há sessão ativa
+        return null
+      }
+      await handleResponseError(response, 'Erro ao carregar sessão')
+      return null
+    }
+
+    const sessions = await response.json()
+    if (sessions.length > 0) {
+      setSession(sessions[0])
+      return sessions[0]
+    } else {
+      // Criar nova sessão se não existir (apenas mestre)
+      await checkMasterRole()
+      if (isMaster) {
+        const newSession = await createSession()
+        return newSession
+      }
+    }
+
+    return null
   }
+
+  const { execute: loadSession, loading: loadingSession } = useRetry(loadSessionFn, {
+    maxRetries: 3,
+    delay: 1000,
+    onError: (err) => {
+      handleErrorWithToast(err, 'Erro ao carregar sessão')
+    },
+  })
 
   /**
    * Cria uma nova sessão

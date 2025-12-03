@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useRealtimeChat } from '@/hooks/useRealtimeChat'
 import { FixedSizeList as List } from 'react-window'
+import { useApiError } from '@/hooks/useApiError'
+import { useToast } from '@/hooks/useToast'
 
 /**
  * Painel de chat estilo Discord
@@ -82,6 +84,8 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<List>(null)
+  const { handleErrorWithToast, handleResponseError } = useApiError()
+  const toast = useToast()
 
   // Memoizar mensagens para evitar re-renders desnecessários
   const memoizedMessages = useMemo(() => messages, [messages])
@@ -142,12 +146,12 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
 
       if (response.ok) {
         setNewMessage('')
+        toast.success('Mensagem enviada')
       } else {
-        throw new Error('Erro ao enviar mensagem')
+        await handleResponseError(response, 'Erro ao enviar mensagem')
       }
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error)
-      alert('Erro ao enviar mensagem. Tente novamente.')
+      handleErrorWithToast(error, 'Erro ao enviar mensagem')
     } finally {
       setSending(false)
     }

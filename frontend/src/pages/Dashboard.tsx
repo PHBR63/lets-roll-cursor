@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useNavigate } from 'react-router-dom'
 import { useCache } from '@/hooks/useCache'
+import { useApiError } from '@/hooks/useApiError'
+import { useRetry } from '@/hooks/useRetry'
 
 /**
  * Dashboard principal
@@ -25,63 +27,75 @@ export function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      loadCampaigns()
+      loadCampaigns().then(() => {
+        setLoading(false)
+      })
     }
   }, [user])
 
+  const { handleErrorWithToast, handleResponseError } = useApiError()
+
   /**
-   * Carrega campanhas do usuário da API (com cache)
+   * Carrega campanhas do usuário da API (com cache e retry)
    */
-  const loadCampaigns = async () => {
-    try {
-      if (!user) return
+  const loadCampaignsFn = async () => {
+    if (!user) return null
 
-      const cacheKey = `campaigns:${user.id}`
-      
-      // Tentar obter do cache primeiro
-      const cached = cache.get(cacheKey)
-      if (cached) {
-        const mastering = cached.filter((c: any) => c.role === 'master')
-        const participating = cached.filter(
-          (c: any) => c.role === 'player' || c.role === 'observer'
-        )
-        setMasteringCampaigns(mastering)
-        setParticipatingCampaigns(participating)
-        setLoading(false)
-        return
-      }
-
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${apiUrl}/api/campaigns`, {
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      })
-
-      if (!response.ok) throw new Error('Erro ao carregar campanhas')
-
-      const campaigns = await response.json()
-
-      // Salvar no cache
-      cache.set(cacheKey, campaigns)
-
-      // Separar por role
-      const mastering = campaigns.filter((c: any) => c.role === 'master')
-      const participating = campaigns.filter(
+    const cacheKey = `campaigns:${user.id}`
+    
+    // Tentar obter do cache primeiro
+    const cached = cache.get(cacheKey)
+    if (cached) {
+      const mastering = cached.filter((c: any) => c.role === 'master')
+      const participating = cached.filter(
         (c: any) => c.role === 'player' || c.role === 'observer'
       )
-
       setMasteringCampaigns(mastering)
       setParticipatingCampaigns(participating)
-    } catch (error) {
-      console.error('Erro ao carregar campanhas:', error)
-    } finally {
-      setLoading(false)
+      return cached
     }
+
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session) {
+      throw new Error('Sessão não encontrada')
+    }
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${apiUrl}/api/campaigns`, {
+      headers: {
+        Authorization: `Bearer ${session.session.access_token}`,
+      },
+    })
+
+    if (!response.ok) {
+      await handleResponseError(response, 'Erro ao carregar campanhas')
+      return null
+    }
+
+    const campaigns = await response.json()
+
+    // Salvar no cache
+    cache.set(cacheKey, campaigns)
+
+    // Separar por role
+    const mastering = campaigns.filter((c: any) => c.role === 'master')
+    const participating = campaigns.filter(
+      (c: any) => c.role === 'player' || c.role === 'observer'
+    )
+
+    setMasteringCampaigns(mastering)
+    setParticipatingCampaigns(participating)
+
+    return campaigns
   }
+
+  const { execute: loadCampaigns, loading: loadingCampaigns } = useRetry(loadCampaignsFn, {
+    maxRetries: 3,
+    delay: 1000,
+    onError: (err) => {
+      handleErrorWithToast(err, 'Erro ao carregar campanhas')
+    },
+  })
 
   /**
    * Função para scrollar carrossel
@@ -97,7 +111,7 @@ export function Dashboard() {
     }
   }
 
-  if (loading) {
+  if (loading || loadingCampaigns) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white">Carregando...</div>

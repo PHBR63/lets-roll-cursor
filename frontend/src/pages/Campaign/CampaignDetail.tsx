@@ -9,9 +9,11 @@ import { InvitePlayers } from '@/components/campaign/InvitePlayers'
 import { EditCampaignModal } from '@/components/campaign/EditCampaignModal'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { EmptyState } from '@/components/common/EmptyState'
+import { EmptyState, NotFoundState } from '@/components/common/EmptyState'
 import { Users } from 'lucide-react'
 import { ChevronRight, Edit, Settings } from 'lucide-react'
+import { useApiError } from '@/hooks/useApiError'
+import { useRetry } from '@/hooks/useRetry'
 
 /**
  * Página de detalhes da campanha
@@ -27,47 +29,64 @@ export function CampaignDetail() {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [isMaster, setIsMaster] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { handleErrorWithToast, handleResponseError } = useApiError()
 
   useEffect(() => {
     if (id) {
-      loadCampaign()
+      loadCampaign().then(() => {
+        setLoading(false)
+      })
       loadCharacters()
     }
   }, [id, user])
 
   /**
-   * Carrega dados da campanha
+   * Carrega dados da campanha (com retry)
    */
-  const loadCampaign = async () => {
-    try {
-      if (!user) return
+  const loadCampaignFn = async () => {
+    if (!user || !id) return null
 
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${apiUrl}/api/campaigns/${id}`, {
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      })
-
-      if (!response.ok) throw new Error('Erro ao carregar campanha')
-
-      const data = await response.json()
-      setCampaign(data)
-
-      // Verificar se usuário é mestre
-      const participant = data.participants?.find(
-        (p: any) => p.user?.id === user.id && p.role === 'master'
-      )
-      setIsMaster(!!participant)
-    } catch (error) {
-      console.error('Erro ao carregar campanha:', error)
-    } finally {
-      setLoading(false)
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session) {
+      throw new Error('Sessão não encontrada')
     }
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${apiUrl}/api/campaigns/${id}`, {
+      headers: {
+        Authorization: `Bearer ${session.session.access_token}`,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        setError('Campanha não encontrada')
+        return null
+      }
+      await handleResponseError(response, 'Erro ao carregar campanha')
+      return null
+    }
+
+    const data = await response.json()
+    setCampaign(data)
+
+    // Verificar se usuário é mestre
+    const participant = data.participants?.find(
+      (p: any) => p.user?.id === user.id && p.role === 'master'
+    )
+    setIsMaster(!!participant)
+
+    return data
   }
+
+  const { execute: loadCampaign, loading: loadingCampaign } = useRetry(loadCampaignFn, {
+    maxRetries: 3,
+    delay: 1000,
+    onError: (err) => {
+      handleErrorWithToast(err, 'Erro ao carregar campanha')
+    },
+  })
 
   /**
    * Carrega personagens da campanha
@@ -102,10 +121,25 @@ export function CampaignDetail() {
     navigate(`/session/${id}`)
   }
 
-  if (loading) {
+  if (loading || loadingCampaign) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white">Carregando...</div>
+      </div>
+    )
+  }
+
+  if (error || !campaign) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <NotFoundState
+            title={error || 'Campanha não encontrada'}
+            description="A campanha que você está procurando não existe ou foi removida."
+          />
+        </div>
+        <Footer />
       </div>
     )
   }

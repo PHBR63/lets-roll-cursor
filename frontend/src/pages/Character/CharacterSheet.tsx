@@ -13,6 +13,9 @@ import { Biography } from '@/components/character/Biography'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { ArrowLeft } from 'lucide-react'
+import { useApiError } from '@/hooks/useApiError'
+import { useRetry } from '@/hooks/useRetry'
+import { NotFoundState } from '@/components/common/EmptyState'
 import {
   Accordion,
   AccordionContent,
@@ -31,41 +34,56 @@ export function CharacterSheet() {
   const [character, setCharacter] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { handleErrorWithToast, handleResponseError } = useApiError()
 
   useEffect(() => {
     if (id) {
-      loadCharacter()
+      loadCharacter().then(() => {
+        setLoading(false)
+      })
     }
   }, [id, user])
 
   /**
-   * Carrega dados do personagem
+   * Carrega dados do personagem (com retry)
    */
-  const loadCharacter = async () => {
-    try {
-      if (!id || !user) return
+  const loadCharacterFn = async () => {
+    if (!id || !user) return null
 
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(`${apiUrl}/api/characters/${id}`, {
-        headers: {
-          Authorization: `Bearer ${session.session.access_token}`,
-        },
-      })
-
-      if (!response.ok) throw new Error('Erro ao carregar personagem')
-
-      const data = await response.json()
-      setCharacter(data)
-    } catch (error) {
-      console.error('Erro ao carregar personagem:', error)
-      alert('Erro ao carregar personagem. Tente novamente.')
-    } finally {
-      setLoading(false)
+    const { data: session } = await supabase.auth.getSession()
+    if (!session.session) {
+      throw new Error('Sessão não encontrada')
     }
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const response = await fetch(`${apiUrl}/api/characters/${id}`, {
+      headers: {
+        Authorization: `Bearer ${session.session.access_token}`,
+      },
+    })
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        setError('Personagem não encontrado')
+        return null
+      }
+      await handleResponseError(response, 'Erro ao carregar personagem')
+      return null
+    }
+
+    const data = await response.json()
+    setCharacter(data)
+    return data
   }
+
+  const { execute: loadCharacter, loading: loadingCharacter } = useRetry(loadCharacterFn, {
+    maxRetries: 3,
+    delay: 1000,
+    onError: (err) => {
+      handleErrorWithToast(err, 'Erro ao carregar personagem')
+    },
+  })
 
   /**
    * Salva alterações do personagem (debounce automático)
