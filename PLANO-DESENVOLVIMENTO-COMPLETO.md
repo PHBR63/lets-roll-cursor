@@ -894,7 +894,7 @@ export function useRealtimeChat(sessionId: string) {
 
 ---
 
-## 🛠️ Fase 9 - Melhorias e Funcionalidades Avançadas ✅ **PARCIALMENTE CONCLUÍDA**
+## 🛠️ Fase 9 - Melhorias e Funcionalidades Avançadas ✅ **100% CONCLUÍDA**
 
 ### 9.1. Sistema de Rolagem Avançado
 
@@ -1352,12 +1352,13 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Integração no PlayersSidebar (status online/offline)
 - [x] Configuração Supabase Realtime documentada
 
-### Fase 9 - Funcionalidades Avançadas
-- [ ] AdvancedDiceRoller
-- [ ] ConditionsPanel
-- [ ] useCharacterResources hook
-- [ ] RitualsPanel
-- [ ] ParanormalPowersPanel
+### Fase 9 - Funcionalidades Avançadas ✅ **100% CONCLUÍDA**
+- [x] AdvancedDiceRoller (DiceRoller com funcionalidades avançadas)
+- [x] ConditionsPanel (com timer e tooltips)
+- [x] useCharacterResources hook (cálculo automático de recursos)
+- [x] RitualsPanel (20 rituais, sistema de ingredientes)
+- [x] ParanormalPowersPanel (19 poderes, sistema de níveis)
+- [x] Exportar histórico de rolagens (CSV)
 
 ### Fase 10 - Responsividade
 - [ ] Ajustes mobile
