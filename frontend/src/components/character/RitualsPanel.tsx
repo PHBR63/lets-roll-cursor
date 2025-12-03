@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ALL_RITUALS, type Ritual } from '@/data/rituals'
 
 /**
  * Painel de rituais paranormais do personagem
@@ -31,237 +32,16 @@ interface RitualsPanelProps {
   onUpdate: () => void
 }
 
-interface Ritual {
-  id: string
-  name: string
-  circle: number // Círculo do ritual (1-5)
-  cost: {
-    pe: number
-    san?: number
-  }
-  requiresIngredients: boolean
-  ingredients?: string[] // Lista de ingredientes necessários
-  element?: string // Elemento paranormal
-  description?: string
-}
-
-// Rituais básicos do sistema (expandido)
-const AVAILABLE_RITUALS: Ritual[] = [
-  // Círculo 1 - SANGUE
-  {
-    id: 'ritual-1',
-    name: 'Amaldiçoar Arma',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Sangue de animal', 'Metal enferrujado'],
-    element: 'SANGUE',
-    description: 'Imbui uma arma com energia paranormal',
-  },
-  {
-    id: 'ritual-2',
-    name: 'Armadura de Sangue',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Sangue próprio', 'Tecido vermelho'],
-    element: 'SANGUE',
-    description: 'Cria uma armadura temporária de sangue',
-  },
-  {
-    id: 'ritual-3',
-    name: 'Cicatrização',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Bandagens', 'Água benta'],
-    element: 'SANGUE',
-    description: 'Regenera pontos de vida',
-  },
-  {
-    id: 'ritual-4',
-    name: 'Sangue de Ferro',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Ferro enferrujado', 'Sangue de animal'],
-    element: 'SANGUE',
-    description: 'Aumenta resistência física temporariamente',
-  },
-  // Círculo 2 - SANGUE
-  {
-    id: 'ritual-5',
-    name: 'Comunhão Vital',
-    circle: 2,
-    cost: { pe: 2 },
-    requiresIngredients: true,
-    ingredients: ['Cordão vermelho', 'Sangue de múltiplos aliados'],
-    element: 'SANGUE',
-    description: 'Compartilha vida entre aliados',
-  },
-  {
-    id: 'ritual-6',
-    name: 'Hemofagia',
-    circle: 2,
-    cost: { pe: 2 },
-    requiresIngredients: true,
-    ingredients: ['Vaso de vidro', 'Sangue de inimigo'],
-    element: 'SANGUE',
-    description: 'Drena vida de inimigos',
-  },
-  {
-    id: 'ritual-7',
-    name: 'Lâmina de Sangue',
-    circle: 2,
-    cost: { pe: 2 },
-    requiresIngredients: true,
-    ingredients: ['Lâmina enferrujada', 'Sangue próprio'],
-    element: 'SANGUE',
-    description: 'Cria lâminas cortantes de sangue',
-  },
-  // Círculo 1 - MORTE
-  {
-    id: 'ritual-8',
-    name: 'Morte Minguante',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Osso de animal morto', 'Terra de cemitério'],
-    element: 'MORTE',
-    description: 'Drena vida de inimigos próximos',
-  },
-  {
-    id: 'ritual-9',
-    name: 'Toque da Morte',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Luvas pretas', 'Pó de osso'],
-    element: 'MORTE',
-    description: 'Causa dano necrótico ao toque',
-  },
-  {
-    id: 'ritual-10',
-    name: 'Espírito Guardião',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Objeto pessoal de falecido', 'Vela preta'],
-    element: 'MORTE',
-    description: 'Invoca um espírito protetor',
-  },
-  // Círculo 2 - MORTE
-  {
-    id: 'ritual-11',
-    name: 'Necromancia',
-    circle: 2,
-    cost: { pe: 2 },
-    requiresIngredients: true,
-    ingredients: ['Cadáver intacto', 'Sangue fresco', 'Runa de morte'],
-    element: 'MORTE',
-    description: 'Reanima cadáveres temporariamente',
-  },
-  {
-    id: 'ritual-12',
-    name: 'Drenar Essência',
-    circle: 2,
-    cost: { pe: 2 },
-    requiresIngredients: true,
-    ingredients: ['Cristal negro', 'Corda de cânhamo'],
-    element: 'MORTE',
-    description: 'Drena energia vital de alvos',
-  },
-  // Círculo 1 - ENERGIA
-  {
-    id: 'ritual-13',
-    name: 'Eletrocutar',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Fio de cobre', 'Bateria'],
-    element: 'ENERGIA',
-    description: 'Causa dano elétrico',
-  },
-  {
-    id: 'ritual-14',
-    name: 'Campo Elétrico',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Ímã', 'Fio metálico'],
-    element: 'ENERGIA',
-    description: 'Cria campo elétrico defensivo',
-  },
-  // Círculo 1 - CONHECIMENTO
-  {
-    id: 'ritual-15',
-    name: 'Clarividência',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Cristal transparente', 'Água pura'],
-    element: 'CONHECIMENTO',
-    description: 'Vê através de obstáculos',
-  },
-  {
-    id: 'ritual-16',
-    name: 'Telepatia',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Fio de prata', 'Objeto do alvo'],
-    element: 'CONHECIMENTO',
-    description: 'Comunicação mental',
-  },
-  // Círculo 1 - MEDO
-  {
-    id: 'ritual-17',
-    name: 'Pesadelo',
-    circle: 1,
-    cost: { pe: 1, san: 1 },
-    requiresIngredients: true,
-    ingredients: ['Pena de corvo', 'Vela preta'],
-    element: 'MEDO',
-    description: 'Causa terror em alvos',
-  },
-  {
-    id: 'ritual-18',
-    name: 'Ilusão',
-    circle: 1,
-    cost: { pe: 1 },
-    requiresIngredients: true,
-    ingredients: ['Espelho quebrado', 'Fumaça'],
-    element: 'MEDO',
-    description: 'Cria ilusões assustadoras',
-  },
-  // Círculo 3
-  {
-    id: 'ritual-19',
-    name: 'Sangue Fervente',
-    circle: 3,
-    cost: { pe: 6 },
-    requiresIngredients: true,
-    ingredients: ['Sangue de múltiplas fontes', 'Metal quente', 'Runa de poder'],
-    element: 'SANGUE',
-    description: 'Aumenta força e velocidade drasticamente',
-  },
-  {
-    id: 'ritual-20',
-    name: 'Necromancia Avançada',
-    circle: 3,
-    cost: { pe: 6 },
-    requiresIngredients: true,
-    ingredients: ['Múltiplos cadáveres', 'Sangue de sacrifício', 'Runa de morte avançada'],
-    element: 'MORTE',
-    description: 'Reanima múltiplos cadáveres',
-  },
-]
+// Rituais disponíveis do sistema (todos os rituais já estão em ALL_RITUALS)
+const AVAILABLE_RITUALS: Ritual[] = ALL_RITUALS
 
 export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
   const [rituals, setRituals] = useState<Ritual[]>([])
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedRitual, setSelectedRitual] = useState<string>('')
   const [conjuring, setConjuring] = useState<string | null>(null)
+  const [filterCircle, setFilterCircle] = useState<string>('all')
+  const [filterElement, setFilterElement] = useState<string>('all')
 
   useEffect(() => {
     // Carregar rituais do personagem (armazenados em JSONB ou tabela separada)
@@ -435,6 +215,14 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
 
   const characterRituals = character.rituals || []
 
+  // Filtrar rituais disponíveis
+  const filteredRituals = AVAILABLE_RITUALS.filter((r) => {
+    const notOwned = !characterRituals.some((cr: Ritual) => cr.id === r.id)
+    const circleMatch = filterCircle === 'all' || r.circle.toString() === filterCircle
+    const elementMatch = filterElement === 'all' || r.element === filterElement
+    return notOwned && circleMatch && elementMatch
+  })
+
   return (
     <div className="bg-card rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
@@ -446,7 +234,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
               Adicionar Ritual
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Ritual</DialogTitle>
               <DialogDescription>
@@ -454,6 +242,40 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Filtrar por Círculo</Label>
+                  <Select value={filterCircle} onValueChange={setFilterCircle}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos os círculos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="1">1º Círculo</SelectItem>
+                      <SelectItem value="2">2º Círculo</SelectItem>
+                      <SelectItem value="3">3º Círculo</SelectItem>
+                      <SelectItem value="4">4º Círculo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Filtrar por Elemento</Label>
+                  <Select value={filterElement} onValueChange={setFilterElement}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos os elementos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos</SelectItem>
+                      <SelectItem value="SANGUE">Sangue</SelectItem>
+                      <SelectItem value="MORTE">Morte</SelectItem>
+                      <SelectItem value="ENERGIA">Energia</SelectItem>
+                      <SelectItem value="CONHECIMENTO">Conhecimento</SelectItem>
+                      <SelectItem value="MEDO">Medo</SelectItem>
+                      <SelectItem value="VARIÁVEL">Variável</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div>
                 <Label>Ritual</Label>
                 <Select value={selectedRitual} onValueChange={setSelectedRitual}>
@@ -461,16 +283,48 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                     <SelectValue placeholder="Selecione um ritual" />
                   </SelectTrigger>
                   <SelectContent>
-                    {AVAILABLE_RITUALS.filter(
-                      (r) => !characterRituals.some((cr: Ritual) => cr.id === r.id)
-                    ).map((ritual) => (
-                      <SelectItem key={ritual.id} value={ritual.id}>
-                        {ritual.name} (Círculo {ritual.circle})
-                      </SelectItem>
-                    ))}
+                    {filteredRituals.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        Nenhum ritual disponível com os filtros selecionados
+                      </div>
+                    ) : (
+                      filteredRituals.map((ritual) => (
+                        <SelectItem key={ritual.id} value={ritual.id}>
+                          {ritual.name} - Círculo {ritual.circle} ({ritual.element})
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
+              {selectedRitual && (
+                <div className="p-3 bg-card-secondary rounded-md">
+                  {(() => {
+                    const ritual = AVAILABLE_RITUALS.find((r) => r.id === selectedRitual)
+                    if (!ritual) return null
+                    return (
+                      <div className="space-y-2 text-sm">
+                        <div className="font-semibold text-white">{ritual.name}</div>
+                        <div className="text-text-secondary">{ritual.description}</div>
+                        <div className="flex gap-4 text-xs">
+                          <div>
+                            <span className="text-text-secondary">Custo: </span>
+                            <span className="text-green-400">{ritual.cost.pe} PE</span>
+                          </div>
+                          <div>
+                            <span className="text-text-secondary">Alcance: </span>
+                            <span>{ritual.range}</span>
+                          </div>
+                          <div>
+                            <span className="text-text-secondary">Alvo: </span>
+                            <span>{ritual.target}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+              )}
               <div className="flex gap-2">
                 <Button onClick={handleAddRitual} disabled={!selectedRitual}>
                   Adicionar
@@ -516,7 +370,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                     {ritual.description && (
                       <p className="text-sm text-text-secondary mb-2">{ritual.description}</p>
                     )}
-                    <div className="flex gap-4 text-sm">
+                    <div className="flex flex-wrap gap-4 text-sm mb-2">
                       <div>
                         <span className="text-text-secondary">Custo: </span>
                         <span className="text-green-400 font-semibold">
@@ -528,15 +382,66 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                           </span>
                         )}
                       </div>
-                      {ritual.requiresIngredients && !hasAffinity && ritual.ingredients && (
-                        <div className="text-yellow-400 text-xs">
-                          Ingredientes: {ritual.ingredients.join(', ')}
+                      <div>
+                        <span className="text-text-secondary">Alcance: </span>
+                        <span className="text-white">{ritual.range}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-secondary">Alvo: </span>
+                        <span className="text-white">{ritual.target}</span>
+                      </div>
+                      <div>
+                        <span className="text-text-secondary">Duração: </span>
+                        <span className="text-white">{ritual.duration}</span>
+                      </div>
+                      {ritual.resistance && (
+                        <div>
+                          <span className="text-text-secondary">Resistência: </span>
+                          <span className="text-white">{ritual.resistance}</span>
                         </div>
                       )}
-                      {hasAffinity && (
-                        <div className="text-purple-400 text-xs">Sem ingredientes (Afinidade)</div>
-                      )}
                     </div>
+                    {(ritual.discente || ritual.verdadeiro) && (
+                      <div className="text-xs text-text-secondary mb-2">
+                        <div className="font-semibold mb-1">Versões Avançadas:</div>
+                        {ritual.discente && (
+                          <div className="ml-2">
+                            <span className="text-purple-400">Discente (+{ritual.discente.pe} PE):</span>{' '}
+                            {ritual.discente.description}
+                            {ritual.discente.requiresCircle && (
+                              <span className="text-yellow-400">
+                                {' '}Requer {ritual.discente.requiresCircle}º círculo.
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {ritual.verdadeiro && (
+                          <div className="ml-2">
+                            <span className="text-purple-600">Verdadeiro (+{ritual.verdadeiro.pe} PE):</span>{' '}
+                            {ritual.verdadeiro.description}
+                            {ritual.verdadeiro.requiresCircle && (
+                              <span className="text-yellow-400">
+                                {' '}Requer {ritual.verdadeiro.requiresCircle}º círculo.
+                              </span>
+                            )}
+                            {ritual.verdadeiro.requiresAffinity && (
+                              <span className="text-purple-600"> Requer afinidade.</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {ritual.requiresIngredients && !hasAffinity && ritual.ingredients && (
+                      <div className="text-yellow-400 text-xs mb-2">
+                        <span className="font-semibold">Ingredientes: </span>
+                        {ritual.ingredients.join(', ')}
+                      </div>
+                    )}
+                    {hasAffinity && (
+                      <div className="text-purple-400 text-xs mb-2">
+                        Sem ingredientes necessários (Afinidade)
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button

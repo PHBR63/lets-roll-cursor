@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import path from 'path'
 import { authRouter } from './routes/auth'
 import { campaignsRouter } from './routes/campaigns'
 import { charactersRouter } from './routes/characters'
@@ -19,6 +20,9 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Obter diretório atual (CommonJS)
+const __dirname = path.resolve()
+
 // Middleware
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
@@ -26,7 +30,7 @@ app.use(cors({
 }))
 app.use(express.json())
 
-// Rotas
+// Rotas da API
 app.use('/api/auth', authRouter)
 app.use('/api/campaigns', campaignsRouter)
 app.use('/api/characters', charactersRouter)
@@ -43,6 +47,9 @@ app.use('/api/chat', chatRouter)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
+
+// Nota: Em produção no Vercel, o frontend é servido separadamente
+// Este código serve apenas para desenvolvimento local ou outros serviços
 
 // Error handler
 app.use(errorHandler)

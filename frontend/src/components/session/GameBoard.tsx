@@ -576,7 +576,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       x: 200,
       y: 200,
       name: creature.name,
-      imageUrl: null, // Criaturas podem não ter imagem
+      imageUrl: undefined, // Criaturas podem não ter imagem
       color: '#ef4444',
       size: 40,
       type: 'creature',

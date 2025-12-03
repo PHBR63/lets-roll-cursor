@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Acquirable } from '@/types/wizard'
-import { cn } from '@/lib/utils'
 
 /**
  * Etapa 2 do wizard: Definição de Adquiríveis

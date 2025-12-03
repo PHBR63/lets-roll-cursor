@@ -16,7 +16,6 @@ import { useAuth } from '@/context/AuthContext'
 import { ArrowLeft } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
-import { NotFoundState } from '@/components/common/EmptyState'
 import {
   Accordion,
   AccordionContent,

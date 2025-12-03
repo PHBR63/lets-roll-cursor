@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useRealtimeChat } from '@/hooks/useRealtimeChat'
-import { FixedSizeList as List } from 'react-window'
+// @ts-expect-error - react-window export issue
+import { FixedSizeList } from 'react-window'
 import { useApiError } from '@/hooks/useApiError'
 import { useToast } from '@/hooks/useToast'
 
@@ -83,7 +84,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const listRef = useRef<List>(null)
+  const listRef = useRef<any>(null)
   const { handleErrorWithToast, handleResponseError } = useApiError()
   const toast = useToast()
 
@@ -175,7 +176,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
         {memoizedMessages.length > 0 ? (
           memoizedMessages.length > 20 ? (
             // Virtualização para listas longas (>20 mensagens)
-            <List
+            <FixedSizeList
               ref={listRef}
               height={400}
               itemCount={memoizedMessages.length}
@@ -183,10 +184,10 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
               width="100%"
               overscanCount={5}
             >
-              {({ index, style }) => (
+              {({ index, style }: { index: number; style: React.CSSProperties }) => (
                 <MessageItem message={memoizedMessages[index]} style={style} />
               )}
-            </List>
+            </FixedSizeList>
           ) : (
             // Renderização normal para listas pequenas
             <div className="flex-1 overflow-y-auto p-4 space-y-3">

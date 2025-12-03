@@ -131,7 +131,7 @@ export function RollHistory({
         </div>
       </div>
 
-      {/* Lista de Rolagens */}
+      {/* Lista de Rolagens em formato hexagonal */}
       <ScrollArea className="flex-1">
         <div className="space-y-3 pr-2">
           {filteredRolls.slice(0, maxRolls).map((roll) => {
@@ -142,33 +142,55 @@ export function RollHistory({
               : userName
 
             return (
-              <Card
+              <div
                 key={roll.id}
-                className="bg-white/5 border-card-secondary hover:border-accent transition-colors p-3 cursor-pointer"
+                className="relative cursor-pointer group"
                 onClick={() => {
                   // TODO: Abrir modal com detalhes
                   console.log('Detalhes da rolagem:', roll)
                 }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="text-white font-bold text-2xl text-center">
-                      {roll.result}
-                    </div>
-                    <div className="text-text-secondary text-xs text-center mt-1">
+                {/* Container hexagonal principal */}
+                <div 
+                  className="relative w-full"
+                  style={{
+                    paddingBottom: '115.47%', // Proporção para hexágono
+                  }}
+                >
+                  <div
+                    className="absolute inset-0 bg-card-secondary border-2 border-card-secondary group-hover:border-accent transition-colors flex flex-col items-center justify-center p-2 md:p-3"
+                    style={{
+                      clipPath: 'polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)',
+                    }}
+                  >
+                    {/* Nome do jogador */}
+                    <div className="text-white text-xs md:text-sm font-semibold mb-2 text-center leading-tight">
                       {displayName}
                     </div>
-                    <div className="text-text-secondary text-xs text-center mt-1">
-                      {roll.formula}
+                    
+                    {/* Resultado principal em hexágono menor */}
+                    <div className="relative w-12 h-12 md:w-14 md:h-14">
+                      <div
+                        className="absolute inset-0 bg-card border border-accent/30 flex items-center justify-center"
+                        style={{
+                          clipPath: 'polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%)',
+                        }}
+                      >
+                        <div className="text-white font-bold text-base md:text-lg">
+                          {String(roll.result).padStart(2, '0')}
+                        </div>
+                      </div>
                     </div>
-                    {roll.details?.rolls && (
-                      <div className="text-text-secondary text-xs text-center mt-1">
+                    
+                    {/* Resultado secundário (se houver) */}
+                    {roll.details?.rolls && roll.details.rolls.length > 1 && (
+                      <div className="mt-1 text-text-secondary text-xs text-center">
                         [{roll.details.rolls.join(', ')}]
                       </div>
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             )
           })}
         </div>

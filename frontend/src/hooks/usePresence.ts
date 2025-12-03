@@ -88,8 +88,8 @@ export function usePresence(campaignId?: string, sessionId?: string) {
         if (status === 'SUBSCRIBED') {
           // Enviar presença inicial
           await channel.track({
-            username: user.username || user.email || 'Usuário',
-            avatarUrl: user.avatar_url,
+            username: (user.user_metadata?.username as string) || user.email || 'Usuário',
+            avatarUrl: user.user_metadata?.avatar_url as string | undefined,
             currentPage: sessionId ? 'session' : 'campaign',
             joinedAt: new Date().toISOString(),
           })
@@ -100,8 +100,8 @@ export function usePresence(campaignId?: string, sessionId?: string) {
     const heartbeatInterval = setInterval(async () => {
       if (channel.state === 'joined') {
         await channel.track({
-          username: user.username || user.email || 'Usuário',
-          avatarUrl: user.avatar_url,
+          username: (user.user_metadata?.username as string) || user.email || 'Usuário',
+          avatarUrl: user.user_metadata?.avatar_url as string | undefined,
           currentPage: sessionId ? 'session' : 'campaign',
           lastSeen: new Date().toISOString(),
         })
@@ -138,8 +138,8 @@ export function usePresence(campaignId?: string, sessionId?: string) {
 
       const channel = supabase.channel(channelName)
       await channel.track({
-        username: user.username || user.email || 'Usuário',
-        avatarUrl: user.avatar_url,
+        username: (user.user_metadata?.username as string) || user.email || 'Usuário',
+        avatarUrl: user.user_metadata?.avatar_url as string | undefined,
         currentPage: page,
         lastSeen: new Date().toISOString(),
       })

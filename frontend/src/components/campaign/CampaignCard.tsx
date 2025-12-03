@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { LazyImage } from '@/components/common/LazyImage'
 
 /**
  * Card de campanha estilo lobby
@@ -28,15 +29,18 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
   return (
     <Card className="w-64 h-80 flex flex-col bg-card border-card-secondary hover:border-accent transition-colors cursor-pointer flex-shrink-0">
       <CardContent className="flex-1 p-0" onClick={handleClick}>
-        <div className="w-full h-48 bg-card-secondary flex items-center justify-center border-b border-card-secondary overflow-hidden">
+        <div className="w-full h-48 border-b border-card-secondary overflow-hidden">
           {campaign.image_url ? (
-            <img
+            <LazyImage
               src={campaign.image_url}
               alt={campaign.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full"
+              fallback={<span className="text-text-secondary">Imagem</span>}
             />
           ) : (
-            <span className="text-text-secondary">Imagem</span>
+            <div className="w-full h-full bg-card-secondary flex items-center justify-center">
+              <span className="text-text-secondary">Imagem</span>
+            </div>
           )}
         </div>
         <div className="p-4">

@@ -174,29 +174,6 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
               </div>
             )}
           </div>
-                              </span>
-                            </div>
-                            <Progress value={energiaPercent} className="h-2 bg-green-900/30" />
-                          </div>
-
-                          {/* Saúde */}
-                          <div>
-                            <div className="flex justify-between text-xs mb-1">
-                              <span className="text-yellow-400">Saúde</span>
-                              <span className="text-white">
-                                {saude.current}/{saude.max}
-                              </span>
-                            </div>
-                            <Progress value={saudePercent} className="h-2 bg-yellow-900/30" />
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                  )
-                })}
-              </div>
-            )}
-          </div>
           {/* Botão Criar */}
           <div className="mt-4">
             <Button
@@ -212,6 +189,7 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
         <TabsContent value="npcs" className="flex-1 overflow-y-auto">
           <NPCsPanel campaignId={campaignId} />
         </TabsContent>
+      </Tabs>
 
       {/* Modais */}
       <CreateCreatureModal

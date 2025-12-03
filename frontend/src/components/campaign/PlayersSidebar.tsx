@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card'
+import { usePresence } from '@/hooks/usePresence'
 
 /**
  * Sidebar com lista de jogadores
@@ -14,15 +15,15 @@ interface PlayersSidebarProps {
     }
   }>
   currentUserId?: string
+  campaignId?: string
 }
 
 export function PlayersSidebar({
   participants,
   currentUserId,
+  campaignId,
 }: PlayersSidebarProps) {
-  // Obter campaignId dos participantes
-  const campaignId = participants[0]?.campaign_id
-  const { checkUserOnline } = usePresence(campaignId)
+  const { checkUserOnline } = usePresence(campaignId || '')
 
   return (
     <Card className="bg-card border-card-secondary p-6">
@@ -31,7 +32,6 @@ export function PlayersSidebar({
         {participants.length > 0 ? (
           participants.map((participant, index) => {
             const isOnline = checkUserOnline(participant.user?.id || '')
-            const isCurrentUser = participant.user?.id === currentUserId
 
             return (
               <div

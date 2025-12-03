@@ -11,7 +11,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Personality } from '@/types/wizard'
-import { cn } from '@/lib/utils'
 
 /**
  * Etapa 3 do wizard: Definição de Personalidades

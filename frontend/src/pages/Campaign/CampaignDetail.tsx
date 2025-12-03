@@ -13,6 +13,7 @@ import { EmptyState, NotFoundState } from '@/components/common/EmptyState'
 import { Users } from 'lucide-react'
 import { ChevronRight, Edit, Settings } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
+import { LazyImage } from '@/components/common/LazyImage'
 import { useRetry } from '@/hooks/useRetry'
 
 /**
@@ -176,15 +177,18 @@ export function CampaignDetail() {
 
             {/* Imagem e Descrição */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-card border border-card-secondary rounded-lg h-64 flex items-center justify-center">
+              <div className="bg-card border border-card-secondary rounded-lg h-64 overflow-hidden">
                 {campaign.image_url ? (
-                  <img
+                  <LazyImage
                     src={campaign.image_url}
                     alt={campaign.name}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="w-full h-full rounded-lg"
+                    fallback={<span className="text-text-secondary">Imagem</span>}
                   />
                 ) : (
-                  <span className="text-text-secondary">Imagem</span>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-text-secondary">Imagem</span>
+                  </div>
                 )}
               </div>
               <div className="space-y-4">
@@ -258,6 +262,7 @@ export function CampaignDetail() {
             <PlayersSidebar
               participants={campaign.participants || []}
               currentUserId={user?.id}
+              campaignId={id}
             />
           </div>
         </div>

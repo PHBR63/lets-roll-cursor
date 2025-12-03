@@ -1,4 +1,5 @@
-import { FixedSizeList as List } from 'react-window'
+// @ts-expect-error - react-window export issue
+import { FixedSizeList } from 'react-window'
 import { ReactNode } from 'react'
 
 /**
@@ -35,7 +36,7 @@ export function VirtualizedList<T>({
   }
 
   return (
-    <List
+    <FixedSizeList
       height={height}
       itemCount={items.length}
       itemSize={itemHeight}
@@ -44,7 +45,7 @@ export function VirtualizedList<T>({
       overscanCount={overscanCount}
     >
       {Row}
-    </List>
+    </FixedSizeList>
   )
 }
 

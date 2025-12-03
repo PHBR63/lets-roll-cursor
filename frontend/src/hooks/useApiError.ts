@@ -82,7 +82,7 @@ export function useApiError() {
 
       return {
         type,
-        message,
+        message: message || 'Erro desconhecido',
         status: response.status,
       }
     },

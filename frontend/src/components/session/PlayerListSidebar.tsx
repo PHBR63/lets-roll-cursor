@@ -24,7 +24,6 @@ export function PlayerListSidebar({
   sessionId,
   isMaster,
 }: PlayerListSidebarProps) {
-  const { user } = useAuth()
   const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
   const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
   const { checkUserOnline } = usePresence(campaignId, sessionId)

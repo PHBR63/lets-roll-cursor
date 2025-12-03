@@ -10,8 +10,7 @@ import { Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { SwipeableCard } from '@/components/common/SwipeableCard'
 import { QuickActions } from '@/components/common/QuickActions'
-import { SwipeableCard } from '@/components/common/SwipeableCard'
-import { QuickActions } from '@/components/common/QuickActions'
+import { LazyImage } from '@/components/common/LazyImage'
 
 /**
  * Card de status de personagem
@@ -104,67 +103,80 @@ export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
                 </div>
               )}
 
-              <div className="p-4 space-y-4">
-                {/* Avatar e Nome */}
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-card-secondary rounded-full flex items-center justify-center">
+              <div className="p-3 md:p-4">
+                <div className="flex gap-3 md:gap-4">
+                  {/* Avatar quadrado à esquerda */}
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-card-secondary border border-card-secondary flex-shrink-0 overflow-hidden">
                     {character.avatar_url ? (
-                      <img
+                      <LazyImage
                         src={character.avatar_url}
                         alt={character.name}
-                        className="w-full h-full object-cover rounded-full"
+                        className="w-full h-full"
+                        fallback={<span className="text-text-secondary text-xs md:text-sm font-semibold">Char</span>}
                       />
                     ) : (
-                      <span className="text-text-secondary text-sm">Char</span>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-text-secondary text-xs md:text-sm font-semibold">Char</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-white font-semibold">
-                      {character.name}
-                    </h3>
-                    {character.user?.username && (
-                      <p className="text-text-secondary text-sm">
-                        ({character.user.username})
-                      </p>
-                    )}
+
+                  {/* Informações e barras */}
+                  <div className="flex-1 min-w-0 space-y-2 md:space-y-3">
+                    {/* Nome do personagem */}
+                    <div>
+                      <h3 className="text-white font-semibold text-sm md:text-base truncate">
+                        {character.name}
+                      </h3>
+                      {character.user?.username && (
+                        <p className="text-text-secondary text-xs md:text-sm truncate">
+                          ({character.user.username})
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Barras de Progresso - Layout compacto */}
+                    <div className="space-y-1.5 md:space-y-2">
+                      <AnimatedProgressBar
+                        label="Vida"
+                        current={vida.current}
+                        max={vida.max}
+                        color="red"
+                        duration={0.5}
+                        delay={0}
+                        size="sm"
+                      />
+                      <AnimatedProgressBar
+                        label="NEX"
+                        current={xp}
+                        max={99}
+                        color="purple"
+                        showValues={false}
+                        duration={0.5}
+                        delay={0.1}
+                        size="sm"
+                      />
+                      <AnimatedProgressBar
+                        label="Energia"
+                        current={energia.current}
+                        max={energia.max}
+                        color="green"
+                        duration={0.5}
+                        delay={0.2}
+                        size="sm"
+                      />
+                      <AnimatedProgressBar
+                        label="Saúde"
+                        current={saude.current}
+                        max={saude.max}
+                        color="yellow"
+                        duration={0.5}
+                        delay={0.3}
+                        size="sm"
+                      />
+                    </div>
                   </div>
                 </div>
-
-          {/* Barras de Progresso */}
-          <div className="space-y-3">
-            <AnimatedProgressBar
-              label="PV"
-              current={vida.current}
-              max={vida.max}
-              color="red"
-              duration={0.5}
-              delay={0}
-            />
-            <AnimatedProgressBar
-              label="NEX"
-              current={xp}
-              max={99}
-              color="purple"
-              showValues={false}
-              duration={0.5}
-              delay={0.1}
-            />
-            <AnimatedProgressBar
-              label="PE"
-              current={energia.current}
-              max={energia.max}
-              color="green"
-              duration={0.5}
-              delay={0.2}
-            />
-            <AnimatedProgressBar
-              label="SAN"
-              current={saude.current}
-              max={saude.max}
-              color="yellow"
-              duration={0.5}
-              delay={0.3}
-            />
               </div>
             </Card>
             </Link>

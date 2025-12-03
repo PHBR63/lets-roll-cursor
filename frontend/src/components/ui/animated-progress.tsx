@@ -87,10 +87,6 @@ export function AnimatedProgress({
         )}
         style={{
           width,
-          transition: {
-            duration,
-            ease: 'easeOut',
-          },
         }}
         initial={{ width: '0%' }}
         animate={{ width: `${percentage}%` }}
@@ -143,6 +139,7 @@ interface AnimatedProgressBarProps {
   className?: string
   duration?: number
   delay?: number
+  size?: 'sm' | 'md' | 'lg'
 }
 
 export function AnimatedProgressBar({
@@ -154,12 +151,25 @@ export function AnimatedProgressBar({
   className,
   duration = 0.8,
   delay = 0,
+  size = 'md',
 }: AnimatedProgressBarProps) {
   const percentage = max > 0 ? Math.round((current / max) * 100) : 0
 
+  const sizeClasses = {
+    sm: 'text-xs space-y-1',
+    md: 'text-sm space-y-2',
+    lg: 'text-base space-y-2',
+  }
+
+  const barHeightClasses = {
+    sm: 'h-1.5',
+    md: 'h-2',
+    lg: 'h-3',
+  }
+
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex justify-between items-center text-sm">
+    <div className={cn(sizeClasses[size], className)}>
+      <div className="flex justify-between items-center">
         <span className="text-text-secondary">{label}</span>
         {showValues && (
           <motion.span
@@ -178,6 +188,7 @@ export function AnimatedProgressBar({
         color={color}
         duration={duration}
         delay={delay}
+        className={barHeightClasses[size]}
       />
     </div>
   )

@@ -26,6 +26,8 @@ Plataforma web completa para jogar RPG de mesa online, onde mestres têm control
 - Node.js 18+
 - npm ou yarn
 - Conta no Supabase
+- Conta no Vercel (para deploy do frontend)
+- Conta no Railway/Render (para deploy do backend)
 
 ### Setup
 

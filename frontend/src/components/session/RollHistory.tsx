@@ -4,7 +4,8 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
 import { useMemo, memo } from 'react'
-import { FixedSizeList as List } from 'react-window'
+// @ts-expect-error - react-window export issue
+import { FixedSizeList } from 'react-window'
 
 /**
  * Componente de histórico de rolagens
@@ -139,17 +140,17 @@ export function RollHistory({
       <div className="flex-1">
         {limitedRolls.length > 10 ? (
           // Virtualização para listas longas (>10 itens)
-          <List
+          <FixedSizeList
             height={400}
             itemCount={limitedRolls.length}
             itemSize={120}
             width="100%"
             overscanCount={3}
           >
-            {({ index, style }) => (
+            {({ index, style }: { index: number; style: React.CSSProperties }) => (
               <RollItem roll={limitedRolls[index]} style={style} />
             )}
-          </List>
+          </FixedSizeList>
         ) : (
           // Renderização normal para listas pequenas
           <ScrollArea className="flex-1">

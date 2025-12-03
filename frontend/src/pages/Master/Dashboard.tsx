@@ -7,7 +7,7 @@ import { CreaturesPanel } from '@/components/master/CreaturesPanel'
 import { PlayersPanel } from '@/components/master/PlayersPanel'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -136,8 +136,42 @@ export function MasterDashboard() {
 
         {/* Layout Responsivo: 1 coluna mobile, 2 tablet, 3 desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 h-[calc(100vh-150px)] md:h-[calc(100vh-200px)]">
-          {/* Coluna 1: Roll History + Master Info */}
+          {/* Coluna 1: Dashboard (Nome do Mestre + Dados + Roll History) */}
           <div className="flex flex-col gap-3 md:gap-4">
+            <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4">
+              <h2 className="text-white font-semibold mb-3 md:mb-4 text-sm md:text-base">Dashboard</h2>
+              
+              {/* Nome do Mestre */}
+              <div className="mb-4">
+                <label className="text-text-secondary text-xs md:text-sm mb-2 block">Nome do Mestre</label>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-card-secondary flex items-center justify-center flex-shrink-0">
+                    <User className="w-5 h-5 md:w-6 md:h-6 text-text-secondary" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Digite o nome do mestre"
+                    defaultValue={user?.email?.split('@')[0] || 'Mestre'}
+                    className="flex-1 bg-card-secondary border border-card-secondary rounded px-3 py-2 text-white text-sm md:text-base focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              {/* Indicador de Rolagem de Dados */}
+              <div className="mb-4">
+                <label className="text-text-secondary text-xs md:text-sm mb-2 block">Rolagem de Dados</label>
+                <div className="flex items-center gap-2 bg-card-secondary rounded px-3 py-2">
+                  <span className="text-white text-sm md:text-base">x D x</span>
+                  <div className="ml-auto">
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-text-secondary" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Histórico de Rolagens */}
             <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4 flex-1 flex flex-col min-h-[300px]">
               <h2 className="text-white font-semibold mb-3 md:mb-4 text-sm md:text-base">Histórico de Rolagens</h2>
               <RollHistory
@@ -145,15 +179,6 @@ export function MasterDashboard() {
                 campaignId={campaignId}
                 maxRolls={15}
               />
-            </div>
-            
-            {/* Master Info (opcional) */}
-            <div className="bg-card rounded-lg border border-card-secondary p-3 md:p-4">
-              <h3 className="text-white font-semibold mb-2 text-sm md:text-base">Informações do Mestre</h3>
-              <div className="text-text-secondary text-xs md:text-sm">
-                <p>Campanha: {campaignId}</p>
-                <p>Sessão: {session?.name || 'Nenhuma sessão ativa'}</p>
-              </div>
             </div>
           </div>
 

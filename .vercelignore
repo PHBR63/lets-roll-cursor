@@ -1,0 +1,14 @@
+# Arquivos e pastas a ignorar no deploy do Vercel
+backend/
+supabase/
+docs/
+*.md
+!README.md
+node_modules/
+.git/
+.env
+.env.local
+coverage/
+*.log
+.DS_Store
+

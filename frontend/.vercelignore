@@ -1,0 +1,10 @@
+# Arquivos a ignorar no deploy do Vercel (frontend)
+node_modules/
+dist/
+.vite/
+*.log
+.env
+.env.local
+coverage/
+.DS_Store
+
