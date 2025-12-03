@@ -1022,6 +1022,28 @@ export function useRealtimeChat(sessionId: string) {
 - Redução permanente de SAN máxima ao adquirir
 - Aprimoramento requer afinidade e nível < 5
 
+### 9.6. Exportação de Histórico de Rolagens
+
+**Arquivo:** `frontend/src/components/session/RollHistory.tsx`
+
+**Status:** ✅ **IMPLEMENTADO**
+
+**Funcionalidades Implementadas:**
+- ✅ Botão "Exportar CSV" no histórico de rolagens
+- ✅ Exportação completa de todas as rolagens
+- ✅ Formato CSV com colunas: Data, Jogador, Personagem, Fórmula, Resultado, Detalhes
+- ✅ Nome de arquivo com data: `rolagens_YYYY-MM-DD.csv`
+- ✅ Download automático do arquivo
+- ✅ Validação (não exporta se não houver rolagens)
+- ✅ Formatação de data em português (pt-BR)
+- ✅ Detalhes dos dados incluídos (array de rolagens individuais)
+
+**Uso:**
+- Disponível no componente `RollHistory`
+- Integrado na Session Room
+- Disponível no Master Dashboard
+- Botão visível apenas quando há rolagens
+
 ---
 
 ## 📱 Fase 10 - Responsividade e Mobile (PRIORIDADE BAIXA) ✅ **CONCLUÍDA**
