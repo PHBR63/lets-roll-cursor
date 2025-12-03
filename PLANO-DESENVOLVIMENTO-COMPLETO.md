@@ -702,9 +702,9 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Suporta dados antigos (vida, energia, saude, xp) para compatibilidade
 - ✅ Clique para abrir ficha (`/character/:id`)
 
-**Pendências (Futuro):**
-- [ ] Indicador de condições ativas
-- [ ] Tooltip com informações adicionais
+**Melhorias Implementadas:**
+- ✅ Indicador de condições ativas (ícone de alerta amarelo)
+- ✅ Tooltip com informações adicionais (classe, atributos, defesa, condições)
 
 ### 7.3. Players Sidebar
 
