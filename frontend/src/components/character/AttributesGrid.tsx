@@ -52,7 +52,7 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
    */
   const handleSave = async () => {
     // Atualiza atributos e recalcula defesa
-    await onUpdate({ attributes: localAttributes })
+    await onUpdate({ attributes: localAttributes, defense })
     setHasChanges(false)
   }
 
@@ -63,21 +63,13 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
     character.stats?.nex || 0
   )
 
-  // Atualizar defesa quando atributos mudarem
-  useEffect(() => {
-    if (hasChanges) {
-      // Recalcular defesa quando atributos mudarem
-      onUpdate({ attributes: localAttributes, defense })
-    }
-  }, [localAttributes.agi])
-
   return (
     <div className="bg-card rounded-lg p-6 animate-in fade-in-50 duration-300">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-xl font-bold text-white">Atributos</h2>
           <div className="text-xs text-muted-foreground mt-1">
-            Defesa calculada: {calculateDefense()} (10 + AGI)
+            Defesa calculada: {defense} (10 + AGI)
           </div>
         </div>
         {hasChanges && (

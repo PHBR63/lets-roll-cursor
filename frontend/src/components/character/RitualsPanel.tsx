@@ -84,6 +84,7 @@ const AVAILABLE_RITUALS: Ritual[] = [
     circle: 1,
     cost: { pe: 1 },
     requiresIngredients: true,
+    ingredients: ['Ferro enferrujado', 'Sangue de animal'],
     element: 'SANGUE',
     description: 'Aumenta resistência física temporariamente',
   },
