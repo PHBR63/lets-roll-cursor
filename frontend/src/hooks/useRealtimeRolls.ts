@@ -23,9 +23,7 @@ export function useRealtimeRolls(sessionId?: string, campaignId?: string) {
           event: 'INSERT',
           schema: 'public',
           table: 'dice_rolls',
-          filter: campaignId
-            ? `campaign_id=eq.${campaignId}`
-            : undefined,
+          filter: `campaign_id=eq.${campaignId}`,
         },
         (payload) => {
           // Ignorar rolagens privadas
