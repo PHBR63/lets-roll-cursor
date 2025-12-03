@@ -1,0 +1,237 @@
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { ExternalLink, Edit } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { useNavigate } from 'react-router-dom'
+
+/**
+ * Painel de jogadores para o mestre
+ * Lista vertical de cards com stats editáveis
+ */
+interface PlayersPanelProps {
+  campaignId?: string
+  sessionId?: string
+}
+
+export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
+  const navigate = useNavigate()
+  const [players, setPlayers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (campaignId) {
+      loadPlayers()
+    }
+  }, [campaignId])
+
+  /**
+   * Carrega jogadores da campanha
+   */
+  const loadPlayers = async () => {
+    try {
+      if (!campaignId) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/campaigns/${campaignId}`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const campaign = await response.json()
+        const participants = campaign.participants || []
+
+        // Buscar personagens de cada participante
+        const playersWithCharacters = await Promise.all(
+          participants.map(async (participant: any) => {
+            const charResponse = await fetch(
+              `${apiUrl}/api/characters?userId=${participant.user?.id}&campaignId=${campaignId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${session.session.access_token}`,
+                },
+              }
+            )
+
+            let character = null
+            if (charResponse.ok) {
+              const chars = await charResponse.json()
+              character = chars[0] || null
+            }
+
+            return {
+              ...participant,
+              character,
+            }
+          })
+        )
+
+        setPlayers(playersWithCharacters)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar jogadores:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Abre ficha do personagem
+   */
+  const handleOpenCharacterSheet = (characterId: string) => {
+    navigate(`/character/${characterId}`)
+  }
+
+  if (loading) {
+    return <div className="text-text-secondary text-sm">Carregando jogadores...</div>
+  }
+
+  if (players.length === 0) {
+    return (
+      <div className="text-text-secondary text-sm text-center py-8">
+        Nenhum jogador na campanha
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <h2 className="text-white font-semibold text-lg mb-4">Jogadores</h2>
+      <div className="flex-1 overflow-y-auto space-y-3">
+        {players.map((player) => {
+          const character = player.character
+          if (!character) {
+            return (
+              <Card
+                key={player.user?.id}
+                className="bg-white/5 border-card-secondary p-3"
+              >
+                <div className="text-white font-semibold">
+                  {player.user?.username || 'Jogador'}
+                </div>
+                <div className="text-text-secondary text-xs mt-1">
+                  Sem personagem
+                </div>
+              </Card>
+            )
+          }
+
+          const stats = character.stats || {}
+          const pv = stats.pv || { current: 0, max: 0 }
+          const san = stats.san || { current: 0, max: 0 }
+          const pe = stats.pe || { current: 0, max: 0 }
+          const nex = stats.nex || 0
+
+          const pvPercent = pv.max > 0 ? (pv.current / pv.max) * 100 : 0
+          const sanPercent = san.max > 0 ? (san.current / san.max) * 100 : 0
+          const pePercent = pe.max > 0 ? (pe.current / pe.max) * 100 : 0
+
+          return (
+            <Card
+              key={player.user?.id}
+              className="bg-white/5 border-card-secondary hover:border-accent transition-colors p-3"
+            >
+              <div className="space-y-2">
+                {/* Nome do Jogador */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-semibold">
+                    {player.user?.username || 'Jogador'}
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleOpenCharacterSheet(character.id)}
+                    className="h-6 w-6 p-0 text-white hover:bg-accent"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </Button>
+                </div>
+
+                {/* Nome do Personagem */}
+                <div className="text-text-secondary text-sm">{character.name}</div>
+
+                {/* Barras de Recursos */}
+                <div className="space-y-2">
+                  {/* PV */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-red-400">Vida</span>
+                      <span className="text-white">
+                        {pv.current}/{pv.max}
+                      </span>
+                    </div>
+                    <Progress value={pvPercent} className="h-2 bg-red-900/30" />
+                  </div>
+
+                  {/* NEX */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-purple-400">NEX</span>
+                      <span className="text-white">{nex}%</span>
+                    </div>
+                    <Progress value={nex} className="h-2 bg-purple-900/30" />
+                  </div>
+
+                  {/* PE */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-green-400">Energia</span>
+                      <span className="text-white">
+                        {pe.current}/{pe.max}
+                      </span>
+                    </div>
+                    <Progress value={pePercent} className="h-2 bg-green-900/30" />
+                  </div>
+
+                  {/* SAN */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-blue-400">Sanidade</span>
+                      <span className="text-white">
+                        {san.current}/{san.max}
+                      </span>
+                    </div>
+                    <Progress value={sanPercent} className="h-2 bg-blue-900/30" />
+                  </div>
+                </div>
+
+                {/* Botões de Ação Rápida */}
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      // TODO: Aplicar dano/cura
+                      console.log('Aplicar dano/cura:', character.id)
+                    }}
+                  >
+                    Dano/Cura
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 text-xs"
+                    onClick={() => {
+                      // TODO: Aplicar condição
+                      console.log('Aplicar condição:', character.id)
+                    }}
+                  >
+                    Condição
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
