@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { ExternalLink, Edit } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { ApplyDamageModal } from './ApplyDamageModal'
+import { ApplyConditionModal } from './ApplyConditionModal'
+import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 
 /**
  * Painel de jogadores para o mestre
@@ -17,14 +20,39 @@ interface PlayersPanelProps {
 
 export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   const navigate = useNavigate()
+  const { characters: realtimeCharacters } = useRealtimeCharacters(campaignId)
   const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showDamageModal, setShowDamageModal] = useState(false)
+  const [showConditionModal, setShowConditionModal] = useState(false)
+  const [selectedPlayer, setSelectedPlayer] = useState<any>(null)
 
   useEffect(() => {
     if (campaignId) {
       loadPlayers()
     }
   }, [campaignId])
+
+  // Atualizar quando personagens mudarem via Realtime
+  useEffect(() => {
+    if (realtimeCharacters.length > 0 && players.length > 0) {
+      // Atualizar stats dos personagens nos players
+      setPlayers((prev) =>
+        prev.map((player) => {
+          const updatedChar = realtimeCharacters.find(
+            (char) => char.id === player.character?.id
+          )
+          if (updatedChar) {
+            return {
+              ...player,
+              character: updatedChar,
+            }
+          }
+          return player
+        })
+      )
+    }
+  }, [realtimeCharacters])
 
   /**
    * Carrega jogadores da campanha
@@ -208,8 +236,8 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                     variant="outline"
                     className="flex-1 text-xs"
                     onClick={() => {
-                      // TODO: Aplicar dano/cura
-                      console.log('Aplicar dano/cura:', character.id)
+                      setSelectedPlayer({ character, user: player.user })
+                      setShowDamageModal(true)
                     }}
                   >
                     Dano/Cura
@@ -219,8 +247,8 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                     variant="outline"
                     className="flex-1 text-xs"
                     onClick={() => {
-                      // TODO: Aplicar condição
-                      console.log('Aplicar condição:', character.id)
+                      setSelectedPlayer({ character, user: player.user })
+                      setShowConditionModal(true)
                     }}
                   >
                     Condição
@@ -231,6 +259,34 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
           )
         })}
       </div>
+
+      {/* Modais */}
+      {selectedPlayer && (
+        <>
+          <ApplyDamageModal
+            open={showDamageModal}
+            onOpenChange={setShowDamageModal}
+            target="character"
+            targetId={selectedPlayer.character.id}
+            currentStats={selectedPlayer.character.stats || {}}
+            onSuccess={() => {
+              loadPlayers()
+              setSelectedPlayer(null)
+            }}
+          />
+          <ApplyConditionModal
+            open={showConditionModal}
+            onOpenChange={setShowConditionModal}
+            target="character"
+            targetId={selectedPlayer.character.id}
+            currentConditions={selectedPlayer.character.conditions || []}
+            onSuccess={() => {
+              loadPlayers()
+              setSelectedPlayer(null)
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }

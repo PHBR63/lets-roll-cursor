@@ -250,3 +250,39 @@ export const TRAINING_BONUS: Record<SkillTraining, number> = {
   EXPERT: 15,
 }
 
+/**
+ * Lista completa de condições disponíveis
+ */
+export const ALL_CONDITIONS: Condition[] = [
+  'CAIDO',
+  'DESPREVENIDO',
+  'ATORDADO',
+  'INCONSCIENTE',
+  'MORRENDO',
+  'ABALADO',
+  'APAVORADO',
+  'PERTURBADO',
+  'ENLOUQUECENDO',
+  'LENTO',
+  'IMOVEL',
+  'PARALISADO',
+  'AGARRADO',
+  'ENREDADO',
+  'CEGO',
+  'SURDO',
+  'ENJOADO',
+  'NAUSEA',
+  'DOENTE',
+  'ENVENENADO',
+  'FRACO',
+  'DEBILITADO',
+  'ESMORECIDO',
+  'FRUSTRADO',
+  'EXAUSTO',
+  'FADIGADO',
+  'SANGRANDO',
+  'EM_CHAMAS',
+  'FASCINADO',
+  'INDEFESO',
+]
+
