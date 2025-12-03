@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
+import { useCharacterResources } from '@/hooks/useCharacterResources'
 
 interface AttributesGridProps {
   character: any
@@ -55,14 +56,20 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
     setHasChanges(false)
   }
 
-  /**
-   * Calcula defesa baseada em AGI
-   * Defesa = 10 + AGI + bônus de equipamento
-   */
-  const calculateDefense = () => {
-    const agi = localAttributes.agi || 0
-    return 10 + agi // Bônus de equipamento seria adicionado aqui se houver
-  }
+  // Usar hook para calcular defesa automaticamente
+  const { defense } = useCharacterResources(
+    character.class,
+    localAttributes,
+    character.stats?.nex || 0
+  )
+
+  // Atualizar defesa quando atributos mudarem
+  useEffect(() => {
+    if (hasChanges) {
+      // Recalcular defesa quando atributos mudarem
+      onUpdate({ attributes: localAttributes, defense })
+    }
+  }, [localAttributes.agi])
 
   return (
     <div className="bg-card rounded-lg p-6 animate-in fade-in-50 duration-300">

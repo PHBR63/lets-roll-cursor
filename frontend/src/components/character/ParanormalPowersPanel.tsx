@@ -40,8 +40,9 @@ interface ParanormalPower {
   requiresAffinity: boolean // Requer afinidade (50% NEX)
 }
 
-// Poderes básicos do sistema (pode ser expandido)
+// Poderes básicos do sistema (expandido)
 const AVAILABLE_POWERS: ParanormalPower[] = [
+  // SANGUE
   {
     id: 'power-1',
     name: 'Sangue de Ferro',
@@ -71,6 +72,25 @@ const AVAILABLE_POWERS: ParanormalPower[] = [
   },
   {
     id: 'power-4',
+    name: 'Regeneração Sanguínea',
+    element: 'SANGUE',
+    level: 4,
+    cost: 8,
+    description: 'Regenera PV automaticamente',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-5',
+    name: 'Controle Sanguíneo',
+    element: 'SANGUE',
+    level: 5,
+    cost: 10,
+    description: 'Controla sangue de outros seres',
+    requiresAffinity: true,
+  },
+  // MORTE
+  {
+    id: 'power-6',
     name: 'Morte Minguante',
     element: 'MORTE',
     level: 1,
@@ -79,12 +99,123 @@ const AVAILABLE_POWERS: ParanormalPower[] = [
     requiresAffinity: false,
   },
   {
-    id: 'power-5',
+    id: 'power-7',
     name: 'Toque da Morte',
     element: 'MORTE',
     level: 2,
     cost: 4,
     description: 'Causa dano necrótico',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-8',
+    name: 'Espírito Vingativo',
+    element: 'MORTE',
+    level: 3,
+    cost: 6,
+    description: 'Invoca espíritos para atacar',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-9',
+    name: 'Necromancia',
+    element: 'MORTE',
+    level: 4,
+    cost: 8,
+    description: 'Reanima cadáveres permanentemente',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-10',
+    name: 'Domínio da Morte',
+    element: 'MORTE',
+    level: 5,
+    cost: 10,
+    description: 'Controle total sobre a morte',
+    requiresAffinity: true,
+  },
+  // ENERGIA
+  {
+    id: 'power-11',
+    name: 'Eletrocinese',
+    element: 'ENERGIA',
+    level: 1,
+    cost: 2,
+    description: 'Manipula energia elétrica',
+    requiresAffinity: false,
+  },
+  {
+    id: 'power-12',
+    name: 'Campo Elétrico',
+    element: 'ENERGIA',
+    level: 2,
+    cost: 4,
+    description: 'Cria campo elétrico defensivo',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-13',
+    name: 'Raio Destrutivo',
+    element: 'ENERGIA',
+    level: 3,
+    cost: 6,
+    description: 'Lança raios poderosos',
+    requiresAffinity: true,
+  },
+  // CONHECIMENTO
+  {
+    id: 'power-14',
+    name: 'Telepatia',
+    element: 'CONHECIMENTO',
+    level: 1,
+    cost: 2,
+    description: 'Comunicação mental',
+    requiresAffinity: false,
+  },
+  {
+    id: 'power-15',
+    name: 'Clarividência',
+    element: 'CONHECIMENTO',
+    level: 2,
+    cost: 4,
+    description: 'Vê através de obstáculos e tempo',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-16',
+    name: 'Controle Mental',
+    element: 'CONHECIMENTO',
+    level: 3,
+    cost: 6,
+    description: 'Controla mentes de outros',
+    requiresAffinity: true,
+  },
+  // MEDO
+  {
+    id: 'power-17',
+    name: 'Pesadelo',
+    element: 'MEDO',
+    level: 1,
+    cost: 2,
+    description: 'Causa terror em alvos',
+    requiresAffinity: false,
+  },
+  {
+    id: 'power-18',
+    name: 'Ilusão',
+    element: 'MEDO',
+    level: 2,
+    cost: 4,
+    description: 'Cria ilusões assustadoras',
+    requiresAffinity: true,
+  },
+  {
+    id: 'power-19',
+    name: 'Terror Absoluto',
+    element: 'MEDO',
+    level: 3,
+    cost: 6,
+    description: 'Paralisa alvos com medo',
     requiresAffinity: true,
   },
 ]

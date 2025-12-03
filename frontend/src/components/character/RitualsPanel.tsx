@@ -40,18 +40,21 @@ interface Ritual {
     san?: number
   }
   requiresIngredients: boolean
+  ingredients?: string[] // Lista de ingredientes necessários
   element?: string // Elemento paranormal
   description?: string
 }
 
-// Rituais básicos do sistema (pode ser expandido)
+// Rituais básicos do sistema (expandido)
 const AVAILABLE_RITUALS: Ritual[] = [
+  // Círculo 1 - SANGUE
   {
     id: 'ritual-1',
     name: 'Amaldiçoar Arma',
     circle: 1,
     cost: { pe: 1 },
     requiresIngredients: true,
+    ingredients: ['Sangue de animal', 'Metal enferrujado'],
     element: 'SANGUE',
     description: 'Imbui uma arma com energia paranormal',
   },
@@ -61,6 +64,7 @@ const AVAILABLE_RITUALS: Ritual[] = [
     circle: 1,
     cost: { pe: 1 },
     requiresIngredients: true,
+    ingredients: ['Sangue próprio', 'Tecido vermelho'],
     element: 'SANGUE',
     description: 'Cria uma armadura temporária de sangue',
   },
@@ -70,11 +74,22 @@ const AVAILABLE_RITUALS: Ritual[] = [
     circle: 1,
     cost: { pe: 1 },
     requiresIngredients: true,
+    ingredients: ['Bandagens', 'Água benta'],
     element: 'SANGUE',
     description: 'Regenera pontos de vida',
   },
   {
     id: 'ritual-4',
+    name: 'Sangue de Ferro',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'SANGUE',
+    description: 'Aumenta resistência física temporariamente',
+  },
+  // Círculo 2 - SANGUE
+  {
+    id: 'ritual-5',
     name: 'Comunhão Vital',
     circle: 2,
     cost: { pe: 2 },
@@ -83,13 +98,145 @@ const AVAILABLE_RITUALS: Ritual[] = [
     description: 'Compartilha vida entre aliados',
   },
   {
-    id: 'ritual-5',
+    id: 'ritual-6',
     name: 'Hemofagia',
     circle: 2,
     cost: { pe: 2 },
     requiresIngredients: true,
     element: 'SANGUE',
     description: 'Drena vida de inimigos',
+  },
+  {
+    id: 'ritual-7',
+    name: 'Lâmina de Sangue',
+    circle: 2,
+    cost: { pe: 2 },
+    requiresIngredients: true,
+    element: 'SANGUE',
+    description: 'Cria lâminas cortantes de sangue',
+  },
+  // Círculo 1 - MORTE
+  {
+    id: 'ritual-8',
+    name: 'Morte Minguante',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Drena vida de inimigos próximos',
+  },
+  {
+    id: 'ritual-9',
+    name: 'Toque da Morte',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Causa dano necrótico ao toque',
+  },
+  {
+    id: 'ritual-10',
+    name: 'Espírito Guardião',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Invoca um espírito protetor',
+  },
+  // Círculo 2 - MORTE
+  {
+    id: 'ritual-11',
+    name: 'Necromancia',
+    circle: 2,
+    cost: { pe: 2 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Reanima cadáveres temporariamente',
+  },
+  {
+    id: 'ritual-12',
+    name: 'Drenar Essência',
+    circle: 2,
+    cost: { pe: 2 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Drena energia vital de alvos',
+  },
+  // Círculo 1 - ENERGIA
+  {
+    id: 'ritual-13',
+    name: 'Eletrocutar',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'ENERGIA',
+    description: 'Causa dano elétrico',
+  },
+  {
+    id: 'ritual-14',
+    name: 'Campo Elétrico',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'ENERGIA',
+    description: 'Cria campo elétrico defensivo',
+  },
+  // Círculo 1 - CONHECIMENTO
+  {
+    id: 'ritual-15',
+    name: 'Clarividência',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'CONHECIMENTO',
+    description: 'Vê através de obstáculos',
+  },
+  {
+    id: 'ritual-16',
+    name: 'Telepatia',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'CONHECIMENTO',
+    description: 'Comunicação mental',
+  },
+  // Círculo 1 - MEDO
+  {
+    id: 'ritual-17',
+    name: 'Pesadelo',
+    circle: 1,
+    cost: { pe: 1, san: 1 },
+    requiresIngredients: true,
+    element: 'MEDO',
+    description: 'Causa terror em alvos',
+  },
+  {
+    id: 'ritual-18',
+    name: 'Ilusão',
+    circle: 1,
+    cost: { pe: 1 },
+    requiresIngredients: true,
+    element: 'MEDO',
+    description: 'Cria ilusões assustadoras',
+  },
+  // Círculo 3
+  {
+    id: 'ritual-19',
+    name: 'Sangue Fervente',
+    circle: 3,
+    cost: { pe: 6 },
+    requiresIngredients: true,
+    element: 'SANGUE',
+    description: 'Aumenta força e velocidade drasticamente',
+  },
+  {
+    id: 'ritual-20',
+    name: 'Necromancia Avançada',
+    circle: 3,
+    cost: { pe: 6 },
+    requiresIngredients: true,
+    element: 'MORTE',
+    description: 'Reanima múltiplos cadáveres',
   },
 ]
 
@@ -207,9 +354,18 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
     // Verificar se tem afinidade (50% NEX) - não precisa de ingredientes
     const hasAffinity = character.affinity === ritual.element && (character.stats?.nex || 0) >= 50
 
-    if (!hasAffinity && ritual.requiresIngredients) {
-      // Por enquanto, apenas avisar (pode implementar sistema de ingredientes depois)
-      if (!confirm('Este ritual requer ingredientes. Deseja conjurar mesmo assim?')) {
+    // Verificar ingredientes (se não tiver afinidade)
+    if (!hasAffinity && ritual.requiresIngredients && ritual.ingredients) {
+      const characterIngredients = character.ingredients || []
+      const missingIngredients = ritual.ingredients.filter(
+        (ing) => !characterIngredients.includes(ing)
+      )
+
+      if (missingIngredients.length > 0) {
+        alert(
+          `Este ritual requer os seguintes ingredientes: ${missingIngredients.join(', ')}\n` +
+            `Você possui: ${characterIngredients.join(', ') || 'Nenhum'}`
+        )
         return
       }
     }
@@ -355,13 +511,13 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                           </span>
                         )}
                       </div>
-                      {ritual.requiresIngredients && !hasAffinity && (
-                        <div className="text-yellow-400">
-                          Requer ingredientes
+                      {ritual.requiresIngredients && !hasAffinity && ritual.ingredients && (
+                        <div className="text-yellow-400 text-xs">
+                          Ingredientes: {ritual.ingredients.join(', ')}
                         </div>
                       )}
                       {hasAffinity && (
-                        <div className="text-purple-400">Sem ingredientes (Afinidade)</div>
+                        <div className="text-purple-400 text-xs">Sem ingredientes (Afinidade)</div>
                       )}
                     </div>
                   </div>

@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Minus } from 'lucide-react'
+import { useCharacterResources } from '@/hooks/useCharacterResources'
 
 interface VitalsPanelProps {
   character: any
@@ -17,12 +18,22 @@ interface VitalsPanelProps {
 export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
   const stats = character.stats || {}
   const attributes = character.attributes || {}
-  const defense = character.defense || 10
-
-  const pv = stats.pv || { current: 0, max: 0 }
-  const san = stats.san || { current: 0, max: 0 }
-  const pe = stats.pe || { current: 0, max: 0 }
   const nex = stats.nex || 0
+
+  // Usar hook para calcular recursos automaticamente
+  const { pvMax, sanMax, peMax, defense, validateStats } = useCharacterResources(
+    character.class,
+    attributes,
+    nex,
+    stats
+  )
+
+  // Validar e ajustar stats com os valores calculados
+  const validatedStats = validateStats(stats)
+  
+  const pv = validatedStats.pv
+  const san = validatedStats.san
+  const pe = validatedStats.pe
 
   const pvPercent = pv.max > 0 ? (pv.current / pv.max) * 100 : 0
   const sanPercent = san.max > 0 ? (san.current / san.max) * 100 : 0

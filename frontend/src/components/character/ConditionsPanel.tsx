@@ -2,16 +2,26 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { X, AlertCircle } from 'lucide-react'
+import { X, AlertCircle, Clock } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { Condition } from '@/types/ordemParanormal'
 import { AddConditionModal } from './AddConditionModal'
+import { ConditionTimer } from './ConditionTimer'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
 
 interface ConditionsPanelProps {
   character: any
@@ -25,6 +35,9 @@ interface ConditionsPanelProps {
 export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
   const conditions = character.conditions || []
   const [showAddModal, setShowAddModal] = useState(false)
+  const [conditionTimers, setConditionTimers] = useState<Record<string, number>>(
+    character.conditionTimers || {}
+  )
 
   /**
    * Remove condição do personagem
@@ -155,37 +168,69 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {conditions.map((condition: Condition) => (
-            <TooltipProvider key={condition}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Badge
-                    variant="destructive"
-                    className="flex items-center gap-1 px-3 py-1 cursor-help"
-                  >
-                    {conditionLabels[condition] || condition}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRemoveCondition(condition)
-                      }}
-                      className="ml-1 hover:bg-destructive/80 rounded-full p-0.5"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs">
-                  <div className="space-y-1">
-                    <div className="font-semibold">{conditionLabels[condition]}</div>
-                    <div className="text-sm text-text-secondary">
-                      {conditionEffects[condition] || 'Sem descrição'}
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          ))}
+          {conditions.map((condition: Condition) => {
+            const hasTimer = conditionTimers[condition] !== undefined
+            const timerDuration = conditionTimers[condition]
+
+            return (
+              <div key={condition} className="flex items-center gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge
+                        variant="destructive"
+                        className="flex items-center gap-1 px-3 py-1 cursor-help"
+                      >
+                        {conditionLabels[condition] || condition}
+                        {hasTimer && (
+                          <Clock className="w-3 h-3" />
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRemoveCondition(condition)
+                          }}
+                          className="ml-1 hover:bg-destructive/80 rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-1">
+                        <div className="font-semibold">{conditionLabels[condition]}</div>
+                        <div className="text-sm text-text-secondary">
+                          {conditionEffects[condition] || 'Sem descrição'}
+                        </div>
+                        {hasTimer && (
+                          <div className="text-xs text-yellow-400 mt-1">
+                            Expira em {timerDuration} rodada{timerDuration !== 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {hasTimer && (
+                  <ConditionTimer
+                    condition={condition}
+                    duration={timerDuration}
+                    onExpire={() => {
+                      handleRemoveCondition(condition)
+                      const newTimers = { ...conditionTimers }
+                      delete newTimers[condition]
+                      setConditionTimers(newTimers)
+                    }}
+                    onRemove={() => {
+                      const newTimers = { ...conditionTimers }
+                      delete newTimers[condition]
+                      setConditionTimers(newTimers)
+                    }}
+                  />
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
