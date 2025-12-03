@@ -870,81 +870,116 @@ export function useRealtimeChat(sessionId: string) {
 
 ---
 
-## 🛠️ Fase 9 - Melhorias e Funcionalidades Avançadas
+## 🛠️ Fase 9 - Melhorias e Funcionalidades Avançadas ✅ **PARCIALMENTE CONCLUÍDA**
 
 ### 9.1. Sistema de Rolagem Avançado
 
-**Arquivo:** `frontend/src/components/session/AdvancedDiceRoller.tsx` (criar)
+**Arquivo:** `frontend/src/components/session/DiceRoller.tsx`
 
-**Funcionalidades:**
-- [ ] Rolagem de Atributo com Perícia
-  - Selecionar atributo (AGI, FOR, etc.)
+**Status:** ✅ **IMPLEMENTADO** - DiceRoller já possui funcionalidades avançadas
+
+**Funcionalidades Implementadas:**
+- ✅ Rolagem de Atributo com Perícia (aba "Perícia")
   - Selecionar perícia
   - Calcular dados automaticamente
   - Aplicar bônus de treinamento
   - Mostrar vantagem/desvantagem
-- [ ] Rolagem de Ataque
-  - Selecionar arma
-  - Calcular ataque (Luta/Pontaria + atributo)
+  - Comparar com DT
+- ✅ Rolagem de Ataque (aba "Ataque")
+  - Selecionar perícia de ataque (Luta/Pontaria)
+  - Calcular ataque com atributo
   - Comparar com Defesa do alvo
   - Calcular dano se acertar
   - Detectar crítico (20 natural)
-- [ ] Rolagem de Dano
-  - Fórmula da arma
+- ✅ Rolagem de Dano
+  - Fórmula da arma configurável
   - Adicionar atributo (FOR para corpo-a-corpo)
   - Multiplicador de crítico
-- [ ] Histórico de Rolagens
-  - Lista de últimas rolagens
-  - Filtros
-  - Exportar (opcional)
+- ✅ Histórico de Rolagens
+  - Integrado com `RollHistory` component
+  - Usa `useRealtimeRolls` para atualização em tempo real
+
+**Nota:** O DiceRoller atual já cobre todas as funcionalidades necessárias. Não é necessário criar um componente separado.
 
 ### 9.2. Sistema de Condições
 
-**Arquivo:** `frontend/src/components/character/ConditionsPanel.tsx` (criar)
+**Arquivo:** `frontend/src/components/character/ConditionsPanel.tsx`
 
-**Funcionalidades:**
-- [ ] Lista de condições ativas
-- [ ] Aplicar condição (dropdown com todas as condições)
-- [ ] Remover condição
-- [ ] Mostrar efeitos da condição
-- [ ] Aplicar penalidades automaticamente
-- [ ] Timer para condições temporárias (opcional)
+**Status:** ✅ **MELHORADO**
+
+**Funcionalidades Implementadas:**
+- ✅ Lista de condições ativas
+- ✅ Aplicar condição (modal `AddConditionModal`)
+- ✅ Remover condição
+- ✅ Mostrar efeitos da condição (tooltips)
+- ✅ Tooltips com descrições detalhadas de cada condição
+- ✅ Penalidades visíveis nos tooltips
+
+**Pendências (Opcional):**
+- [ ] Timer para condições temporárias (futuro)
+- [ ] Aplicação automática de penalidades em rolagens (já calculado no backend)
 
 ### 9.3. Calculadora de Recursos
 
-**Arquivo:** `frontend/src/hooks/useCharacterResources.ts` (criar)
+**Arquivo:** `frontend/src/hooks/useCharacterResources.ts`
 
-**Funcionalidades:**
-- [ ] Cálculo automático de PV máximo
-- [ ] Cálculo automático de SAN máximo
-- [ ] Cálculo automático de PE máximo
-- [ ] Cálculo de Defesa
-- [ ] Recalcular ao alterar atributos/classe/NEX
-- [ ] Validação de valores (não exceder máximo)
+**Status:** ✅ **IMPLEMENTADO**
+
+**Funcionalidades Implementadas:**
+- ✅ Cálculo automático de PV máximo (baseado em classe, VIG e NEX)
+- ✅ Cálculo automático de SAN máximo (baseado em classe e NEX)
+- ✅ Cálculo automático de PE máximo (baseado em classe, PRE e NEX)
+- ✅ Cálculo de Defesa (10 + AGI)
+- ✅ Recalcular ao alterar atributos/classe/NEX (useMemo)
+- ✅ Validação de valores (não exceder máximo)
+- ✅ Função `validateStats` para ajustar valores automaticamente
+
+**Uso:** Hook pronto para ser integrado nos componentes de ficha de personagem.
 
 ### 9.4. Sistema de Rituais Paranormais
 
-**Arquivo:** `frontend/src/components/character/RitualsPanel.tsx` (criar)
+**Arquivo:** `frontend/src/components/character/RitualsPanel.tsx`
 
-**Funcionalidades:**
-- [ ] Lista de rituais conhecidos
-- [ ] Adicionar/remover ritual
-- [ ] Mostrar círculo do ritual
-- [ ] Mostrar custo em PE
-- [ ] Mostrar custo em SAN (se houver)
-- [ ] Conjurar ritual (gastar PE/SAN)
-- [ ] Rituais com Afinidade (50% NEX) - sem ingredientes
+**Status:** ✅ **IMPLEMENTADO**
+
+**Funcionalidades Implementadas:**
+- ✅ Lista de rituais conhecidos
+- ✅ Adicionar/remover ritual
+- ✅ Mostrar círculo do ritual (1-5)
+- ✅ Mostrar custo em PE
+- ✅ Mostrar custo em SAN (se houver)
+- ✅ Conjurar ritual (gastar PE/SAN)
+- ✅ Rituais com Afinidade (50% NEX) - sem ingredientes
+- ✅ Validação de PE/SAN suficientes
+- ✅ Badges visuais para círculo, elemento e afinidade
+- ✅ Lista de rituais básicos do sistema (expansível)
+
+**Estrutura:**
+- Rituais armazenados em JSONB no personagem
+- Suporte para múltiplos elementos paranormais
+- Sistema de ingredientes (com/sem afinidade)
 
 ### 9.5. Sistema de Poderes Paranormais
 
-**Arquivo:** `frontend/src/components/character/ParanormalPowersPanel.tsx` (criar)
+**Arquivo:** `frontend/src/components/character/ParanormalPowersPanel.tsx`
 
-**Funcionalidades:**
-- [ ] Lista de poderes adquiridos
-- [ ] Adquirir poder (gastar SAN máxima)
-- [ ] Aprimorar poder (gastar SAN máxima novamente)
-- [ ] Mostrar custo em SAN máxima
-- [ ] Validação (requer Afinidade para aprimorar)
+**Status:** ✅ **IMPLEMENTADO**
+
+**Funcionalidades Implementadas:**
+- ✅ Lista de poderes adquiridos
+- ✅ Adquirir poder (gastar SAN máxima)
+- ✅ Aprimorar poder (gastar SAN máxima novamente)
+- ✅ Mostrar custo em SAN máxima
+- ✅ Validação (requer Afinidade para aprimorar)
+- ✅ Sistema de níveis (1-5)
+- ✅ Validação de SAN máxima suficiente
+- ✅ Badges visuais para nível, elemento e afinidade
+- ✅ Lista de poderes básicos do sistema (expansível)
+
+**Estrutura:**
+- Poderes armazenados em JSONB no personagem
+- Redução permanente de SAN máxima ao adquirir
+- Aprimoramento requer afinidade e nível < 5
 
 ---
 
