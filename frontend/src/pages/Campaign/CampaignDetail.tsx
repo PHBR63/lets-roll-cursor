@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button'
 import { CharacterStatusCard } from '@/components/character/CharacterStatusCard'
 import { PlayersSidebar } from '@/components/campaign/PlayersSidebar'
 import { InvitePlayers } from '@/components/campaign/InvitePlayers'
+import { EditCampaignModal } from '@/components/campaign/EditCampaignModal'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Edit, Settings } from 'lucide-react'
 
 /**
  * Página de detalhes da campanha
@@ -22,6 +23,7 @@ export function CampaignDetail() {
   const [characters, setCharacters] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [isMaster, setIsMaster] = useState(false)
 
   useEffect(() => {
@@ -166,12 +168,30 @@ export function CampaignDetail() {
             {isMaster && (
               <div className="bg-card border border-card-secondary rounded-lg p-6">
                 <h2 className="text-xl font-bold text-white mb-4">Ações</h2>
-                <Button
-                  onClick={() => setShowInviteModal(true)}
-                  className="bg-accent hover:bg-accent/90"
-                >
-                  Convidar Jogadores
-                </Button>
+                <div className="flex gap-3 flex-wrap">
+                  <Button
+                    onClick={() => setShowInviteModal(true)}
+                    className="bg-accent hover:bg-accent/90"
+                  >
+                    Convidar Jogadores
+                  </Button>
+                  <Button
+                    onClick={() => setShowEditModal(true)}
+                    variant="outline"
+                    className="border-white/20"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Editar Campanha
+                  </Button>
+                  <Button
+                    onClick={() => navigate(`/master/${id}`)}
+                    variant="outline"
+                    className="border-white/20"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Painel do Mestre
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -207,13 +227,24 @@ export function CampaignDetail() {
 
       <Footer />
 
-      {/* Modal de Convite */}
+      {/* Modais */}
       {showInviteModal && isMaster && (
         <InvitePlayers
           campaignId={id!}
           onClose={() => setShowInviteModal(false)}
           onSuccess={() => {
             setShowInviteModal(false)
+            loadCampaign()
+          }}
+        />
+      )}
+      {showEditModal && isMaster && campaign && (
+        <EditCampaignModal
+          open={showEditModal}
+          onOpenChange={setShowEditModal}
+          campaign={campaign}
+          onSuccess={() => {
+            setShowEditModal(false)
             loadCampaign()
           }}
         />

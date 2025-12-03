@@ -25,10 +25,11 @@ interface CharacterStatusCardProps {
 
 export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
   const stats = character.stats || {}
-  const vida = stats.vida || { current: 10, max: 20 }
-  const energia = stats.energia || { current: 20, max: 20 }
-  const saude = stats.saude || { current: 15, max: 20 }
-  const xp = stats.xp || 30
+  // Sistema Ordem Paranormal: pv, san, pe, nex
+  const vida = stats.pv || stats.vida || { current: 10, max: 20 }
+  const energia = stats.pe || stats.energia || { current: 20, max: 20 }
+  const saude = stats.san || stats.saude || { current: 15, max: 20 }
+  const xp = stats.nex || stats.xp || 0
 
   return (
     <Link to={`/character/${character.id}`}>
@@ -62,26 +63,26 @@ export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
           {/* Barras de Progresso */}
           <div className="space-y-3">
             <ProgressBar
-              label="Vida"
+              label="PV"
               current={vida.current}
               max={vida.max}
               variant="life"
             />
             <ProgressBar
-              label="XP"
+              label="NEX"
               current={xp}
-              max={100}
+              max={99}
               variant="xp"
               showValues={false}
             />
             <ProgressBar
-              label="Energia"
+              label="PE"
               current={energia.current}
               max={energia.max}
               variant="energy"
             />
             <ProgressBar
-              label="Saúde"
+              label="SAN"
               current={saude.current}
               max={saude.max}
               variant="health"
