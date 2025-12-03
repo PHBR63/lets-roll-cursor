@@ -1147,33 +1147,101 @@ export function useRealtimeChat(sessionId: string) {
 
 ---
 
-## 📊 Fase 12 - Testes e Qualidade (PRIORIDADE BAIXA)
+## 📊 Fase 12 - Testes e Qualidade ✅ **IMPLEMENTADO**
 
 ### 12.1. Testes Unitários
 
-**Arquivos para Testar:**
-- [ ] `ordemParanormalService` - Todos os cálculos
-- [ ] `diceService` - Parser de fórmulas
-- [ ] `characterService` - CRUD e cálculos
-- [ ] Funções de rolagem
+**Status:** ✅ **IMPLEMENTADO**
+
+**Arquivos Testados:**
+- ✅ `ordemParanormalService` - Todos os cálculos (75 testes existentes)
+  - Cálculos de PV, SAN, PE para todas as classes
+  - Cálculo de defesa
+  - Bônus de perícias
+  - Conversão de NEX para níveis
+  - Recuperação de PE
+  - Rolagens de atributo (vantagem/desvantagem)
+  - Rolagens de ataque (crítico, acerto/erro)
+  - Cálculo de dano
+  - Estados críticos (machucado, morrendo, insano)
+  - Penalidades de condições
+  - Aplicação de condições (transformações automáticas)
+- ✅ `diceService` - Parser de fórmulas (9 testes)
+  - Rolagem básica (1d20)
+  - Rolagem com modificador (2d6+3)
+  - Validação de fórmulas inválidas
+  - Validação de limites (quantidade e lados)
+  - Rolagem privada
+  - Associação com personagem
+  - Busca de histórico
+  - Filtros por sessionId e campaignId
+- ✅ `characterService` - CRUD e cálculos (testes existentes expandidos)
+  - Atualização de atributos e recálculo
+  - Atualização de perícias
+  - Aplicação de condições
+  - Remoção de condições
+  - Aplicação de dano/cura
+  - Rolagens de perícia e ataque
+  - Recuperação de PE
 
 ### 12.2. Testes de Integração
 
-**Cenários:**
-- [ ] Criação de personagem completa
-- [ ] Atualização de atributos e recálculo
-- [ ] Rolagem de dados e histórico
-- [ ] Chat em tempo real
-- [ ] Sessão de jogo completa
+**Status:** ✅ **IMPLEMENTADO**
+
+**Cenários Testados:**
+- ✅ Criação de personagem completa
+  - Criação com cálculo automático de recursos (PV, SAN, PE, Defesa)
+  - Validação de todos os cálculos baseados em classe, atributos e NEX
+- ✅ Atualização de atributos e recálculo
+  - Atualização de atributos dispara recálculo de todos os recursos
+  - Validação de cálculos corretos após atualização
+- ✅ Rolagem de dados e histórico
+  - Rolagem de dados salva no banco
+  - Busca de histórico filtra corretamente
+  - Associação com campanha e sessão
+- ✅ Aplicação de condições e penalidades
+  - Aplicação de condições calcula penalidades corretamente
+  - Penalidades combinadas funcionam corretamente
+- ✅ Sistema de rolagem completo
+  - Teste de perícia com condições aplicadas
+  - Rolagem de ataque e cálculo de dano
+  - Detecção de críticos
 
 ### 12.3. Validação de Regras
 
-**Verificar:**
-- [ ] Cálculos de recursos corretos
-- [ ] Rolagens seguem regras do sistema
-- [ ] Condições aplicam penalidades corretas
-- [ ] Limites de atributos respeitados
-- [ ] Perícias "somente treinadas" validadas
+**Status:** ✅ **IMPLEMENTADO**
+
+**Validações Implementadas:**
+- ✅ Cálculos de recursos corretos
+  - PV, SAN, PE para todas as classes (Combatente, Especialista, Ocultista)
+  - Cálculos em diferentes níveis de NEX
+  - Validação com atributos extremos (mínimo e máximo)
+- ✅ Rolagens seguem regras do sistema
+  - Vantagem para atributos positivos
+  - Desvantagem para atributos zero ou negativos
+  - Aplicação correta de bônus de perícia
+  - Detecção de crítico (20 natural)
+- ✅ Condições aplicam penalidades corretas
+  - Abalado (-1D)
+  - Apavorado (-2D)
+  - Desprevenido (-5 defesa, -2D)
+  - Cego (-2 AGI, FOR, Percepção)
+  - Exausto (-2 AGI, FOR, VIG, velocidade reduzida)
+  - Penalidades combinadas
+- ✅ Limites de atributos respeitados
+  - Defesa com AGI negativa
+  - Defesa com AGI alta
+  - Recursos com atributos extremos
+- ✅ Perícias "somente treinadas" validadas
+  - Bônus 0 para destreinado
+  - Bônus corretos para cada nível (Trained, Competent, Expert)
+  - Aplicação em rolagens
+- ✅ Transformações de condições
+  - Abalado → Apavorado quando aplicado novamente
+  - Condições automáticas (Morrendo → Inconsciente, Atordado → Desprevenido, etc.)
+- ✅ Cálculo de NEX e níveis
+  - Conversão correta de NEX para níveis
+  - Recuperação de PE baseada no nível
 
 ---
 
