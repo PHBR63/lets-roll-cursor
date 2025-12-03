@@ -30,16 +30,31 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
 
   /**
    * Handler para incrementar/decrementar recursos
+   * Valida limites antes de atualizar
    */
   const handleResourceChange = (
     resource: 'pv' | 'san' | 'pe',
     delta: number
   ) => {
+    const current = resource === 'pv' ? pv.current : resource === 'san' ? san.current : pe.current
+    const max = resource === 'pv' ? pv.max : resource === 'san' ? san.max : pe.max
+    const newValue = current + delta
+    
+    // Valida limites
+    if (newValue < 0) {
+      alert(`${resource.toUpperCase()} não pode ser menor que 0`)
+      return
+    }
+    if (newValue > max) {
+      alert(`${resource.toUpperCase()} não pode exceder o máximo (${max})`)
+      return
+    }
+    
     onUpdateResource(resource, delta, true)
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 space-y-6">
+    <div className="bg-card rounded-lg p-6 space-y-6 animate-in fade-in-50 duration-300">
       <h2 className="text-xl font-bold text-white">Recursos</h2>
 
       {/* PV - Pontos de Vida */}
@@ -50,7 +65,10 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {pv.current} / {pv.max}
           </span>
         </div>
-        <Progress value={pvPercent} className="h-3 bg-red-900/30" />
+        <Progress 
+          value={pvPercent} 
+          className="h-3 bg-red-900/30 transition-all duration-500" 
+        />
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -63,13 +81,21 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
           <Input
             type="number"
             value={pv.current}
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 0
-              onUpdateResource('pv', value, false)
-            }}
-            className="w-20 text-center"
-            min={0}
-            max={pv.max}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 0
+                if (value < 0) {
+                  alert('PV não pode ser menor que 0')
+                  return
+                }
+                if (value > pv.max) {
+                  alert(`PV não pode exceder o máximo (${pv.max})`)
+                  return
+                }
+                onUpdateResource('pv', value, false)
+              }}
+              className="w-20 text-center"
+              min={0}
+              max={pv.max}
           />
           <Button
             size="sm"
@@ -90,7 +116,10 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {san.current} / {san.max}
           </span>
         </div>
-        <Progress value={sanPercent} className="h-3 bg-blue-900/30" />
+        <Progress 
+          value={sanPercent} 
+          className="h-3 bg-blue-900/30 transition-all duration-500" 
+        />
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -103,13 +132,21 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
           <Input
             type="number"
             value={san.current}
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 0
-              onUpdateResource('san', value, false)
-            }}
-            className="w-20 text-center"
-            min={0}
-            max={san.max}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 0
+                if (value < 0) {
+                  alert('SAN não pode ser menor que 0')
+                  return
+                }
+                if (value > san.max) {
+                  alert(`SAN não pode exceder o máximo (${san.max})`)
+                  return
+                }
+                onUpdateResource('san', value, false)
+              }}
+              className="w-20 text-center"
+              min={0}
+              max={san.max}
           />
           <Button
             size="sm"
@@ -130,7 +167,10 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {pe.current} / {pe.max}
           </span>
         </div>
-        <Progress value={pePercent} className="h-3 bg-green-900/30" />
+        <Progress 
+          value={pePercent} 
+          className="h-3 bg-green-900/30 transition-all duration-500" 
+        />
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -143,13 +183,21 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
           <Input
             type="number"
             value={pe.current}
-            onChange={(e) => {
-              const value = parseInt(e.target.value) || 0
-              onUpdateResource('pe', value, false)
-            }}
-            className="w-20 text-center"
-            min={0}
-            max={pe.max}
+              onChange={(e) => {
+                const value = parseInt(e.target.value) || 0
+                if (value < 0) {
+                  alert('PE não pode ser menor que 0')
+                  return
+                }
+                if (value > pe.max) {
+                  alert(`PE não pode exceder o máximo (${pe.max})`)
+                  return
+                }
+                onUpdateResource('pe', value, false)
+              }}
+              className="w-20 text-center"
+              min={0}
+              max={pe.max}
           />
           <Button
             size="sm"

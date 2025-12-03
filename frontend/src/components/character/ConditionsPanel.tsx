@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { Condition } from '@/types/ordemParanormal'
+import { AddConditionModal } from './AddConditionModal'
 
 interface ConditionsPanelProps {
   character: any
@@ -17,6 +18,7 @@ interface ConditionsPanelProps {
  */
 export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
   const conditions = character.conditions || []
+  const [showAddModal, setShowAddModal] = useState(false)
 
   /**
    * Remove condição do personagem
@@ -88,10 +90,22 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
     <div className="bg-card rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-white">Condições</h2>
-        <Button size="sm" variant="outline">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setShowAddModal(true)}
+        >
           Adicionar Condição
         </Button>
       </div>
+
+      <AddConditionModal
+        open={showAddModal}
+        onOpenChange={setShowAddModal}
+        characterId={character.id}
+        currentConditions={conditions}
+        onSuccess={onUpdate}
+      />
 
       {conditions.length === 0 ? (
         <div className="text-muted-foreground text-sm text-center py-4">

@@ -47,16 +47,32 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
 
   /**
    * Salva alterações dos atributos
+   * Recalcula defesa automaticamente
    */
-  const handleSave = () => {
-    onUpdate({ attributes: localAttributes })
+  const handleSave = async () => {
+    // Atualiza atributos e recalcula defesa
+    await onUpdate({ attributes: localAttributes })
     setHasChanges(false)
   }
 
+  /**
+   * Calcula defesa baseada em AGI
+   * Defesa = 10 + AGI + bônus de equipamento
+   */
+  const calculateDefense = () => {
+    const agi = localAttributes.agi || 0
+    return 10 + agi // Bônus de equipamento seria adicionado aqui se houver
+  }
+
   return (
-    <div className="bg-card rounded-lg p-6">
+    <div className="bg-card rounded-lg p-6 animate-in fade-in-50 duration-300">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">Atributos</h2>
+        <div>
+          <h2 className="text-xl font-bold text-white">Atributos</h2>
+          <div className="text-xs text-muted-foreground mt-1">
+            Defesa calculada: {calculateDefense()} (10 + AGI)
+          </div>
+        </div>
         {hasChanges && (
           <Button size="sm" onClick={handleSave} className="gap-2">
             <Save className="w-4 h-4" />

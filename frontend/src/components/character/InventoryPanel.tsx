@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Trash2, Plus } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { AddItemModal } from './AddItemModal'
 
 interface InventoryPanelProps {
   character: any
@@ -16,6 +17,7 @@ interface InventoryPanelProps {
 export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   useEffect(() => {
     if (character?.id) {
@@ -118,11 +120,27 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-white font-semibold">Itens</Label>
-          <Button size="sm" variant="outline" className="gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2"
+            onClick={() => setShowAddModal(true)}
+          >
             <Plus className="w-4 h-4" />
             Adicionar Item
           </Button>
         </div>
+
+        <AddItemModal
+          open={showAddModal}
+          onOpenChange={setShowAddModal}
+          characterId={character.id}
+          campaignId={character.campaign_id}
+          onSuccess={() => {
+            loadInventory()
+            onUpdate()
+          }}
+        />
 
         {inventory.length === 0 ? (
           <div className="text-muted-foreground text-sm text-center py-4">
