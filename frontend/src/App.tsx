@@ -7,6 +7,7 @@ import { Dashboard } from './pages/Dashboard'
 import { CreateCampaign } from './pages/Campaign/CreateCampaign'
 import { CampaignDetail } from './pages/Campaign/CampaignDetail'
 import { SessionRoom } from './pages/GameSession/SessionRoom'
+import { CharacterSheet } from './pages/Character/CharacterSheet'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 /**
@@ -52,6 +53,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SessionRoom />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/character/:id"
+              element={
+                <ProtectedRoute>
+                  <CharacterSheet />
                 </ProtectedRoute>
               }
             />

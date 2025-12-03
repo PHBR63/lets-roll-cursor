@@ -1,0 +1,253 @@
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Navbar } from '@/components/layout/Navbar'
+import { Footer } from '@/components/layout/Footer'
+import { Button } from '@/components/ui/button'
+import { VitalsPanel } from '@/components/character/VitalsPanel'
+import { AttributesGrid } from '@/components/character/AttributesGrid'
+import { PersonalData } from '@/components/character/PersonalData'
+import { SkillsGrid } from '@/components/character/SkillsGrid'
+import { InventoryPanel } from '@/components/character/InventoryPanel'
+import { ConditionsPanel } from '@/components/character/ConditionsPanel'
+import { Biography } from '@/components/character/Biography'
+import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/context/AuthContext'
+import { ArrowLeft } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+
+/**
+ * Página da ficha de personagem do sistema Ordem Paranormal
+ * Exibe todas as informações do personagem em layout 2 colunas
+ */
+export function CharacterSheet() {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [character, setCharacter] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    if (id) {
+      loadCharacter()
+    }
+  }, [id, user])
+
+  /**
+   * Carrega dados do personagem
+   */
+  const loadCharacter = async () => {
+    try {
+      if (!id || !user) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/characters/${id}`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) throw new Error('Erro ao carregar personagem')
+
+      const data = await response.json()
+      setCharacter(data)
+    } catch (error) {
+      console.error('Erro ao carregar personagem:', error)
+      alert('Erro ao carregar personagem. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
+   * Salva alterações do personagem (debounce automático)
+   */
+  const saveCharacter = async (updates: any) => {
+    if (!id || !user || saving) return
+
+    setSaving(true)
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/characters/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) throw new Error('Erro ao salvar personagem')
+
+      const data = await response.json()
+      setCharacter(data)
+    } catch (error) {
+      console.error('Erro ao salvar personagem:', error)
+      alert('Erro ao salvar alterações. Tente novamente.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  /**
+   * Handler para atualizar recursos (PV, SAN, PE)
+   */
+  const handleUpdateResource = async (
+    resource: 'pv' | 'san' | 'pe',
+    value: number,
+    isDelta: boolean = false
+  ) => {
+    if (!id || !user) return
+
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/characters/${id}/${resource}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({ value, isDelta }),
+      })
+
+      if (!response.ok) throw new Error(`Erro ao atualizar ${resource.toUpperCase()}`)
+
+      const data = await response.json()
+      setCharacter(data.character)
+    } catch (error) {
+      console.error(`Erro ao atualizar ${resource}:`, error)
+      alert(`Erro ao atualizar ${resource.toUpperCase()}. Tente novamente.`)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Carregando ficha...</div>
+      </div>
+    )
+  }
+
+  if (!character) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Personagem não encontrado</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="text-primary hover:text-primary/80"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar
+            </Button>
+            <h1 className="text-3xl font-bold text-white">Ficha de Personagem</h1>
+          </div>
+          {saving && (
+            <div className="text-sm text-muted-foreground">Salvando...</div>
+          )}
+        </div>
+
+        {/* Layout 2 colunas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Coluna Esquerda */}
+          <div className="space-y-6">
+            {/* Vitals Panel */}
+            <VitalsPanel
+              character={character}
+              onUpdateResource={handleUpdateResource}
+            />
+
+            {/* Attributes Grid */}
+            <AttributesGrid
+              character={character}
+              onUpdate={saveCharacter}
+            />
+
+            {/* Personal Data */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="personal-data">
+                <AccordionTrigger>Dados Pessoais</AccordionTrigger>
+                <AccordionContent>
+                  <PersonalData
+                    character={character}
+                    onUpdate={saveCharacter}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {/* Inventory */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="inventory">
+                <AccordionTrigger>Inventário</AccordionTrigger>
+                <AccordionContent>
+                  <InventoryPanel
+                    character={character}
+                    onUpdate={loadCharacter}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {/* Biography */}
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="biography">
+                <AccordionTrigger>Biografia</AccordionTrigger>
+                <AccordionContent>
+                  <Biography
+                    character={character}
+                    onUpdate={saveCharacter}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+
+          {/* Coluna Direita */}
+          <div className="space-y-6">
+            {/* Skills Grid */}
+            <SkillsGrid
+              character={character}
+              onUpdate={saveCharacter}
+            />
+
+            {/* Conditions */}
+            <ConditionsPanel
+              character={character}
+              onUpdate={loadCharacter}
+            />
+
+            {/* Seções adicionais podem ser adicionadas aqui */}
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  )
+}
+
