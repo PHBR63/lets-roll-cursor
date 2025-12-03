@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
+import { useToast } from '@/hooks/useToast'
 
 interface AttributesGridProps {
   character: any
@@ -15,6 +16,7 @@ interface AttributesGridProps {
  * 5 atributos: Agilidade, Força, Intelecto, Presença, Vigor
  */
 export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
+  const toast = useToast()
   const attributes = character.attributes || {
     agi: 0,
     for: 0,
@@ -25,6 +27,7 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
 
   const [localAttributes, setLocalAttributes] = useState(attributes)
   const [hasChanges, setHasChanges] = useState(false)
+  const [attributeErrors, setAttributeErrors] = useState<Record<string, string>>({})
 
   const attributeLabels: Record<string, { label: string; short: string }> = {
     agi: { label: 'Agilidade', short: 'AGI' },
@@ -35,9 +38,37 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
   }
 
   /**
+   * Valida valor de atributo
+   * Limites: -5 a 20 (sistema Ordem Paranormal)
+   */
+  const validateAttribute = (key: string, value: number): string | null => {
+    if (value < -5) {
+      return 'Atributo não pode ser menor que -5'
+    }
+    if (value > 20) {
+      return 'Atributo não pode ser maior que 20'
+    }
+    return null
+  }
+
+  /**
    * Handler para atualizar atributo localmente
    */
   const handleAttributeChange = (key: string, value: number) => {
+    const error = validateAttribute(key, value)
+    
+    if (error) {
+      setAttributeErrors((prev) => ({ ...prev, [key]: error }))
+      toast.warning('Valor inválido', error)
+      return
+    }
+
+    setAttributeErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[key]
+      return newErrors
+    })
+
     const newAttributes = {
       ...localAttributes,
       [key]: value,
@@ -93,10 +124,17 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
                 const value = parseInt(e.target.value) || 0
                 handleAttributeChange(key, value)
               }}
-              className="text-center text-lg font-bold"
+              className={`text-center text-lg font-bold ${
+                attributeErrors[key] ? 'border-red-500' : ''
+              }`}
               min={-5}
               max={20}
             />
+            {attributeErrors[key] && (
+              <p className="text-red-500 text-xs animate-in fade-in-50">
+                {attributeErrors[key]}
+              </p>
+            )}
             <div className="text-xs text-muted-foreground text-center">
               {localAttributes[key] > 0
                 ? `+${localAttributes[key]} dados (vantagem)`
