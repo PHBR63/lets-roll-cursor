@@ -292,13 +292,23 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       }
 
       const result = await response.json()
+      
+      // Mostrar animação
+      if (result.details?.rolls) {
+        setAnimationResult({
+          result: result.result,
+          dice: result.details.rolls,
+        })
+        setShowAnimation(true)
+      }
+
       setLastResult({
         type: 'attack',
         ...result,
       })
     } catch (error: any) {
       console.error('Erro ao rolar ataque:', error)
-      alert(error.message || 'Erro ao rolar ataque. Tente novamente.')
+      toast.error('Erro ao rolar ataque', error.message || 'Tente novamente.')
     } finally {
       setRolling(false)
     }
