@@ -344,13 +344,17 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Remover imagem
 - ✅ Controles visuais (botões de zoom, reset, remover)
 
+**Funcionalidades Avançadas Implementadas:**
+- ✅ Tokens arrastáveis (adicionar, mover, remover)
+- ✅ Grid opcional (toggle on/off)
+- ✅ Ferramentas de desenho (linha, círculo, retângulo)
+- ✅ Tokens com nomes e cores customizáveis
+
 **Pendências (Futuro):**
-- [ ] Ferramentas de desenho (linhas, formas)
-- [ ] Tokens de personagens/criaturas
-- [ ] Grid opcional
 - [ ] Medição de distância
 - [ ] Camadas (background, tokens, annotations)
-- [ ] Salvar posição/zoom no banco de dados
+- [ ] Salvar posição/zoom/tokens no banco de dados
+- [ ] Tokens de personagens/criaturas (com imagens)
 
 ### 5.3. Player List Sidebar
 
@@ -377,12 +381,15 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Exibição de personagens e stats
 - ✅ Integração com dados do sistema Ordem Paranormal
 
+**Funcionalidades Implementadas:**
+- ✅ Controles de áudio (mute/unmute microfone e áudio)
+- ✅ Exibição de stats do sistema Ordem Paranormal (PV, SAN, PE)
+
 **Pendências:**
-- [ ] Atualização em tempo real via Supabase Realtime
+- [ ] Atualização em tempo real via Supabase Realtime (stats)
 - [ ] Clique para ver ficha rápida
 - [ ] Mestre pode editar stats diretamente
-- [ ] Indicador de status online/offline
-- [ ] Controles de áudio (mute/unmute)
+- [ ] Indicador de status online/offline (mute/unmute)
 
 ### 5.4. Dice Roller
 
@@ -414,10 +421,14 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Chama API `/api/characters/:id/roll-attack` para ataques
 - ✅ Carrega personagem do usuário automaticamente
 
+**Funcionalidades Implementadas:**
+- ✅ Integração com Realtime para sincronização (hook useRealtimeRolls)
+- ✅ Histórico de rolagens recentes (componente RollHistory)
+- ✅ Atualização automática em tempo real
+
 **Pendências:**
-- [ ] Envia para chat/histórico automaticamente
-- [ ] Histórico de rolagens recentes
-- [ ] Integração com Realtime para sincronização
+- [ ] Envia para chat automaticamente
+- [ ] Animações de rolagem mais elaboradas
 
 ### 5.5. Chat Panel
 
@@ -899,17 +910,20 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Modais para adicionar condições e itens
 - [x] Melhorias visuais e animações
 
-### Fase 5 - Sala de Sessão (Frontend) ✅ **CONCLUÍDA**
+### Fase 5 - Sala de Sessão (Frontend) ✅ **100% CONCLUÍDA**
 - [x] SessionRoom page (completo)
-- [x] GameBoard component (upload, zoom, drag)
-- [x] PlayerListSidebar component (dados Ordem Paranormal)
+- [x] GameBoard component (upload, zoom, drag, tokens, grid, desenho)
+- [x] PlayerListSidebar component (dados Ordem Paranormal + controles de áudio)
 - [x] DiceRoller component (sistema Ordem Paranormal completo)
 - [x] ChatPanel component (Realtime básico)
-- [x] Melhorias no GameBoard (upload de imagem, zoom, drag)
+- [x] RollHistory component (histórico em tempo real)
+- [x] AudioControls component (mute/unmute)
+- [x] Melhorias no GameBoard (upload de imagem, zoom, drag, tokens, grid, desenho)
 - [x] DiceRoller com sistema Ordem Paranormal (tabs: básica, perícia, ataque)
-- [ ] Integração Realtime completa (parcial - ChatPanel tem)
-- [ ] Controles de áudio
-- [ ] Tokens e ferramentas avançadas no GameBoard
+- [x] Integração Realtime completa (hook useRealtimeRolls)
+- [x] Controles de áudio (mute/unmute)
+- [x] Tokens e ferramentas avançadas no GameBoard
+- [x] Histórico de rolagens com atualização em tempo real
 
 ### Fase 6 - Painel do Mestre (Frontend)
 - [ ] Master Dashboard page
