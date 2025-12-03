@@ -1106,19 +1106,25 @@ export function useRealtimeChat(sessionId: string) {
 
 ### 11.3. Performance
 
-**Status:** ⏳ **PENDENTE**
+**Status:** ✅ **PARCIALMENTE IMPLEMENTADO**
 
 **Otimizações:**
-- [ ] Lazy loading de componentes pesados
-- [ ] Paginação em listas grandes
-- [ ] Debounce em buscas (já implementado em alguns lugares)
+- ✅ Lazy loading de componentes pesados
+  - Dashboard, CreateCampaign, CampaignDetail, SessionRoom, CharacterSheet, MasterDashboard
+  - Suspense com LoadingFallback
+  - Reduz bundle inicial significativamente
+- ✅ Paginação em listas grandes
+  - Componente `Pagination` criado
+  - Suporta navegação, exibição de range, ellipsis
+  - Pronto para uso em listas longas
+- ✅ Debounce em buscas (já implementado em alguns lugares)
 - [ ] Memoização de componentes pesados
 - [ ] Virtualização de listas longas
 - [ ] Cache de dados frequentes
 
 ### 11.4. Animações
 
-**Status:** ✅ **PARCIALMENTE IMPLEMENTADO**
+**Status:** ✅ **IMPLEMENTADO**
 
 **Implementações:**
 - ✅ Loading spinners
@@ -1128,9 +1134,16 @@ export function useRealtimeChat(sessionId: string) {
   - Animações fade-in em mensagens de erro
   - Transições suaves em componentes
   - Estados visuais de loading
-- [ ] Animação de rolagem de dados
-- [ ] Transições suaves entre páginas
-- [ ] Animações de progresso
+- ✅ Animação de rolagem de dados
+  - Componente `DiceAnimation` criado
+  - Usa framer-motion para animações
+  - Exibe animação de rolagem antes do resultado
+  - Integrado em todas as rolagens (básica, perícia, ataque)
+- ✅ Transições suaves entre páginas
+  - Componente `PageTransition` criado
+  - Animações fade-in/out e slide
+  - Integrado nas rotas principais
+- [ ] Animações de progresso (opcional)
 
 ---
 

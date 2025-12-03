@@ -225,13 +225,23 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       }
 
       const result = await response.json()
+      
+      // Mostrar animação
+      if (result.details?.rolls) {
+        setAnimationResult({
+          result: result.result,
+          dice: result.details.rolls,
+        })
+        setShowAnimation(true)
+      }
+
       setLastResult({
         type: 'skill',
         ...result,
       })
     } catch (error: any) {
       console.error('Erro ao rolar teste de perícia:', error)
-      alert(error.message || 'Erro ao rolar teste de perícia. Tente novamente.')
+      toast.error('Erro ao rolar teste de perícia', error.message || 'Tente novamente.')
     } finally {
       setRolling(false)
     }
