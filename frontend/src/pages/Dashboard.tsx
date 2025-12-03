@@ -1,11 +1,13 @@
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { CampaignCard } from '@/components/campaign/CampaignCard'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { EmptyState } from '@/components/common/EmptyState'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * Dashboard principal
@@ -14,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client'
  */
 export function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [masteringCampaigns, setMasteringCampaigns] = useState<any[]>([])
   const [participatingCampaigns, setParticipatingCampaigns] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -121,9 +124,15 @@ export function Dashboard() {
               </Button>
             </div>
           ) : (
-            <p className="text-text-secondary text-sm md:text-base">
-              Você ainda não está mestrando nenhuma campanha
-            </p>
+            <EmptyState
+              icon={<Plus className="w-8 h-8 text-text-secondary" />}
+              title="Nenhuma campanha mestrada"
+              description="Você ainda não está mestrando nenhuma campanha. Crie uma nova campanha para começar!"
+              action={{
+                label: 'Criar Campanha',
+                onClick: () => navigate('/campaign/create'),
+              }}
+            />
           )}
         </section>
 
@@ -161,9 +170,15 @@ export function Dashboard() {
               </Button>
             </div>
           ) : (
-            <p className="text-text-secondary text-sm md:text-base">
-              Você ainda não está participando de nenhuma campanha
-            </p>
+            <EmptyState
+              icon={<Plus className="w-8 h-8 text-text-secondary" />}
+              title="Nenhuma campanha"
+              description="Você ainda não está participando de nenhuma campanha. Aceite um convite ou crie uma nova campanha!"
+              action={{
+                label: 'Criar Campanha',
+                onClick: () => navigate('/campaign/create'),
+              }}
+            />
           )}
         </section>
       </main>

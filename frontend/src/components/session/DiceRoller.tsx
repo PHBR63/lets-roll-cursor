@@ -18,6 +18,7 @@ import { useRealtimeRolls } from '@/hooks/useRealtimeRolls'
 import { useToast } from '@/hooks/useToast'
 import { validateDiceFormula } from '@/utils/diceValidation'
 import { Loader2 } from 'lucide-react'
+import { DiceAnimation } from '@/components/common/DiceAnimation'
 
 /**
  * Componente de rolagem de dados com sistema Ordem Paranormal
@@ -47,6 +48,8 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
   const [isPrivate, setIsPrivate] = useState(false)
   const [lastResult, setLastResult] = useState<any>(null)
   const [rolling, setRolling] = useState(false)
+  const [showAnimation, setShowAnimation] = useState(false)
+  const [animationResult, setAnimationResult] = useState<{ result: number; dice: number[] } | null>(null)
   const [character, setCharacter] = useState<any>(null)
   const [selectedSkill, setSelectedSkill] = useState('')
   const [difficulty, setDifficulty] = useState(15)
@@ -154,12 +157,20 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       }
 
       const result = await response.json()
+      
+      // Mostrar animação
+      if (result.details?.rolls) {
+        setAnimationResult({
+          result: result.result,
+          dice: result.details.rolls,
+        })
+        setShowAnimation(true)
+      }
+
       setLastResult({
         type: 'basic',
         ...result,
       })
-
-      toast.success('Dados rolados!', `Resultado: ${result.result}`)
 
       if (customFormula) {
         setFormula('')

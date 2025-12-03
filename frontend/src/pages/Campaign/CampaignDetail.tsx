@@ -9,6 +9,8 @@ import { InvitePlayers } from '@/components/campaign/InvitePlayers'
 import { EditCampaignModal } from '@/components/campaign/EditCampaignModal'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { EmptyState } from '@/components/common/EmptyState'
+import { Users } from 'lucide-react'
 import { ChevronRight, Edit, Settings } from 'lucide-react'
 
 /**
@@ -208,9 +210,11 @@ export function CampaignDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-text-secondary">
-                  Nenhum personagem criado ainda
-                </p>
+                <EmptyState
+                  icon={<Users className="w-8 h-8 text-text-secondary" />}
+                  title="Nenhum personagem"
+                  description="Ainda não há personagens criados nesta campanha. Convide jogadores para começar!"
+                />
               )}
             </div>
           </div>

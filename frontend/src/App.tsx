@@ -1,16 +1,36 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Auth/Login'
 import { Register } from './pages/Auth/Register'
-import { Dashboard } from './pages/Dashboard'
-import { CreateCampaign } from './pages/Campaign/CreateCampaign'
-import { CampaignDetail } from './pages/Campaign/CampaignDetail'
-import { SessionRoom } from './pages/GameSession/SessionRoom'
-import { CharacterSheet } from './pages/Character/CharacterSheet'
-import { MasterDashboard } from './pages/Master/Dashboard'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { Toaster } from './components/ui/toaster'
+import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { PageTransition } from './components/common/PageTransition'
+import { Loader2 } from 'lucide-react'
+
+// Lazy loading de componentes pesados
+const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })))
+const CreateCampaign = lazy(() => import('./pages/Campaign/CreateCampaign').then(m => ({ default: m.CreateCampaign })))
+const CampaignDetail = lazy(() => import('./pages/Campaign/CampaignDetail').then(m => ({ default: m.CampaignDetail })))
+const SessionRoom = lazy(() => import('./pages/GameSession/SessionRoom').then(m => ({ default: m.SessionRoom })))
+const CharacterSheet = lazy(() => import('./pages/Character/CharacterSheet').then(m => ({ default: m.CharacterSheet })))
+const MasterDashboard = lazy(() => import('./pages/Master/Dashboard').then(m => ({ default: m.MasterDashboard })))
+
+/**
+ * Componente de loading para lazy loading
+ */
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <p className="text-text-secondary">Carregando...</p>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Componente principal da aplicação
@@ -18,67 +38,85 @@ import { Toaster } from './components/ui/toaster'
  */
 function App() {
   return (
-    <AuthProvider>
-      <div className="min-h-screen">
-        <div className="pattern-icosahedrons" />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/campaign/create"
-              element={
-                <ProtectedRoute>
-                  <CreateCampaign />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/campaign/:id"
-              element={
-                <ProtectedRoute>
-                  <CampaignDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/session/:id"
-              element={
-                <ProtectedRoute>
-                  <SessionRoom />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/character/:id"
-              element={
-                <ProtectedRoute>
-                  <CharacterSheet />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/master/:campaignId"
-              element={
-                <ProtectedRoute>
-                  <MasterDashboard />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-        <Toaster />
-      </div>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <div className="min-h-screen">
+          <div className="pattern-icosahedrons" />
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <PageTransition>
+                          <Dashboard />
+                        </PageTransition>
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/campaign/create"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <CreateCampaign />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/campaign/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <CampaignDetail />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/session/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <SessionRoom />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/character/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <CharacterSheet />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/master/:campaignId"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <MasterDashboard />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+          <Toaster />
+        </div>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 
