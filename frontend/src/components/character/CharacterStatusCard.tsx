@@ -10,6 +10,8 @@ import { Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { SwipeableCard } from '@/components/common/SwipeableCard'
 import { QuickActions } from '@/components/common/QuickActions'
+import { SwipeableCard } from '@/components/common/SwipeableCard'
+import { QuickActions } from '@/components/common/QuickActions'
 
 /**
  * Card de status de personagem
