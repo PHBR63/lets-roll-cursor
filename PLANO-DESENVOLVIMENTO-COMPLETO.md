@@ -1055,44 +1055,81 @@ export function useRealtimeChat(sessionId: string) {
 
 ---
 
-## 🎨 Fase 11 - Polimento e UX (PRIORIDADE BAIXA)
+## 🎨 Fase 11 - Polimento e UX (PRIORIDADE BAIXA) ✅ **PARCIALMENTE CONCLUÍDA**
 
 ### 11.1. Validações Frontend
 
-**Implementar:**
-- [ ] Formulários com react-hook-form + zod
-- [ ] Mensagens de erro amigáveis
-- [ ] Loading states em todos os componentes
-- [ ] Validação de campos obrigatórios
-- [ ] Validação de fórmulas de dados
-- [ ] Validação de limites de atributos
+**Status:** ✅ **IMPLEMENTADO**
+
+**Implementações:**
+- ✅ Formulários com react-hook-form + zod
+  - Login e Register atualizados
+  - Validação em tempo real
+  - Mensagens de erro contextuais
+  - Schema de validação robusto
+- ✅ Mensagens de erro amigáveis
+  - Tradução de erros do Supabase
+  - Mensagens contextuais por campo
+  - Feedback visual com bordas vermelhas
+- ✅ Loading states em todos os componentes
+  - Spinners com Loader2 (lucide-react)
+  - Estados de loading nos botões
+  - Desabilitação durante operações
+- ✅ Validação de campos obrigatórios
+  - Implementada via zod schemas
+  - Validação em tempo real
+- ✅ Validação de fórmulas de dados
+  - `diceValidation.ts` com regex robusto
+  - Validação em tempo real no DiceRoller
+  - Mensagens de erro específicas
+- ✅ Validação de limites de atributos
+  - Limites: -5 a 20 (sistema Ordem Paranormal)
+  - Validação em tempo real
+  - Feedback visual com bordas vermelhas
 
 ### 11.2. Error Handling
 
-**Implementar:**
-- [ ] Toast notifications para erros (usar shadcn/ui toast)
+**Status:** ✅ **PARCIALMENTE IMPLEMENTADO**
+
+**Implementações:**
+- ✅ Toast notifications para erros (usar shadcn/ui toast)
+  - Hook `useToast` criado
+  - Toasts de sucesso, erro, aviso e info
+  - Integrado em Login, Register, DiceRoller
+  - Toaster adicionado ao App.tsx
+- ✅ Mensagens de erro contextuais
+  - Tradução de erros do Supabase
+  - Mensagens específicas por contexto
 - [ ] Fallbacks para dados não encontrados
 - [ ] Retry logic para requisições falhas
 - [ ] Error boundaries no React
-- [ ] Mensagens de erro contextuais
 
 ### 11.3. Performance
+
+**Status:** ⏳ **PENDENTE**
 
 **Otimizações:**
 - [ ] Lazy loading de componentes pesados
 - [ ] Paginação em listas grandes
-- [ ] Debounce em buscas
+- [ ] Debounce em buscas (já implementado em alguns lugares)
 - [ ] Memoização de componentes pesados
 - [ ] Virtualização de listas longas
 - [ ] Cache de dados frequentes
 
 ### 11.4. Animações
 
-**Adicionar:**
+**Status:** ✅ **PARCIALMENTE IMPLEMENTADO**
+
+**Implementações:**
+- ✅ Loading spinners
+  - Loader2 em botões de ação
+  - Animações de spin
+- ✅ Feedback visual em ações
+  - Animações fade-in em mensagens de erro
+  - Transições suaves em componentes
+  - Estados visuais de loading
 - [ ] Animação de rolagem de dados
 - [ ] Transições suaves entre páginas
-- [ ] Feedback visual em ações
-- [ ] Loading spinners
 - [ ] Animações de progresso
 
 ---
