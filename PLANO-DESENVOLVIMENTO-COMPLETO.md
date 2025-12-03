@@ -334,7 +334,7 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 
 **Arquivo:** `frontend/src/components/session/GameBoard.tsx`
 
-**Status:** ✅ **MELHORADO** - Funcionalidades básicas implementadas
+**Status:** ✅ **COMPLETO** - Todas as funcionalidades avançadas implementadas
 
 **Funcionalidades Implementadas:**
 - ✅ Upload de mapas/imagens (Supabase Storage ou URL local)
@@ -350,11 +350,21 @@ Este documento detalha o plano completo de desenvolvimento do projeto Let's Roll
 - ✅ Ferramentas de desenho (linha, círculo, retângulo)
 - ✅ Tokens com nomes e cores customizáveis
 
-**Pendências (Futuro):**
-- [ ] Medição de distância
-- [ ] Camadas (background, tokens, annotations)
-- [ ] Salvar posição/zoom/tokens no banco de dados
-- [ ] Tokens de personagens/criaturas (com imagens)
+**Funcionalidades Avançadas Implementadas:**
+- ✅ Medição de distância (régua com cálculo em unidades)
+- ✅ Sistema de camadas (background, tokens, annotations)
+- ✅ Salvar posição/zoom/tokens/desenhos no banco de dados (auto-save com debounce)
+- ✅ Tokens de personagens/criaturas (com imagens e ícones)
+- ✅ Carregamento de personagens e criaturas da campanha
+- ✅ Select dropdown para adicionar tokens de personagens/criaturas
+- ✅ Migration para board_state na tabela sessions
+- ✅ API para salvar/carregar estado do board
+
+**Detalhes da Implementação:**
+- **Medição de Distância**: Botão régua ativa modo de medição, mostra linha e distância em unidades do jogo
+- **Camadas**: Toggle para mostrar/ocultar background, tokens e anotações
+- **Salvamento**: Estado salvo automaticamente no banco com debounce de 1 segundo
+- **Tokens**: Suporte para tokens genéricos, personagens (com avatar) e criaturas (com ícone)
 
 ### 5.3. Player List Sidebar
 
