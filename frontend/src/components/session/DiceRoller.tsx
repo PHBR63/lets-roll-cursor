@@ -348,9 +348,14 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
                 id="formula"
                 placeholder="2d6+3"
                 value={formula}
-                onChange={(e) => setFormula(e.target.value)}
+                onChange={(e) => {
+                  setFormula(e.target.value)
+                  setFormulaError(null)
+                }}
                 onKeyPress={handleKeyPress}
-                className="bg-input border-white/20 flex-1"
+                className={`bg-input border-white/20 flex-1 ${
+                  formulaError ? 'border-red-500' : ''
+                }`}
                 disabled={rolling}
               />
               <Button
@@ -358,9 +363,21 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
                 disabled={rolling || !formula.trim()}
                 className="bg-accent hover:bg-accent/90"
               >
-                {rolling ? 'Rolando...' : 'Rolar'}
+                {rolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Rolando...
+                  </>
+                ) : (
+                  'Rolar'
+                )}
               </Button>
             </div>
+            {formulaError && (
+              <p className="text-red-500 text-sm animate-in fade-in-50">
+                {formulaError}
+              </p>
+            )}
           </div>
         </TabsContent>
 
