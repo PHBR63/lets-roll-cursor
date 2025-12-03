@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   ZoomIn,
@@ -10,17 +10,31 @@ import {
   Square,
   Circle,
   Minus,
+  Ruler,
+  Layers,
+  Users,
+  Skull,
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useDebounce } from '@/hooks/useDebounce'
 
 /**
  * Componente Game Board
  * Área central grande para exibir cenário/mapa do RPG
- * Funcionalidades: upload de imagem, zoom, drag, tokens, grid, ferramentas de desenho
+ * Funcionalidades: upload de imagem, zoom, drag, tokens, grid, ferramentas de desenho,
+ * medição de distância, camadas, salvamento no banco
  */
 interface GameBoardProps {
   sessionId?: string
+  campaignId?: string
 }
 
 interface Token {
@@ -31,6 +45,8 @@ interface Token {
   imageUrl?: string
   color?: string
   size: number
+  type?: 'character' | 'creature' | 'generic'
+  entityId?: string // ID do personagem ou criatura
 }
 
 interface Drawing {
@@ -39,9 +55,18 @@ interface Drawing {
   points: { x: number; y: number }[]
   color: string
   strokeWidth: number
+  layer: 'annotations'
 }
 
-export function GameBoard({ sessionId }: GameBoardProps) {
+interface Measurement {
+  start: { x: number; y: number } | null
+  end: { x: number; y: number } | null
+  distance: number
+}
+
+type Layer = 'background' | 'tokens' | 'annotations'
+
+export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   const { user } = useAuth()
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
@@ -56,30 +81,158 @@ export function GameBoard({ sessionId }: GameBoardProps) {
   const [drawings, setDrawings] = useState<Drawing[]>([])
   const [currentDrawing, setCurrentDrawing] = useState<Drawing | null>(null)
   const [drawingStart, setDrawingStart] = useState<{ x: number; y: number } | null>(null)
+  const [measurementMode, setMeasurementMode] = useState(false)
+  const [measurement, setMeasurement] = useState<Measurement>({
+    start: null,
+    end: null,
+    distance: 0,
+  })
+  const [layers, setLayers] = useState<Record<Layer, boolean>>({
+    background: true,
+    tokens: true,
+    annotations: true,
+  })
+  const [characters, setCharacters] = useState<any[]>([])
+  const [creatures, setCreatures] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const tokenIdCounter = useRef(0)
 
+  // Debounce para salvar estado
+  const debouncedBoardState = useDebounce(
+    {
+      imageUrl,
+      zoom,
+      position,
+      tokens,
+      drawings,
+    },
+    1000
+  )
+
   useEffect(() => {
     if (sessionId) {
-      loadBoardImage()
+      loadBoardState()
+      loadCharactersAndCreatures()
     }
-  }, [sessionId])
+  }, [sessionId, campaignId])
+
+  // Salvar estado quando mudar (com debounce)
+  useEffect(() => {
+    if (sessionId && debouncedBoardState) {
+      saveBoardState()
+    }
+  }, [debouncedBoardState, sessionId])
 
   /**
-   * Carrega imagem do board da sessão
+   * Carrega estado do board da sessão
    */
-  const loadBoardImage = async () => {
-    // TODO: Implementar carregamento de imagem da sessão do banco
-    // Por enquanto, mantém placeholder
+  const loadBoardState = async () => {
+    try {
+      if (!sessionId) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(`${apiUrl}/api/sessions/${sessionId}`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const sessionData = await response.json()
+        const boardState = sessionData.board_state || {}
+
+        if (boardState.imageUrl) setImageUrl(boardState.imageUrl)
+        if (boardState.zoom) setZoom(boardState.zoom)
+        if (boardState.position) setPosition(boardState.position)
+        if (boardState.tokens) setTokens(boardState.tokens || [])
+        if (boardState.drawings) setDrawings(boardState.drawings || [])
+        if (boardState.layers) setLayers(boardState.layers)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estado do board:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   /**
-   * Salva imagem do board na sessão
+   * Salva estado do board na sessão
    */
-  const saveBoardImage = async (url: string) => {
-    // TODO: Implementar salvamento de URL da imagem na sessão
-    // Por enquanto, apenas salva no estado local
+  const saveBoardState = async () => {
+    try {
+      if (!sessionId) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      await fetch(`${apiUrl}/api/sessions/${sessionId}/board-state`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+        body: JSON.stringify({
+          imageUrl,
+          zoom,
+          position,
+          tokens,
+          drawings,
+          layers,
+        }),
+      })
+    } catch (error) {
+      console.error('Erro ao salvar estado do board:', error)
+    }
+  }
+
+  /**
+   * Carrega personagens e criaturas para tokens
+   */
+  const loadCharactersAndCreatures = async () => {
+    try {
+      if (!campaignId) return
+
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
+      // Carregar personagens
+      const charsResponse = await fetch(
+        `${apiUrl}/api/characters?campaignId=${campaignId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        }
+      )
+      if (charsResponse.ok) {
+        const chars = await charsResponse.json()
+        setCharacters(chars || [])
+      }
+
+      // Carregar criaturas
+      const creaturesResponse = await fetch(
+        `${apiUrl}/api/creatures?campaignId=${campaignId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        }
+      )
+      if (creaturesResponse.ok) {
+        const creatures = await creaturesResponse.json()
+        setCreatures(creatures || [])
+      }
+    } catch (error) {
+      console.error('Erro ao carregar personagens/criaturas:', error)
+    }
   }
 
   /**
@@ -122,7 +275,6 @@ export function GameBoard({ sessionId }: GameBoardProps) {
       if (uploadError) {
         const localUrl = URL.createObjectURL(file)
         setImageUrl(localUrl)
-        await saveBoardImage(localUrl)
         return
       }
 
@@ -131,7 +283,6 @@ export function GameBoard({ sessionId }: GameBoardProps) {
       } = supabase.storage.from('game-assets').getPublicUrl(filePath)
 
       setImageUrl(publicUrl)
-      await saveBoardImage(publicUrl)
     } catch (error) {
       console.error('Erro ao fazer upload:', error)
       alert('Erro ao fazer upload da imagem. Tente novamente.')
@@ -177,49 +328,75 @@ export function GameBoard({ sessionId }: GameBoardProps) {
   }
 
   /**
-   * Handler para iniciar drag do mapa
+   * Calcula distância entre dois pontos
+   */
+  const calculateDistance = (p1: { x: number; y: number }, p2: { x: number; y: number }) => {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
+  }
+
+  /**
+   * Converte pixels para unidades do jogo (assumindo 1 unidade = 5 pixels)
+   */
+  const pixelsToUnits = (pixels: number) => {
+    return Math.round((pixels / zoom) / 5)
+  }
+
+  /**
+   * Handler para iniciar drag/medir/desenhar
    */
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (drawingMode !== 'none') {
-      // Iniciar desenho
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (rect) {
-        const x = (e.clientX - rect.left - position.x) / zoom
-        const y = (e.clientY - rect.top - position.y) / zoom
-        setDrawingStart({ x, y })
-        setCurrentDrawing({
-          id: `draw-${Date.now()}`,
-          type: drawingMode,
-          points: [{ x, y }],
-          color: '#ff6b6b',
-          strokeWidth: 2,
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const x = (e.clientX - rect.left - position.x) / zoom
+    const y = (e.clientY - rect.top - position.y) / zoom
+
+    if (measurementMode) {
+      // Modo medição
+      if (!measurement.start) {
+        setMeasurement({ start: { x, y }, end: null, distance: 0 })
+      } else {
+        const distance = calculateDistance(measurement.start, { x, y })
+        setMeasurement({
+          start: measurement.start,
+          end: { x, y },
+          distance,
         })
+        setMeasurementMode(false)
       }
       return
     }
 
-    // Verificar se clicou em um token
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (rect) {
-      const clickX = (e.clientX - rect.left - position.x) / zoom
-      const clickY = (e.clientY - rect.top - position.y) / zoom
-
-      const clickedToken = tokens.find((token) => {
-        const distance = Math.sqrt(
-          Math.pow(clickX - token.x, 2) + Math.pow(clickY - token.y, 2)
-        )
-        return distance <= token.size / 2
+    if (drawingMode !== 'none') {
+      // Iniciar desenho
+      setDrawingStart({ x, y })
+      setCurrentDrawing({
+        id: `draw-${Date.now()}`,
+        type: drawingMode,
+        points: [{ x, y }],
+        color: '#ff6b6b',
+        strokeWidth: 2,
+        layer: 'annotations',
       })
+      return
+    }
 
-      if (clickedToken) {
-        setSelectedToken(clickedToken.id)
-        setIsDragging(true)
-        setDragStart({
-          x: e.clientX - clickedToken.x * zoom,
-          y: e.clientY - clickedToken.y * zoom,
-        })
-        return
-      }
+    // Verificar se clicou em um token
+    const clickedToken = tokens.find((token) => {
+      const distance = Math.sqrt(
+        Math.pow(x - token.x, 2) + Math.pow(y - token.y, 2)
+      )
+      return distance <= token.size / 2
+    })
+
+    if (clickedToken) {
+      setSelectedToken(clickedToken.id)
+      setIsDragging(true)
+      setDragStart({
+        x: e.clientX - clickedToken.x * zoom,
+        y: e.clientY - clickedToken.y * zoom,
+      })
+      return
     }
 
     // Drag do mapa
@@ -233,37 +410,46 @@ export function GameBoard({ sessionId }: GameBoardProps) {
   }
 
   /**
-   * Handler para mover durante drag
+   * Handler para mover durante drag/medir/desenhar
    */
   const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect()
+    if (!rect) return
+
+    const x = (e.clientX - rect.left - position.x) / zoom
+    const y = (e.clientY - rect.top - position.y) / zoom
+
+    if (measurementMode && measurement.start) {
+      // Atualizar medição em tempo real
+      const distance = calculateDistance(measurement.start, { x, y })
+      setMeasurement({
+        start: measurement.start,
+        end: { x, y },
+        distance,
+      })
+      return
+    }
+
     if (drawingMode !== 'none' && currentDrawing && drawingStart) {
       // Continuar desenho
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (rect) {
-        const x = (e.clientX - rect.left - position.x) / zoom
-        const y = (e.clientY - rect.top - position.y) / zoom
-        setCurrentDrawing({
-          ...currentDrawing,
-          points: [...currentDrawing.points, { x, y }],
-        })
-      }
+      setCurrentDrawing({
+        ...currentDrawing,
+        points: [...currentDrawing.points, { x, y }],
+      })
       return
     }
 
     if (isDragging && selectedToken) {
       // Mover token
-      const rect = containerRef.current?.getBoundingClientRect()
-      if (rect) {
-        const newX = (e.clientX - dragStart.x) / zoom
-        const newY = (e.clientY - dragStart.y) / zoom
-        setTokens((prev) =>
-          prev.map((token) =>
-            token.id === selectedToken
-              ? { ...token, x: newX, y: newY }
-              : token
-          )
+      const newX = (e.clientX - dragStart.x) / zoom
+      const newY = (e.clientY - dragStart.y) / zoom
+      setTokens((prev) =>
+        prev.map((token) =>
+          token.id === selectedToken
+            ? { ...token, x: newX, y: newY }
+            : token
         )
-      }
+      )
       return
     }
 
@@ -292,7 +478,7 @@ export function GameBoard({ sessionId }: GameBoardProps) {
   }
 
   /**
-   * Adiciona token no board
+   * Adiciona token genérico
    */
   const handleAddToken = () => {
     const newToken: Token = {
@@ -302,6 +488,43 @@ export function GameBoard({ sessionId }: GameBoardProps) {
       name: `Token ${tokens.length + 1}`,
       color: '#ff6b6b',
       size: 40,
+      type: 'generic',
+    }
+    setTokens((prev) => [...prev, newToken])
+  }
+
+  /**
+   * Adiciona token de personagem
+   */
+  const handleAddCharacterToken = (character: any) => {
+    const newToken: Token = {
+      id: `token-char-${character.id}`,
+      x: 200,
+      y: 200,
+      name: character.name,
+      imageUrl: character.avatar_url,
+      color: '#6366f1',
+      size: 40,
+      type: 'character',
+      entityId: character.id,
+    }
+    setTokens((prev) => [...prev, newToken])
+  }
+
+  /**
+   * Adiciona token de criatura
+   */
+  const handleAddCreatureToken = (creature: any) => {
+    const newToken: Token = {
+      id: `token-creature-${creature.id}`,
+      x: 200,
+      y: 200,
+      name: creature.name,
+      imageUrl: null, // Criaturas podem não ter imagem
+      color: '#ef4444',
+      size: 40,
+      type: 'creature',
+      entityId: creature.id,
     }
     setTokens((prev) => [...prev, newToken])
   }
@@ -317,20 +540,21 @@ export function GameBoard({ sessionId }: GameBoardProps) {
   }
 
   /**
-   * Handler para clique no board (adicionar token ou desenhar)
+   * Toggle de camada
    */
-  const handleBoardClick = (e: React.MouseEvent) => {
-    if (drawingMode !== 'none' || isDragging) return
+  const toggleLayer = (layer: Layer) => {
+    setLayers((prev) => ({
+      ...prev,
+      [layer]: !prev[layer],
+    }))
+  }
 
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-
-    const x = (e.clientX - rect.left - position.x) / zoom
-    const y = (e.clientY - rect.top - position.y) / zoom
-
-    // Se não clicou em token, pode adicionar novo token (duplo clique)
-    // Por enquanto, apenas limpa seleção
-    setSelectedToken(null)
+  if (loading) {
+    return (
+      <div className="flex-1 bg-card-secondary flex items-center justify-center">
+        <div className="text-white">Carregando board...</div>
+      </div>
+    )
   }
 
   return (
@@ -341,14 +565,13 @@ export function GameBoard({ sessionId }: GameBoardProps) {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onMouseDown={handleMouseDown}
-      onClick={handleBoardClick}
     >
       {imageUrl ? (
         <>
           {/* Grid opcional */}
-          {showGrid && (
+          {showGrid && layers.background && (
             <div
-              className="absolute inset-0 opacity-20"
+              className="absolute inset-0 opacity-20 pointer-events-none"
               style={{
                 backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
                   linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px)`,
@@ -359,23 +582,73 @@ export function GameBoard({ sessionId }: GameBoardProps) {
           )}
 
           {/* Imagem do mapa com zoom e drag */}
-          <div
-            className="absolute inset-0 cursor-move"
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-              transformOrigin: 'center center',
-              transition: isDragging ? 'none' : 'transform 0.1s ease-out',
-            }}
-          >
-            <img
-              src={imageUrl}
-              alt="Mapa do jogo"
-              className="w-full h-full object-contain select-none"
-              draggable={false}
-            />
+          {layers.background && (
+            <div
+              className="absolute inset-0 cursor-move"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+              }}
+            >
+              <img
+                src={imageUrl}
+                alt="Mapa do jogo"
+                className="w-full h-full object-contain select-none"
+                draggable={false}
+              />
+            </div>
+          )}
 
-            {/* Desenhos */}
-            <svg className="absolute inset-0 pointer-events-none">
+          {/* Medição de distância */}
+          {measurement.start && (
+            <svg
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+              }}
+            >
+              <line
+                x1={measurement.start.x}
+                y1={measurement.start.y}
+                x2={measurement.end?.x || measurement.start.x}
+                y2={measurement.end?.y || measurement.start.y}
+                stroke="#ff6b6b"
+                strokeWidth={2}
+                strokeDasharray="5,5"
+              />
+              {measurement.end && (
+                <circle
+                  cx={measurement.end.x}
+                  cy={measurement.end.y}
+                  r={5}
+                  fill="#ff6b6b"
+                />
+              )}
+              {measurement.distance > 0 && (
+                <text
+                  x={(measurement.start.x + (measurement.end?.x || measurement.start.x)) / 2}
+                  y={(measurement.start.y + (measurement.end?.y || measurement.start.y)) / 2 - 10}
+                  fill="#ff6b6b"
+                  fontSize="14"
+                  fontWeight="bold"
+                  textAnchor="middle"
+                  className="drop-shadow-lg"
+                >
+                  {pixelsToUnits(measurement.distance)} unidades
+                </text>
+              )}
+            </svg>
+          )}
+
+          {/* Desenhos (camada annotations) */}
+          {layers.annotations && (
+            <svg
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
+              }}
+            >
               {drawings.map((drawing) => (
                 <g key={drawing.id}>
                   {drawing.type === 'line' && drawing.points.length >= 2 && (
@@ -475,38 +748,59 @@ export function GameBoard({ sessionId }: GameBoardProps) {
                 </g>
               )}
             </svg>
+          )}
 
-            {/* Tokens */}
-            {tokens.map((token) => (
+          {/* Tokens (camada tokens) */}
+          {layers.tokens &&
+            tokens.map((token) => (
               <div
                 key={token.id}
                 className={`absolute cursor-move transition-transform ${
                   selectedToken === token.id ? 'ring-2 ring-accent' : ''
                 }`}
                 style={{
-                  left: `${token.x}px`,
-                  top: `${token.y}px`,
-                  transform: 'translate(-50%, -50%)',
+                  left: `${token.x * zoom + position.x}px`,
+                  top: `${token.y * zoom + position.y}px`,
+                  transform: 'translate(-50%, -50%) scale(' + zoom + ')',
                 }}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedToken(token.id)
                 }}
               >
-                <div
-                  className="rounded-full border-2 border-white shadow-lg"
-                  style={{
-                    width: `${token.size}px`,
-                    height: `${token.size}px`,
-                    backgroundColor: token.color || '#ff6b6b',
-                  }}
-                />
+                {token.imageUrl ? (
+                  <img
+                    src={token.imageUrl}
+                    alt={token.name}
+                    className="rounded-full border-2 border-white shadow-lg"
+                    style={{
+                      width: `${token.size}px`,
+                      height: `${token.size}px`,
+                      objectFit: 'cover',
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="rounded-full border-2 border-white shadow-lg flex items-center justify-center"
+                    style={{
+                      width: `${token.size}px`,
+                      height: `${token.size}px`,
+                      backgroundColor: token.color || '#ff6b6b',
+                    }}
+                  >
+                    {token.type === 'character' && (
+                      <Users className="w-5 h-5 text-white" />
+                    )}
+                    {token.type === 'creature' && (
+                      <Skull className="w-5 h-5 text-white" />
+                    )}
+                  </div>
+                )}
                 <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-white text-xs bg-black/50 px-2 py-0.5 rounded whitespace-nowrap">
                   {token.name}
                 </div>
               </div>
             ))}
-          </div>
 
           {/* Controles de zoom e ferramentas */}
           <div className="absolute bottom-4 right-4 flex flex-col gap-2">
@@ -548,6 +842,20 @@ export function GameBoard({ sessionId }: GameBoardProps) {
               >
                 <Grid className="w-4 h-4" />
               </Button>
+              <Button
+                size="sm"
+                variant={measurementMode ? 'default' : 'ghost'}
+                onClick={() => {
+                  setMeasurementMode(!measurementMode)
+                  if (measurementMode) {
+                    setMeasurement({ start: null, end: null, distance: 0 })
+                  }
+                }}
+                className="text-white hover:bg-accent"
+                title="Medição de Distância"
+              >
+                <Ruler className="w-4 h-4" />
+              </Button>
             </div>
 
             {/* Ferramentas de desenho */}
@@ -579,24 +887,99 @@ export function GameBoard({ sessionId }: GameBoardProps) {
               >
                 <Square className="w-4 h-4" />
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleAddToken}
-                className="text-white hover:bg-accent"
-                title="Adicionar Token"
+            </div>
+
+            {/* Controles de camadas */}
+            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+              <div className="flex items-center gap-2 mb-2">
+                <Layers className="w-4 h-4 text-white" />
+                <span className="text-white text-xs font-semibold">Camadas</span>
+              </div>
+              <div className="space-y-1">
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={layers.background}
+                    onChange={() => toggleLayer('background')}
+                    className="w-3 h-3"
+                  />
+                  Background
+                </label>
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={layers.tokens}
+                    onChange={() => toggleLayer('tokens')}
+                    className="w-3 h-3"
+                  />
+                  Tokens
+                </label>
+                <label className="flex items-center gap-2 text-white text-xs cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={layers.annotations}
+                    onChange={() => toggleLayer('annotations')}
+                    className="w-3 h-3"
+                  />
+                  Anotações
+                </label>
+              </div>
+            </div>
+
+            {/* Adicionar tokens */}
+            <div className="bg-card/80 backdrop-blur-sm rounded-lg p-2 border border-card-secondary">
+              <Select
+                onValueChange={(value) => {
+                  if (value === 'generic') {
+                    handleAddToken()
+                  } else if (value.startsWith('char-')) {
+                    const charId = value.replace('char-', '')
+                    const char = characters.find((c) => c.id === charId)
+                    if (char) handleAddCharacterToken(char)
+                  } else if (value.startsWith('creature-')) {
+                    const creatureId = value.replace('creature-', '')
+                    const creature = creatures.find((c) => c.id === creatureId)
+                    if (creature) handleAddCreatureToken(creature)
+                  }
+                }}
               >
-                +
-              </Button>
+                <SelectTrigger className="w-full bg-input border-white/20 text-white text-xs h-8">
+                  <SelectValue placeholder="Adicionar Token" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="generic">Token Genérico</SelectItem>
+                  {characters.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs text-text-secondary">Personagens</div>
+                      {characters.map((char) => (
+                        <SelectItem key={char.id} value={`char-${char.id}`}>
+                          {char.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                  {creatures.length > 0 && (
+                    <>
+                      <div className="px-2 py-1 text-xs text-text-secondary">Criaturas</div>
+                      {creatures.map((creature) => (
+                        <SelectItem key={creature.id} value={`creature-${creature.id}`}>
+                          {creature.name}
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
               {selectedToken && (
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={handleRemoveToken}
-                  className="text-white hover:bg-destructive"
+                  className="w-full mt-2 text-white hover:bg-destructive"
                   title="Remover Token"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-4 h-4 mr-2" />
+                  Remover Token
                 </Button>
               )}
             </div>

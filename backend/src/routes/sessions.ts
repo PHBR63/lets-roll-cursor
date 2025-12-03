@@ -70,6 +70,19 @@ sessionsRouter.put('/:id', async (req: Request, res: Response) => {
   }
 })
 
+// Atualizar board state (rota específica antes da genérica)
+sessionsRouter.put('/:id/board-state', async (req: Request, res: Response) => {
+  try {
+    const session = await sessionService.updateBoardState(
+      req.params.id,
+      req.body
+    )
+    res.json(session)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Finalizar sessão
 sessionsRouter.post('/:id/end', async (req: Request, res: Response) => {
   try {

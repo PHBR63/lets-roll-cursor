@@ -153,7 +153,7 @@ export function SessionRoom() {
       <main className="flex-1 flex overflow-hidden">
         {/* Área Principal - Game Board */}
         <div className="flex-1 flex flex-col min-w-0">
-          <GameBoard sessionId={session?.id} />
+          <GameBoard sessionId={session?.id} campaignId={campaignId} />
           
           {/* Área inferior: Dice Roller, Histórico e Chat */}
           <div className="grid grid-cols-3 gap-4 p-4 border-t border-card-secondary bg-background">

@@ -110,6 +110,7 @@ export const sessionService = {
 
       if (data.name) updateData.name = data.name
       if (data.notes !== undefined) updateData.notes = data.notes
+      if (data.board_state !== undefined) updateData.board_state = data.board_state
 
       const { data: session, error } = await supabase
         .from('sessions')
@@ -124,6 +125,30 @@ export const sessionService = {
     } catch (error: any) {
       console.error('Error updating session:', error)
       throw new Error('Erro ao atualizar sessão: ' + error.message)
+    }
+  },
+
+  /**
+   * Atualiza apenas o board_state da sessão
+   */
+  async updateBoardState(id: string, boardState: any) {
+    try {
+      const { data: session, error } = await supabase
+        .from('sessions')
+        .update({
+          board_state: boardState,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return session
+    } catch (error: any) {
+      console.error('Error updating board state:', error)
+      throw new Error('Erro ao atualizar estado do board: ' + error.message)
     }
   },
 
