@@ -19,6 +19,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    // Garantir versão única do React para evitar problemas de resolução
+    dedupe: ['react', 'react-dom'],
   },
   server: {
     port: 5173,
@@ -35,9 +37,9 @@ export default defineConfig({
       external: [],
       output: {
         // Code splitting manual para melhor cache
+        // NOTA: React e React-DOM não devem ser separados em chunks para evitar problemas de resolução
         manualChunks: {
-          // Vendor chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Vendor chunks (sem React para evitar problemas de resolução)
           'ui-vendor': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
@@ -64,10 +66,13 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
+      'react/jsx-runtime', // Importante para SWC
       'react-router-dom',
       '@supabase/supabase-js',
       'react-window',
     ],
+    // Forçar re-otimização para garantir resolução correta
+    force: true,
   },
 })
 
