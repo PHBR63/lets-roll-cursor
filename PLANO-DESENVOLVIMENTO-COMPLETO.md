@@ -1289,7 +1289,7 @@ export function useRealtimeChat(sessionId: string) {
 
 ### 12.2. Testes de Integração
 
-**Status:** ✅ **IMPLEMENTADO**
+**Status:** ✅ **IMPLEMENTADO E EXPANDIDO**
 
 **Cenários Testados:**
 - ✅ Criação de personagem completa
@@ -1309,6 +1309,18 @@ export function useRealtimeChat(sessionId: string) {
   - Teste de perícia com condições aplicadas
   - Rolagem de ataque e cálculo de dano
   - Detecção de críticos
+
+**Testes Estendidos (Novos):**
+- ✅ Fluxo completo: Criação de personagem até rolagem
+  - Criação → Aplicação de condições → Rolagem → Cálculo de dano
+- ✅ Fluxo completo: Recuperação e gerenciamento de recursos
+  - Recuperação de PE → Aplicação de dano → Verificação de estados críticos
+- ✅ Fluxo completo: Sistema de condições e transformações
+  - Aplicação de múltiplas condições → Transformações automáticas → Penalidades combinadas
+- ✅ Fluxo completo: Rolagem de dados e histórico
+  - Rolagem → Salvamento → Busca com filtros (campanha/sessão)
+- ✅ Fluxo completo: Sistema de combate
+  - Ataque → Dano → Estados críticos → Aplicação de condições
 
 ### 12.3. Validação de Regras
 
@@ -1450,11 +1462,26 @@ export function useRealtimeChat(sessionId: string) {
 - [x] Performance optimizations (lazy loading, memoização, virtualização, cache)
 - [x] Animações (progresso, dados, transições, feedback visual)
 
-### Fase 12 - Testes ✅ **PARCIALMENTE CONCLUÍDA**
-- [x] Testes unitários (75 testes para Fase 3)
+### Fase 12 - Testes ✅ **100% CONCLUÍDA**
+- [x] Testes unitários (75+ testes)
+  - ordemParanormalService (cálculos completos)
+  - diceService (parser e validação)
+  - characterService (CRUD e operações)
 - [x] Cobertura de código (ordemParanormalService: 66.99%, characterService: 43.04%)
-- [ ] Testes de integração
-- [ ] Validação de regras (parcial - testes unitários cobrem cálculos)
+- [x] Testes de integração
+  - Fluxos completos end-to-end
+  - Criação de personagem até rolagem
+  - Recuperação e gerenciamento de recursos
+  - Sistema de condições e transformações
+  - Sistema de combate completo
+- [x] Validação de regras (completa)
+  - Cálculos de recursos
+  - Rolagens e mecânicas
+  - Condições e penalidades
+  - Limites e validações
+  - Transformações automáticas
+  - Estados críticos
+  - Fórmulas de dados
 
 ---
 

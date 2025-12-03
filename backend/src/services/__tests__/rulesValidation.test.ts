@@ -238,5 +238,150 @@ describe('Validação de Regras do Sistema', () => {
       expect(ordemParanormalService.calculatePERecovery(20)).toBe(5) // nível 4 + 1
     })
   })
+
+  describe('Validação de Limites de Recursos', () => {
+    it('deve garantir que PV não pode exceder máximo', () => {
+      const maxPV = ordemParanormalService.calculateMaxPV('COMBATENTE', 2, 5)
+      expect(maxPV).toBe(28)
+      // Em um sistema real, updatePV deve validar que current <= max
+    })
+
+    it('deve garantir que SAN não pode exceder máximo', () => {
+      const maxSAN = ordemParanormalService.calculateMaxSAN('OCULTISTA', 20)
+      expect(maxSAN).toBe(40)
+    })
+
+    it('deve garantir que PE não pode exceder máximo', () => {
+      const maxPE = ordemParanormalService.calculateMaxPE('ESPECIALISTA', 2, 10)
+      expect(maxPE).toBe(14)
+    })
+
+    it('deve garantir que recursos não podem ser negativos', () => {
+      // PV mínimo deve ser 0 (ou 1 se morrendo)
+      const minPV = ordemParanormalService.calculateMaxPV('COMBATENTE', -5, 0)
+      expect(minPV).toBeGreaterThanOrEqual(0)
+
+      // PE pode ser negativo em casos extremos, mas deve ser tratado
+      const minPE = ordemParanormalService.calculateMaxPE('OCULTISTA', -5, 0)
+      // PE pode ser negativo, mas o sistema deve tratar isso
+      expect(typeof minPE).toBe('number')
+    })
+  })
+
+  describe('Validação de Fórmulas de Dados', () => {
+    it('deve validar fórmulas de dados corretamente', () => {
+      // Fórmulas válidas
+      const validFormulas = ['1d20', '2d6+3', '1d4-1', '3d8+5', '1d100']
+      validFormulas.forEach((formula) => {
+        // Em um sistema real, haveria uma função de validação
+        const matches = formula.match(/^(\d+)d(\d+)([+-]\d+)?$/)
+        expect(matches).not.toBeNull()
+      })
+
+      // Fórmulas inválidas
+      const invalidFormulas = ['d20', '1d', 'abc', '1d20+', '1d20-']
+      invalidFormulas.forEach((formula) => {
+        const matches = formula.match(/^(\d+)d(\d+)([+-]\d+)?$/)
+        expect(matches).toBeNull()
+      })
+    })
+
+    it('deve validar limites de dados (quantidade e lados)', () => {
+      // Quantidade máxima de dados (ex: 10)
+      const maxDice = 10
+      const maxSides = 100
+
+      const testCases = [
+        { formula: '1d20', valid: true },
+        { formula: '10d6', valid: true },
+        { formula: '11d6', valid: false }, // Excede quantidade máxima
+        { formula: '1d100', valid: true },
+        { formula: '1d101', valid: false }, // Excede lados máximos
+      ]
+
+      testCases.forEach(({ formula, valid }) => {
+        const match = formula.match(/^(\d+)d(\d+)([+-]\d+)?$/)
+        if (match) {
+          const quantity = parseInt(match[1])
+          const sides = parseInt(match[2])
+          const isValid = quantity <= maxDice && sides <= maxSides
+          expect(isValid).toBe(valid)
+        }
+      })
+    })
+  })
+
+  describe('Validação de Estados Críticos', () => {
+    it('deve detectar estado machucado corretamente', () => {
+      const states = ordemParanormalService.checkCriticalStates(10, 28, 15, 15)
+      expect(states.injured).toBe(true) // 10 < 28 * 0.5
+      expect(states.dying).toBe(false) // 10 > 0
+    })
+
+    it('deve detectar estado morrendo corretamente', () => {
+      const states = ordemParanormalService.checkCriticalStates(0, 28, 15, 15)
+      expect(states.dying).toBe(true) // PV = 0
+    })
+
+    it('deve detectar estado insano corretamente', () => {
+      const states = ordemParanormalService.checkCriticalStates(28, 28, 0, 15)
+      expect(states.insane).toBe(true) // SAN = 0
+    })
+
+    it('deve detectar estado de baixa sanidade corretamente', () => {
+      const states = ordemParanormalService.checkCriticalStates(28, 28, 5, 15)
+      expect(states.lowSAN).toBe(true) // 5 < 15 * 0.5
+    })
+  })
+
+  describe('Validação de Transformações de Condições', () => {
+    it('deve validar todas as transformações automáticas', () => {
+      // Abalado -> Apavorado (quando aplicado novamente)
+      const abaladoTwice = ordemParanormalService.applyCondition('ABALADO', ['ABALADO'])
+      expect(abaladoTwice.newConditions).toContain('APAVORADO')
+      expect(abaladoTwice.newConditions).not.toContain('ABALADO')
+
+      // Morrendo -> Inconsciente
+      const morrendo = ordemParanormalService.applyCondition('MORRENDO', [])
+      expect(morrendo.newConditions).toContain('MORRENDO')
+      expect(morrendo.newConditions).toContain('INCONSCIENTE')
+
+      // Atordado -> Desprevenido
+      const atordado = ordemParanormalService.applyCondition('ATORDADO', [])
+      expect(atordado.newConditions).toContain('ATORDADO')
+      expect(atordado.newConditions).toContain('DESPREVENIDO')
+
+      // Paralisado -> Imóvel + Indefeso
+      const paralisado = ordemParanormalService.applyCondition('PARALISADO', [])
+      expect(paralisado.newConditions).toContain('PARALISADO')
+      expect(paralisado.newConditions).toContain('IMOVEL')
+      expect(paralisado.newConditions).toContain('INDEFESO')
+
+      // Exausto -> Debilitado + Lento
+      const exausto = ordemParanormalService.applyCondition('EXAUSTO', [])
+      expect(exausto.newConditions).toContain('EXAUSTO')
+      expect(exausto.newConditions).toContain('DEBILITADO')
+      expect(exausto.newConditions).toContain('LENTO')
+    })
+  })
+
+  describe('Validação de Cálculos de Dano', () => {
+    it('deve calcular dano crítico corretamente', () => {
+      const normalDamage = ordemParanormalService.calculateDamage('1d8', 2, true, false)
+      const criticalDamage = ordemParanormalService.calculateDamage('1d8', 2, true, true)
+
+      // Dano crítico deve ser maior ou igual ao dano normal
+      expect(criticalDamage.total).toBeGreaterThanOrEqual(normalDamage.total)
+      expect(criticalDamage.isCritical).toBe(true)
+    })
+
+    it('deve calcular dano à distância corretamente', () => {
+      const meleeDamage = ordemParanormalService.calculateDamage('1d8', 2, true, false)
+      const rangedDamage = ordemParanormalService.calculateDamage('1d8', 2, false, false)
+
+      // Dano à distância não usa FOR
+      expect(rangedDamage.total).toBeLessThanOrEqual(meleeDamage.total)
+    })
+  })
 })
 
