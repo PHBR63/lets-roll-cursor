@@ -1197,6 +1197,16 @@ export function useRealtimeChat(sessionId: string) {
   - Componente `DiceAnimation` criado
   - Usa framer-motion para animações
   - Exibe animação de rolagem antes do resultado
+- ✅ Animações de barras de progresso
+  - Componente `AnimatedProgress` criado
+  - Animações suaves com framer-motion (spring physics)
+  - Efeito de brilho animado nas barras
+  - Delay escalonado para efeito cascata
+  - Integrado em:
+    - `VitalsPanel` (PV, SAN, PE)
+    - `CharacterStatusCard` (PV, NEX, PE, SAN)
+    - `CreatureCard` (Vida, Energia, Saúde, EXP)
+  - Suporte a diferentes cores e durações configuráveis
   - Integrado em todas as rolagens (básica, perícia, ataque)
 - ✅ Transições suaves entre páginas
   - Componente `PageTransition` criado

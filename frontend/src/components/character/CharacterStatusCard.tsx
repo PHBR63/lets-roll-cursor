@@ -8,6 +8,8 @@ import {
 } from '@/components/ui/tooltip'
 import { Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
+import { SwipeableCard } from '@/components/common/SwipeableCard'
+import { QuickActions } from '@/components/common/QuickActions'
 
 /**
  * Card de status de personagem
@@ -66,8 +68,31 @@ export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Link to={`/character/${character.id}`} className="block">
-            <Card className="bg-card border-card-secondary hover:border-accent transition-colors cursor-pointer relative">
+          <SwipeableCard
+            onSwipeLeft={() => {
+              // Ação rápida: ver ficha
+              window.location.href = `/character/${character.id}`
+            }}
+            onSwipeRight={() => {
+              // Ação rápida: ver ficha
+              window.location.href = `/character/${character.id}`
+            }}
+            leftAction={
+              <QuickActions
+                onView={() => window.location.href = `/character/${character.id}`}
+                variant="vertical"
+              />
+            }
+            rightAction={
+              <QuickActions
+                onView={() => window.location.href = `/character/${character.id}`}
+                variant="vertical"
+              />
+            }
+            className="md:pointer-events-none"
+          >
+            <Link to={`/character/${character.id}`} className="block">
+              <Card className="bg-card border-card-secondary hover:border-accent transition-colors cursor-pointer relative">
               {/* Indicador de Condições */}
               {hasConditions && (
                 <div className="absolute top-2 right-2">
@@ -140,7 +165,8 @@ export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
             />
               </div>
             </Card>
-          </Link>
+            </Link>
+          </SwipeableCard>
         </TooltipTrigger>
         {tooltipInfo && (
           <TooltipContent className="bg-card border-card-secondary text-white max-w-xs">
