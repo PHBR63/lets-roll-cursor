@@ -629,6 +629,19 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
           )}
         </div>
       )}
+
+      {/* Animação de rolagem de dados */}
+      {showAnimation && animationResult && (
+        <DiceAnimation
+          result={animationResult.result}
+          dice={animationResult.dice}
+          onComplete={() => {
+            setShowAnimation(false)
+            setAnimationResult(null)
+            toast.success('Dados rolados!', `Resultado: ${animationResult.result}`)
+          }}
+        />
+      )}
     </div>
   )
 }
