@@ -157,7 +157,7 @@ export function CharacterSheet() {
     }
   }
 
-  if (loading) {
+  if (loading || loadingCharacter) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-white">Carregando ficha...</div>
@@ -165,10 +165,17 @@ export function CharacterSheet() {
     )
   }
 
-  if (!character) {
+  if (error || !character) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Personagem não encontrado</div>
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8">
+          <NotFoundState
+            title={error || 'Personagem não encontrado'}
+            description="O personagem que você está procurando não existe ou foi removido."
+          />
+        </div>
+        <Footer />
       </div>
     )
   }
