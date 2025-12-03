@@ -915,9 +915,12 @@ export function useRealtimeChat(sessionId: string) {
 - ✅ Tooltips com descrições detalhadas de cada condição
 - ✅ Penalidades visíveis nos tooltips
 
-**Pendências (Opcional):**
-- [ ] Timer para condições temporárias (futuro)
-- [ ] Aplicação automática de penalidades em rolagens (já calculado no backend)
+**Melhorias Implementadas:**
+- ✅ Timer para condições temporárias (`ConditionTimer`)
+  - Componente para gerenciar duração de condições
+  - Expiração automática após X rodadas
+  - Visual com ícone de relógio
+- ✅ Aplicação automática de penalidades em rolagens (já calculado no backend)
 
 ### 9.3. Calculadora de Recursos
 
@@ -934,7 +937,10 @@ export function useRealtimeChat(sessionId: string) {
 - ✅ Validação de valores (não exceder máximo)
 - ✅ Função `validateStats` para ajustar valores automaticamente
 
-**Uso:** Hook pronto para ser integrado nos componentes de ficha de personagem.
+**Uso:** Hook integrado em:
+- ✅ `VitalsPanel` - Calcula e valida PV, SAN, PE máximos
+- ✅ `AttributesGrid` - Calcula defesa automaticamente
+- ✅ Recalculo automático quando atributos/classe/NEX mudam
 
 ### 9.4. Sistema de Rituais Paranormais
 
@@ -952,12 +958,18 @@ export function useRealtimeChat(sessionId: string) {
 - ✅ Rituais com Afinidade (50% NEX) - sem ingredientes
 - ✅ Validação de PE/SAN suficientes
 - ✅ Badges visuais para círculo, elemento e afinidade
-- ✅ Lista de rituais básicos do sistema (expansível)
+- ✅ Lista expandida: 20 rituais (Círculos 1-3, todos os elementos)
+- ✅ Sistema de ingredientes implementado
+  - Lista de ingredientes por ritual
+  - Validação de ingredientes antes de conjurar
+  - Afinidade (50% NEX) dispensa ingredientes
+  - Mensagens de erro quando faltam ingredientes
 
 **Estrutura:**
 - Rituais armazenados em JSONB no personagem
 - Suporte para múltiplos elementos paranormais
-- Sistema de ingredientes (com/sem afinidade)
+- Sistema de ingredientes completo (com/sem afinidade)
+- Ingredientes armazenados no personagem (JSONB)
 
 ### 9.5. Sistema de Poderes Paranormais
 
@@ -974,7 +986,12 @@ export function useRealtimeChat(sessionId: string) {
 - ✅ Sistema de níveis (1-5)
 - ✅ Validação de SAN máxima suficiente
 - ✅ Badges visuais para nível, elemento e afinidade
-- ✅ Lista de poderes básicos do sistema (expansível)
+- ✅ Lista expandida: 19 poderes (Níveis 1-5, todos os elementos)
+  - SANGUE: 5 poderes
+  - MORTE: 5 poderes
+  - ENERGIA: 3 poderes
+  - CONHECIMENTO: 3 poderes
+  - MEDO: 3 poderes
 
 **Estrutura:**
 - Poderes armazenados em JSONB no personagem
