@@ -102,10 +102,12 @@ export function SessionRoom() {
    */
   const createSession = async () => {
     try {
-      if (!user || !campaignId) return
+      if (!user || !campaignId) return null
 
       const { data: sessionData } = await supabase.auth.getSession()
-      if (!sessionData.session) return
+      if (!sessionData.session) {
+        throw new Error('Sessão não encontrada')
+      }
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
@@ -124,9 +126,14 @@ export function SessionRoom() {
       if (response.ok) {
         const newSession = await response.json()
         setSession(newSession)
+        return newSession
+      } else {
+        await handleResponseError(response, 'Erro ao criar sessão')
+        return null
       }
     } catch (error) {
-      console.error('Erro ao criar sessão:', error)
+      handleErrorWithToast(error, 'Erro ao criar sessão')
+      return null
     }
   }
 

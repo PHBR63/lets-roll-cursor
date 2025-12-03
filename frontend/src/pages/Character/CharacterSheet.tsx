@@ -106,13 +106,15 @@ export function CharacterSheet() {
         body: JSON.stringify(updates),
       })
 
-      if (!response.ok) throw new Error('Erro ao salvar personagem')
+      if (!response.ok) {
+        await handleResponseError(response, 'Erro ao salvar personagem')
+        return
+      }
 
       const data = await response.json()
       setCharacter(data)
     } catch (error) {
-      console.error('Erro ao salvar personagem:', error)
-      alert('Erro ao salvar alterações. Tente novamente.')
+      handleErrorWithToast(error, 'Erro ao salvar alterações')
     } finally {
       setSaving(false)
     }
@@ -142,13 +144,15 @@ export function CharacterSheet() {
         body: JSON.stringify({ value, isDelta }),
       })
 
-      if (!response.ok) throw new Error(`Erro ao atualizar ${resource.toUpperCase()}`)
+      if (!response.ok) {
+        await handleResponseError(response, `Erro ao atualizar ${resource.toUpperCase()}`)
+        return
+      }
 
       const data = await response.json()
       setCharacter(data.character)
     } catch (error) {
-      console.error(`Erro ao atualizar ${resource}:`, error)
-      alert(`Erro ao atualizar ${resource.toUpperCase()}. Tente novamente.`)
+      handleErrorWithToast(error, `Erro ao atualizar ${resource.toUpperCase()}`)
     }
   }
 
