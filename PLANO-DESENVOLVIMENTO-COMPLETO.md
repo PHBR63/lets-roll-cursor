@@ -845,12 +845,7 @@ export function useRealtimeChat(sessionId: string) {
   - Histórico atualiza automaticamente
 - ✅ `Master Dashboard` - Usa `useRealtimeRolls`, `useRealtimeCharacters`, `useRealtimeCreatures`
   - Todos os painéis atualizam em tempo real
-- ✅ `RollHistory` - Usa `useRealtimeRolls` para exibir histórico atualizado
-- ✅ `SessionRoom` - Integra RollHistory com Realtime
-
-**Componentes Pendentes:**
-- [ ] `PlayerListSidebar` - Usar `useRealtimePlayers` (atualizar stats em tempo real)
-- [ ] `PlayersPanel` - Usar `useRealtimePlayers` (quando criado)
+- ✅ `SessionRoom` - Integra todos os componentes com Realtime
 
 ### 8.3. Configuração Supabase Realtime
 
