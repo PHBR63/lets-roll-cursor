@@ -15,6 +15,8 @@ import { ChevronRight, Edit, Settings } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
 import { LazyImage } from '@/components/common/LazyImage'
 import { useRetry } from '@/hooks/useRetry'
+import { Campaign, CampaignParticipant } from '@/types/campaign'
+import { Character } from '@/types/character'
 
 /**
  * Página de detalhes da campanha

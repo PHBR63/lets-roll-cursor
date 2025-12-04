@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCache } from '@/hooks/useCache'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
+import { Campaign } from '@/types/campaign'
 
 /**
  * Dashboard principal

@@ -9,6 +9,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { ArrowLeft, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Session } from '@/types/session'
+import { CampaignParticipant } from '@/types/campaign'
 
 /**
  * Painel do Mestre - Dashboard completo para gerenciar a sessão
