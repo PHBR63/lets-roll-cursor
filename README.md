@@ -1,6 +1,20 @@
-# Let's Roll - Plataforma de RPG de Mesa
+# Let's Roll 🎲
 
-Plataforma web completa para jogar RPG de mesa online, onde mestres têm controle total sobre rolagens, criaturas, itens e habilidades.
+[![CI](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/ci.yml/badge.svg)](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/codeql.yml/badge.svg)](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20-green.svg)](https://nodejs.org/)
+
+> Plataforma web completa para jogar RPG de mesa online, onde mestres têm controle total sobre rolagens, criaturas, itens e habilidades.
+
+## 🚀 Demo
+
+🔗 [Acesse a demo ao vivo](https://letsroll.app) *(em breve)*
+
+## 📸 Screenshots
+
+<!-- Adicione screenshots aqui quando disponíveis -->
 
 ## 🎮 Características
 
@@ -12,20 +26,23 @@ Plataforma web completa para jogar RPG de mesa online, onde mestres têm control
 - Fichas de personagem completas
 - Bestiário e gerenciamento de itens/habilidades
 
-## 🚀 Tecnologias
+## 🛠️ Tecnologias
 
-- **Frontend:** React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Backend:** Node.js + Express + TypeScript
-- **Banco de Dados:** Supabase (PostgreSQL)
-- **Realtime:** Supabase Realtime
+- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui
+- **Backend:** Node.js, Express, TypeScript
+- **Database:** Supabase (PostgreSQL)
+- **Cache:** Redis
+- **Real-time:** Supabase Realtime
+- **Testing:** Jest, Vitest, Playwright
 
 ## 📦 Instalação
 
 ### Pré-requisitos
 
-- Node.js 18+
+- Node.js 20+
 - npm ou yarn
 - Conta no Supabase
+- Redis (opcional, para cache)
 - Conta no Vercel (para deploy do frontend)
 - Conta no Railway/Render (para deploy do backend)
 
@@ -158,10 +175,41 @@ A autenticação é gerenciada pelo Supabase Auth. Os tokens JWT são enviados n
 
 Consulte o arquivo `cria-o-projeto-let-s-roll.plan.md` (se disponível) para detalhes completos da arquitetura e funcionalidades planejadas.
 
+## 🐛 Troubleshooting
+
+### Problema: Erro ao conectar com Supabase
+**Solução**: Verifique se as variáveis de ambiente estão configuradas corretamente no arquivo `.env`.
+
+### Problema: Build falha
+**Solução**: Limpe o cache e reinstale as dependências:
+```bash
+rm -rf node_modules frontend/node_modules backend/node_modules
+npm run install:all
+```
+
+### Problema: Erro de autenticação
+**Solução**: Verifique se as chaves do Supabase estão corretas e se o RLS está configurado adequadamente.
+
+### Problema: Redis não conecta
+**Solução**: Redis é opcional. Se não estiver configurado, o sistema funcionará sem cache.
+
 ## 🤝 Contribuindo
 
 Este projeto está em desenvolvimento ativo. Sinta-se livre para contribuir!
 
+Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre nosso código de conduta e processo de contribuição.
+
 ## 📄 Licença
 
-[MIT]
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 🔒 Segurança
+
+Veja [SECURITY.md](.github/SECURITY.md) para informações sobre segurança e como reportar vulnerabilidades.
+
+## 📚 Documentação Adicional
+
+- [Guia de Contribuição](CONTRIBUTING.md)
+- [Código de Conduta](CODE_OF_CONDUCT.md)
+- [Changelog](CHANGELOG.md)
+- [Git Flow](.github/GIT_FLOW.md)

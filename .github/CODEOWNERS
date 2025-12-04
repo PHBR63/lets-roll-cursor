@@ -1,0 +1,19 @@
+# Padrão global - requer aprovação do mantenedor
+* @PHBR63
+
+# Arquivos de configuração críticos
+/.github/ @PHBR63
+/package.json @PHBR63
+/frontend/package.json @PHBR63
+/backend/package.json @PHBR63
+
+# Arquivos de segurança
+/.github/SECURITY.md @PHBR63
+/.github/dependabot.yml @PHBR63
+
+# Migrations do banco de dados
+/supabase/migrations/ @PHBR63
+
+# Configurações de deploy
+/vercel.json @PHBR63
+

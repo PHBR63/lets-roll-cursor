@@ -7,6 +7,7 @@ import { AppError } from '../../types/common'
 import { Condition } from '../../types/ordemParanormal'
 import { ordemParanormalService } from '../ordemParanormalService'
 import { deleteCache, getCharacterCacheKey } from '../cache'
+import { characterClassAbilitiesService } from './characterClassAbilitiesService'
 
 export const characterResourcesService = {
   /**
@@ -74,6 +75,24 @@ export const characterResourcesService = {
         .single()
 
       if (error) throw error
+
+      // Conceder habilidades de classe automaticamente se NEX aumentou
+      const oldNex = stats.nex || 5
+      if (nex > oldNex) {
+        try {
+          await characterClassAbilitiesService.grantClassAbilities(
+            id,
+            characterClass,
+            nex
+          )
+        } catch (abilityError) {
+          // Log do erro mas não falha a atualização de NEX
+          logger.error(
+            { error: abilityError, characterId: id },
+            'Error granting class abilities during NEX update'
+          )
+        }
+      }
 
       // Invalidar cache
       await deleteCache(getCharacterCacheKey({ characterId: id }))

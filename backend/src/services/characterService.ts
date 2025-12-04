@@ -11,6 +11,7 @@ import { AppError } from '../types/common'
 import { getCache, setCache, deleteCache, deleteCachePattern, getCharacterCacheKey } from './cache'
 import { characterInventoryService } from './character/characterInventoryService'
 import { characterAbilitiesService } from './character/characterAbilitiesService'
+import { characterClassAbilitiesService } from './character/characterClassAbilitiesService'
 import { characterConditionsService } from './character/characterConditionsService'
 import { characterResourcesService } from './character/characterResourcesService'
 import { characterAttributesService } from './character/characterAttributesService'
@@ -149,6 +150,21 @@ export const characterService = {
         .single()
 
       if (error) throw error
+
+      // Conceder habilidades de classe iniciais
+      try {
+        await characterClassAbilitiesService.grantClassAbilities(
+          character.id,
+          characterClass,
+          nex
+        )
+      } catch (abilityError) {
+        // Log do erro mas não falha a criação do personagem
+        logger.error(
+          { error: abilityError, characterId: character.id },
+          'Error granting class abilities during character creation'
+        )
+      }
 
       // Invalidar cache relacionado
       await deleteCachePattern('characters:*')
@@ -347,6 +363,10 @@ export const characterService = {
   getCharacterAbilities: characterAbilitiesService.getCharacterAbilities,
   addAbilityToCharacter: characterAbilitiesService.addAbilityToCharacter,
   removeAbilityFromCharacter: characterAbilitiesService.removeAbilityFromCharacter,
+
+  // Habilidades de classe
+  getUnlockedClassAbilities: characterClassAbilitiesService.getUnlockedClassAbilities,
+  getNewlyUnlockedClassAbilities: characterClassAbilitiesService.getNewlyUnlockedClassAbilities,
 
   // Condições
   applyCondition: characterConditionsService.applyCondition,

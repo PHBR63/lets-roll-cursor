@@ -8,6 +8,11 @@ import {
   SkillTraining,
   TRAINING_BONUS,
 } from '../types/ordemParanormal'
+import {
+  getUnlockedAbilities as getUnlockedClassAbilities,
+  getNewlyUnlockedAbilities as getNewlyUnlockedClassAbilities,
+  ClassAbility,
+} from '../types/classAbilities'
 
 /**
  * Serviço para cálculos e mecânicas do sistema Ordem Paranormal RPG
