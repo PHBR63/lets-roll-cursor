@@ -105,8 +105,8 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
-      const currentRituals = character.rituals || []
-      const updatedRituals = currentRituals.filter((r: Ritual) => r.id !== ritualId)
+      const currentRituals = (character.rituals || []) as unknown as Ritual[]
+      const updatedRituals = currentRituals.filter((r) => r.id !== ritualId)
 
       const response = await fetch(`${apiUrl}/api/characters/${character.id}`, {
         method: 'PUT',
@@ -157,7 +157,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
     if (!hasAffinity && ritual.requiresIngredients && ritual.ingredients) {
       const characterIngredients = character.ingredients || []
       const missingIngredients = ritual.ingredients.filter(
-        (ing) => !characterIngredients.includes(ing)
+        (ing) => !((characterIngredients as unknown as string[]) || []).includes(ing)
       )
 
       if (missingIngredients.length > 0) {
@@ -219,7 +219,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
 
   // Filtrar rituais disponíveis
   const filteredRituals = AVAILABLE_RITUALS.filter((r) => {
-    const notOwned = !characterRituals.some((cr: Ritual) => cr.id === r.id)
+    const notOwned = !((characterRituals as unknown as Ritual[]) || []).some((cr) => cr.id === r.id)
     const circleMatch = filterCircle === 'all' || r.circle.toString() === filterCircle
     const elementMatch = filterElement === 'all' || r.element === filterElement
     return notOwned && circleMatch && elementMatch
@@ -346,7 +346,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {characterRituals.map((ritual: Ritual) => {
+          {((characterRituals as unknown as Ritual[]) || []).map((ritual) => {
             const stats = character.stats || {}
             const pe = stats.pe || { current: 0, max: 0 }
             const hasAffinity =

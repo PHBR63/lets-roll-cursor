@@ -101,7 +101,7 @@ export function CreaturesPanel({ campaignId }: CreaturesPanelProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-white font-semibold text-lg">Criaturas</h2>
-        <Select value={viewMode} onValueChange={(v: string) => setViewMode(v)}>
+        <Select value={viewMode} onValueChange={(v: 'creatures' | 'list') => setViewMode(v)}>
           <SelectTrigger className="w-[140px] bg-input border-white/20 text-white">
             <SelectValue />
           </SelectTrigger>

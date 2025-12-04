@@ -34,7 +34,12 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
   const conditions = character.conditions || []
   const [showAddModal, setShowAddModal] = useState(false)
   const [conditionTimers, setConditionTimers] = useState<Record<string, number>>(
-    character.conditionTimers || {}
+    Array.isArray(character.conditionTimers) 
+      ? character.conditionTimers.reduce((acc, timer) => {
+          acc[timer.condition] = timer.duration
+          return acc
+        }, {} as Record<string, number>)
+      : ((character.conditionTimers as unknown as Record<string, number>) || {})
   )
 
   /**
@@ -156,7 +161,7 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
         open={showAddModal}
         onOpenChange={setShowAddModal}
         characterId={character.id}
-        currentConditions={conditions}
+        currentConditions={conditions as Condition[]}
         onSuccess={onUpdate}
       />
 

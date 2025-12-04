@@ -21,7 +21,7 @@ interface GameBoardContextValue {
   setPosition: (pos: { x: number; y: number } | ((prev: { x: number; y: number }) => { x: number; y: number })) => void
   setTokens: (tokens: Token[] | ((prev: Token[]) => Token[])) => void
   setDrawings: (drawings: Drawing[] | ((prev: Drawing[]) => Drawing[])) => void
-  setMeasurement: (measurement: Measurement | ((prev: Measurement) => Measurement)) => void
+  setMeasurement: (measurement: Measurement | null | ((prev: Measurement | null) => Measurement | null)) => void
   toggleLayer: (layer: Layer) => void
   // Actions
   handleZoomIn: () => void

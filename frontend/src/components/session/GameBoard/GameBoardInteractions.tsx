@@ -20,7 +20,7 @@ export function useGameBoardInteractions() {
     const y = (e.clientY - rect.top - state.position.y) / state.zoom
 
     if (state.measurementMode) {
-      if (!state.measurement.start) {
+      if (!state.measurement?.start) {
         setMeasurement({ start: { x, y }, end: null, distance: 0 })
       } else {
         const distance = calculateDistance(state.measurement.start, { x, y })
@@ -91,7 +91,7 @@ export function useGameBoardInteractions() {
     const x = (e.clientX - rect.left - state.position.x) / state.zoom
     const y = (e.clientY - rect.top - state.position.y) / state.zoom
 
-    if (state.measurementMode && state.measurement.start) {
+    if (state.measurementMode && state.measurement?.start) {
       const distance = calculateDistance(state.measurement.start, { x, y })
       setMeasurement({
         start: state.measurement.start,

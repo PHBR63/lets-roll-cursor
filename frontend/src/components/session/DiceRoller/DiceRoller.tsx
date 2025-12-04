@@ -150,7 +150,7 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       </div>
 
       {/* Último Resultado */}
-      {lastResult && <DiceRollResult result={lastResult} />}
+      {lastResult && <DiceRollResult result={lastResult as any} />}
 
       {/* Animação de rolagem de dados */}
       {showAnimation && animationResult && (

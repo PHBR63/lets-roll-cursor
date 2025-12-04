@@ -61,7 +61,7 @@ export function EditCreatureModal({
       setEnergiaMax(energia.max || 10)
       setSaudeCurrent(saude.current || 0)
       setSaudeMax(saude.max || 10)
-      setExp(expValue)
+      setExp(typeof expValue === 'number' ? expValue : 0)
     }
   }, [creature])
 

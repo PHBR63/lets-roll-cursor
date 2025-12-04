@@ -37,7 +37,7 @@ export function AddItemModal({
   campaignId,
   onSuccess,
 }: AddItemModalProps) {
-  const [items, setItems] = useState<Array<{ id: string; name: string; description?: string }>>([])
+  const [items, setItems] = useState<Array<{ id: string; name: string; description?: string; weight?: number }>>([])
   const [selectedItemId, setSelectedItemId] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)

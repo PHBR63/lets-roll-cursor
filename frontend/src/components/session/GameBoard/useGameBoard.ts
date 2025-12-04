@@ -28,7 +28,7 @@ export function useGameBoard(sessionId?: string, campaignId?: string) {
     currentDrawing: null,
     drawingStart: null,
     measurementMode: false,
-    measurement: { start: null, end: null, distance: 0 },
+    measurement: null,
     layers: {
       background: true,
       tokens: true,

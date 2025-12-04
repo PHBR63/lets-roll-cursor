@@ -572,7 +572,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       x: 200,
       y: 200,
       name: character.name,
-      imageUrl: character.avatar_url || null,
+      imageUrl: character.avatar_url || undefined,
       color: '#6366f1',
       size: 40,
       type: 'character',

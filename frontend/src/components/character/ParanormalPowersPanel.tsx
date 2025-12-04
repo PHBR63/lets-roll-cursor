@@ -233,7 +233,7 @@ export function ParanormalPowersPanel({
 
   useEffect(() => {
     // Carregar poderes do personagem
-    const characterPowers = character.paranormalPowers || []
+    const characterPowers = (character.paranormalPowers || []) as unknown as ParanormalPower[]
     setPowers(characterPowers)
   }, [character])
 
@@ -254,8 +254,8 @@ export function ParanormalPowersPanel({
     }
 
     // Verificar se já tem o poder
-    const characterPowers = character.paranormalPowers || []
-    if (characterPowers.some((p: ParanormalPower) => p.id === power.id)) {
+    const characterPowers = (character.paranormalPowers || []) as unknown as ParanormalPower[]
+    if (characterPowers.some((p) => p.id === power.id)) {
       alert('Você já possui este poder')
       return
     }
@@ -263,7 +263,7 @@ export function ParanormalPowersPanel({
     // Calcular nova SAN máxima
     const stats = character.stats || {}
     const san = stats.san || { current: 0, max: 0 }
-    const newSanMax = Math.max(0, san.max - power.cost)
+    const newSanMax = Math.max(0, san.max - (power.cost as number))
 
     if (newSanMax < san.current) {
       alert('SAN máxima insuficiente. Você precisa reduzir sua SAN atual primeiro.')
@@ -314,8 +314,8 @@ export function ParanormalPowersPanel({
   const handleUpgradePower = async (powerId: string) => {
     if (!character?.id || upgrading) return
 
-    const characterPowers = character.paranormalPowers || []
-    const power = characterPowers.find((p: ParanormalPower) => p.id === powerId)
+    const characterPowers = (character.paranormalPowers || []) as unknown as ParanormalPower[]
+    const power = characterPowers.find((p) => p.id === powerId)
     if (!power) return
 
     // Verificar se pode aprimorar (requer afinidade e nível < 5)
@@ -325,7 +325,7 @@ export function ParanormalPowersPanel({
       return
     }
 
-    if (power.level >= 5) {
+    if ((power.level as number) >= 5) {
       alert('Este poder já está no nível máximo')
       return
     }
@@ -333,7 +333,7 @@ export function ParanormalPowersPanel({
     // Calcular nova SAN máxima
     const stats = character.stats || {}
     const san = stats.san || { current: 0, max: 0 }
-    const newSanMax = Math.max(0, san.max - power.cost)
+    const newSanMax = Math.max(0, san.max - (power.cost as number))
 
     if (newSanMax < san.current) {
       alert('SAN máxima insuficiente. Você precisa reduzir sua SAN atual primeiro.')
@@ -348,8 +348,8 @@ export function ParanormalPowersPanel({
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
-      const updatedPowers = characterPowers.map((p: ParanormalPower) =>
-        p.id === powerId ? { ...p, level: p.level + 1 } : p
+      const updatedPowers = characterPowers.map((p) =>
+        p.id === powerId ? { ...p, level: (p.level as number) + 1 } : p
       )
       const updatedStats = {
         ...stats,
@@ -399,7 +399,7 @@ export function ParanormalPowersPanel({
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
       const characterPowers = character.paranormalPowers || []
-      const updatedPowers = characterPowers.filter((p: ParanormalPower) => p.id !== powerId)
+      const updatedPowers = characterPowers.filter((p) => p.id !== powerId)
 
       const response = await fetch(`${apiUrl}/api/characters/${character.id}`, {
         method: 'PUT',
@@ -451,10 +451,10 @@ export function ParanormalPowersPanel({
                   </SelectTrigger>
                   <SelectContent>
                     {AVAILABLE_POWERS.filter(
-                      (p) => !characterPowers.some((cp: ParanormalPower) => cp.id === p.id)
+                      (p) => !characterPowers.some((cp) => cp.id === p.id)
                     ).map((power) => (
                       <SelectItem key={power.id} value={power.id}>
-                        {power.name} ({power.cost} SAN máx.)
+                        {power.name} ({(power.cost as number)} SAN máx.)
                         {power.requiresAffinity && ' - Requer Afinidade'}
                       </SelectItem>
                     ))}
@@ -513,7 +513,7 @@ export function ParanormalPowersPanel({
                       <p className="text-sm text-text-secondary mb-2">{power.description}</p>
                     )}
                     <div className="text-sm text-text-secondary">
-                      Custo: <span className="text-blue-400 font-semibold">{power.cost} SAN máx.</span>
+                      Custo: <span className="text-blue-400 font-semibold">{(power.cost as number)} SAN máx.</span>
                     </div>
                   </div>
                   <div className="flex gap-2">

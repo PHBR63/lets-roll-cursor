@@ -45,7 +45,7 @@ export interface GameBoardState {
   currentDrawing: Drawing | null
   drawingStart: { x: number; y: number } | null
   measurementMode: boolean
-  measurement: Measurement
+  measurement: Measurement | null
   layers: Record<Layer, boolean>
 }
 

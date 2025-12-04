@@ -88,7 +88,8 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
    * Salva alterações das perícias
    */
   const handleSave = () => {
-    onUpdate({ skills: localSkills })
+    // Converter para o formato esperado pelo CharacterUpdateData
+    onUpdate({ skills: localSkills as any })
     setHasChanges(false)
   }
 

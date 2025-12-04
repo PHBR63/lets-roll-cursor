@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Plus, Minus } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
 import { Character } from '@/types/character'
-import { CharacterClass } from '@/types/ordemParanormal'
+import { CharacterClass, Attributes } from '@/types/ordemParanormal'
 
 interface VitalsPanelProps {
   character: Character
@@ -22,16 +22,25 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
   const attributes = character.attributes || {}
   const nex = stats.nex || 0
 
+  // Converter attributes para formato Attributes
+  const attributesForHook: Attributes = {
+    agi: attributes.agi || 0,
+    for: attributes.for || 0,
+    int: attributes.int || 0,
+    pre: attributes.pre || 0,
+    vig: attributes.vig || 0,
+  }
+
   // Usar hook para calcular recursos automaticamente
   const { pvMax, sanMax, peMax, defense, validateStats } = useCharacterResources(
     character.class as CharacterClass | undefined,
-    attributes,
+    attributesForHook,
     nex,
-    stats
+    stats as any
   )
 
   // Validar e ajustar stats com os valores calculados
-  const validatedStats = validateStats(stats)
+  const validatedStats = validateStats(stats as any)
   
   const pv = validatedStats.pv
   const san = validatedStats.san
