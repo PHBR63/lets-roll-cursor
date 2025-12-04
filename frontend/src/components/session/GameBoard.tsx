@@ -153,7 +153,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
         setLayers(boardState.layers as Record<Layer, boolean>)
       }
     }
-  }, [realtimeSession?.board_state, imageUrl, zoom, position])
+  }, [realtimeSession?.board_state])
 
   // Salvar estado quando mudar (com debounce)
   useEffect(() => {
@@ -573,7 +573,6 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       y: 200,
       name: character.name,
       imageUrl: character.avatar_url || null,
-      imageUrl: character.avatar_url,
       color: '#6366f1',
       size: 40,
       type: 'character',

@@ -92,7 +92,7 @@ export function useGameBoard(sessionId?: string, campaignId?: string) {
         setState((prev) => ({ ...prev, layers: boardState.layers as Record<Layer, boolean> }))
       }
     }
-  }, [realtimeSession?.board_state, state.imageUrl, state.zoom, state.position])
+  }, [realtimeSession?.board_state])
 
   // Salvar estado quando mudar
   useEffect(() => {
