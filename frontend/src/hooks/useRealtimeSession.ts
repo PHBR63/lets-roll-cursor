@@ -27,7 +27,7 @@ export function useRealtimeSession(sessionId?: string) {
           filter: `id=eq.${sessionId}`,
         },
         (payload) => {
-          setSession(payload.new)
+          setSession(payload.new as Session)
         }
       )
       .subscribe()

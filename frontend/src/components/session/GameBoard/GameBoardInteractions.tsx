@@ -38,9 +38,9 @@ export function useGameBoardInteractions() {
       setState((prev) => ({
         ...prev,
         drawingStart: { x, y },
-        currentDrawing: {
+        currentDrawing: prev.drawingMode !== 'none' ? {
           id: `draw-${Date.now()}`,
-          type: prev.drawingMode,
+          type: prev.drawingMode as 'line' | 'circle' | 'rect',
           points: [{ x, y }],
           color: '#ff6b6b',
           strokeWidth: 2,

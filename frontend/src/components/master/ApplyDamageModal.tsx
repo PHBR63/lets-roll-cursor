@@ -164,7 +164,7 @@ export function ApplyDamageModal({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select value={damageType} onValueChange={(v: string) => setDamageType(v)}>
+            <Select value={damageType} onValueChange={(v: 'physical' | 'mental' | 'heal') => setDamageType(v)}>
               <SelectTrigger className="bg-input border-white/20">
                 <SelectValue />
               </SelectTrigger>

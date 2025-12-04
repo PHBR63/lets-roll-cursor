@@ -166,7 +166,7 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {conditions.map((condition: Condition) => {
+          {(conditions as Condition[]).map((condition: Condition) => {
             const hasTimer = conditionTimers[condition] !== undefined
             const timerDuration = conditionTimers[condition]
 

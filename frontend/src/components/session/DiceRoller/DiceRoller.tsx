@@ -75,9 +75,14 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
   const handleRoll = (result: DiceRollResultType) => {
     // Mostrar animação
     if (result.details?.rolls) {
+      const rolls = Array.isArray(result.details.rolls) 
+        ? result.details.rolls.map((r: { die?: number; value?: number } | number) => 
+            typeof r === 'number' ? r : (r.value || r.die || 0)
+          )
+        : []
       setAnimationResult({
         result: result.result || result.total,
-        dice: result.details.rolls,
+        dice: rolls,
       })
       setShowAnimation(true)
     }

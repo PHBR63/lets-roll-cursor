@@ -6,6 +6,7 @@ import { Save } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
 import { useToast } from '@/hooks/useToast'
 import { Character, CharacterUpdateData } from '@/types/character'
+import { CharacterClass } from '@/types/ordemParanormal'
 
 interface AttributesGridProps {
   character: Character
@@ -90,7 +91,7 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
 
   // Usar hook para calcular defesa automaticamente
   const { defense } = useCharacterResources(
-    character.class,
+    character.class as CharacterClass | undefined,
     localAttributes,
     character.stats?.nex || 0
   )

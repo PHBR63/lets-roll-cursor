@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Plus, Minus } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
 import { Character } from '@/types/character'
+import { CharacterClass } from '@/types/ordemParanormal'
 
 interface VitalsPanelProps {
   character: Character
@@ -23,7 +24,7 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
 
   // Usar hook para calcular recursos automaticamente
   const { pvMax, sanMax, peMax, defense, validateStats } = useCharacterResources(
-    character.class,
+    character.class as CharacterClass | undefined,
     attributes,
     nex,
     stats

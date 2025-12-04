@@ -8,17 +8,40 @@ export interface DiceRollResult {
   result: number
   total: number
   type?: 'basic' | 'skill' | 'attack'
+  bonus?: number
   details?: {
     rolls: Array<{
       die: number
       value: number
-    }>
+    }> | number[]
     modifiers?: number
+  }
+  dice?: number[]
+  skillName?: string
+  difficulty?: number
+  skillBonus?: number
+  success?: boolean
+  advantage?: boolean
+  disadvantage?: boolean
+  targetDefense?: number
+  hit?: boolean
+  critical?: boolean
+  damage?: {
+    total: number
+    dice: number[]
   }
   session_id?: string | null
   campaign_id?: string
   character_id?: string | null
+  character?: {
+    id: string
+    name: string
+  }
   user_id?: string
+  user?: {
+    id: string
+    username: string
+  }
   is_private?: boolean
   created_at?: string
 }

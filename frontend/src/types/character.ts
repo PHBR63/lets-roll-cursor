@@ -9,11 +9,34 @@ export interface Character {
   user_id: string
   class?: string
   attributes?: Record<string, number>
-  skills?: Record<string, { value: number; trained: boolean }>
+  skills?: Record<string, { value: number; trained: boolean } | { attribute: string; training: 'trained' | 'expert' | 'veteran' | 'master'; bonus: number }>
   resources?: Record<string, { current: number; max: number }>
+  stats?: {
+    pv?: { current: number; max: number }
+    san?: { current: number; max: number }
+    pe?: { current: number; max: number }
+    nex?: number
+    vida?: { current: number; max: number }
+    energia?: { current: number; max: number }
+    saude?: { current: number; max: number }
+    xp?: number
+  }
   conditions?: string[]
+  conditionTimers?: Array<{ condition: string; duration: number }>
   inventory?: CharacterInventoryItem[]
   abilities?: CharacterAbility[]
+  biography?: string
+  origin?: string
+  age?: number
+  height?: string
+  weight?: string
+  carryCapacity?: number
+  coins?: number
+  paranormalPowers?: Array<{ id: string; name: string; [key: string]: unknown }>
+  affinity?: string
+  rituals?: Array<{ id: string; name: string; [key: string]: unknown }>
+  ingredients?: Array<{ id: string; name: string; [key: string]: unknown }>
+  avatar_url?: string
   created_at?: string
   updated_at?: string
   campaign?: {
@@ -38,6 +61,7 @@ export interface CharacterInventoryItem {
     name: string
     description?: string
     type?: string
+    weight?: number
     attributes?: Record<string, unknown>
   }
 }

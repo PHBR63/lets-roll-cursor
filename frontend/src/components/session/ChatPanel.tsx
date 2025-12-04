@@ -95,7 +95,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
     scrollToBottom()
     // Scroll para o final quando novas mensagens chegarem
     if (listRef.current && memoizedMessages.length > 0) {
-      listRef.current.scrollToItem(memoizedMessages.length - 1, 'end')
+      listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
     }
   }, [memoizedMessages])
 

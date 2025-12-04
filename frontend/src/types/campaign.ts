@@ -5,6 +5,7 @@
 export interface Campaign {
   id: string
   name: string
+  title?: string // Alias para name (compatibilidade)
   description?: string
   image_url?: string
   system_rpg?: string
@@ -22,6 +23,11 @@ export interface CampaignParticipant {
   campaign_id: string
   user_id: string
   role: 'master' | 'player' | 'observer'
+  character?: {
+    id: string
+    name: string
+    [key: string]: unknown
+  }
   user?: {
     id: string
     username: string

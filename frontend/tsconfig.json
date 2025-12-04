@@ -27,6 +27,6 @@
     }
   },
   "include": ["src"],
-  "exclude": ["src/test"]
+  "exclude": ["src/test", "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"]
 }
 

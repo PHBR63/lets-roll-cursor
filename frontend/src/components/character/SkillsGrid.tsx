@@ -18,7 +18,14 @@ interface SkillsGridProps {
  */
 export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   const skills = character.skills || {}
-  const [localSkills, setLocalSkills] = useState(skills)
+  const [localSkills, setLocalSkills] = useState<Record<string, { attribute: string; training: SkillTraining; bonus: number }>>(
+    Object.entries(skills).reduce((acc, [key, value]) => {
+      if ('attribute' in value && 'training' in value && 'bonus' in value) {
+        acc[key] = value as { attribute: string; training: SkillTraining; bonus: number }
+      }
+      return acc
+    }, {} as Record<string, { attribute: string; training: SkillTraining; bonus: number }>)
+  )
   const [hasChanges, setHasChanges] = useState(false)
 
   /**

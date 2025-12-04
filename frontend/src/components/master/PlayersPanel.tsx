@@ -26,7 +26,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   const [loading, setLoading] = useState(true)
   const [showDamageModal, setShowDamageModal] = useState(false)
   const [showConditionModal, setShowConditionModal] = useState(false)
-  const [selectedPlayer, setSelectedPlayer] = useState<CampaignParticipant | null>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<{ character: { id: string; stats?: Record<string, unknown>; conditions?: string[] }; user?: { id: string; username: string; avatar_url?: string } } | null>(null)
 
   useEffect(() => {
     if (campaignId) {

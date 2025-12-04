@@ -126,22 +126,34 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
 
   // Atualizar board quando session mudar via Realtime
   useEffect(() => {
-    if (realtimeSession?.board_state) {
-      const boardState = realtimeSession.board_state
+    if (realtimeSession?.board_state && typeof realtimeSession.board_state === 'object' && Object.keys(realtimeSession.board_state).length > 0) {
+      const boardState = realtimeSession.board_state as Record<string, unknown>
       // Só atualizar se for diferente do estado atual (evitar loops)
-      if (boardState.imageUrl !== imageUrl) setImageUrl(boardState.imageUrl || null)
-      if (boardState.zoom !== zoom) setZoom(boardState.zoom || 1)
-      if (boardState.position && (
-        boardState.position.x !== position.x || 
-        boardState.position.y !== position.y
-      )) {
-        setPosition(boardState.position)
+      if (typeof boardState.imageUrl === 'string' && boardState.imageUrl !== imageUrl) {
+        setImageUrl(boardState.imageUrl)
+      } else if (boardState.imageUrl === null && imageUrl !== null) {
+        setImageUrl(null)
       }
-      if (boardState.tokens) setTokens(boardState.tokens || [])
-      if (boardState.drawings) setDrawings(boardState.drawings || [])
-      if (boardState.layers) setLayers(boardState.layers)
+      if (typeof boardState.zoom === 'number' && boardState.zoom !== zoom) {
+        setZoom(boardState.zoom)
+      }
+      if (boardState.position && typeof boardState.position === 'object' && 'x' in boardState.position && 'y' in boardState.position) {
+        const pos = boardState.position as { x: number; y: number }
+        if (pos.x !== position.x || pos.y !== position.y) {
+          setPosition(pos)
+        }
+      }
+      if (Array.isArray(boardState.tokens)) {
+        setTokens(boardState.tokens as Token[])
+      }
+      if (Array.isArray(boardState.drawings)) {
+        setDrawings(boardState.drawings as Drawing[])
+      }
+      if (boardState.layers && typeof boardState.layers === 'object') {
+        setLayers(boardState.layers as Record<Layer, boolean>)
+      }
     }
-  }, [realtimeSession?.board_state])
+  }, [realtimeSession?.board_state, imageUrl, zoom, position])
 
   // Salvar estado quando mudar (com debounce)
   useEffect(() => {
@@ -560,6 +572,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       x: 200,
       y: 200,
       name: character.name,
+      imageUrl: character.avatar_url || null,
       imageUrl: character.avatar_url,
       color: '#6366f1',
       size: 40,

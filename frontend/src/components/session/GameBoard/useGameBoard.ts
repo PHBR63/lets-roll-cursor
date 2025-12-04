@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useRealtimeSession } from '@/hooks/useRealtimeSession'
-import { GameBoardState, Token, Character, Creature, Layer } from './types'
+import { GameBoardState, Token, Character, Creature, Layer, Drawing, Measurement } from './types'
 import { logger } from '@/utils/logger'
 
 /**
@@ -66,21 +66,33 @@ export function useGameBoard(sessionId?: string, campaignId?: string) {
 
   // Sincronizar com Realtime
   useEffect(() => {
-    if (realtimeSession?.board_state) {
-      const boardState = realtimeSession.board_state
-      if (boardState.imageUrl !== state.imageUrl) setState((prev) => ({ ...prev, imageUrl: boardState.imageUrl || null }))
-      if (boardState.zoom !== state.zoom) setState((prev) => ({ ...prev, zoom: boardState.zoom || 1 }))
-      if (boardState.position && (
-        boardState.position.x !== state.position.x || 
-        boardState.position.y !== state.position.y
-      )) {
-        setState((prev) => ({ ...prev, position: boardState.position }))
+    if (realtimeSession?.board_state && typeof realtimeSession.board_state === 'object' && Object.keys(realtimeSession.board_state).length > 0) {
+      const boardState = realtimeSession.board_state as Record<string, unknown>
+      if (typeof boardState.imageUrl === 'string' && boardState.imageUrl !== state.imageUrl) {
+        setState((prev) => ({ ...prev, imageUrl: boardState.imageUrl as string }))
+      } else if (boardState.imageUrl === null && state.imageUrl !== null) {
+        setState((prev) => ({ ...prev, imageUrl: null }))
       }
-      if (boardState.tokens) setState((prev) => ({ ...prev, tokens: boardState.tokens || [] }))
-      if (boardState.drawings) setState((prev) => ({ ...prev, drawings: boardState.drawings || [] }))
-      if (boardState.layers) setState((prev) => ({ ...prev, layers: boardState.layers }))
+      if (typeof boardState.zoom === 'number' && boardState.zoom !== state.zoom) {
+        setState((prev) => ({ ...prev, zoom: boardState.zoom as number }))
+      }
+      if (boardState.position && typeof boardState.position === 'object' && 'x' in boardState.position && 'y' in boardState.position) {
+        const pos = boardState.position as { x: number; y: number }
+        if (pos.x !== state.position.x || pos.y !== state.position.y) {
+          setState((prev) => ({ ...prev, position: pos }))
+        }
+      }
+      if (Array.isArray(boardState.tokens)) {
+        setState((prev) => ({ ...prev, tokens: boardState.tokens as Token[] }))
+      }
+      if (Array.isArray(boardState.drawings)) {
+        setState((prev) => ({ ...prev, drawings: boardState.drawings as Drawing[] }))
+      }
+      if (boardState.layers && typeof boardState.layers === 'object') {
+        setState((prev) => ({ ...prev, layers: boardState.layers as Record<Layer, boolean> }))
+      }
     }
-  }, [realtimeSession?.board_state])
+  }, [realtimeSession?.board_state, state.imageUrl, state.zoom, state.position])
 
   // Salvar estado quando mudar
   useEffect(() => {

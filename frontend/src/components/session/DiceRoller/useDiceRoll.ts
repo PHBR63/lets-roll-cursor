@@ -78,9 +78,10 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
         setShowAnimation(true)
       }
 
-      const rollResult: DiceRollResult = {
-        type: 'basic',
+      const rollResult: DiceRollResultType = {
         ...result,
+        type: result.type || 'basic',
+        formula: result.formula || '',
       }
       setLastResult(rollResult)
 
@@ -146,9 +147,10 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
         setShowAnimation(true)
       }
 
-      const rollResult: DiceRollResult = {
-        type: 'skill',
+      const rollResult: DiceRollResultType = {
         ...result,
+        type: result.type || 'skill',
+        formula: result.formula || '',
       }
       setLastResult(rollResult)
 
@@ -215,9 +217,10 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
         setShowAnimation(true)
       }
 
-      const rollResult: DiceRollResult = {
-        type: 'attack',
+      const rollResult: DiceRollResultType = {
         ...result,
+        type: result.type || 'attack',
+        formula: result.formula || '',
       }
       setLastResult(rollResult)
 

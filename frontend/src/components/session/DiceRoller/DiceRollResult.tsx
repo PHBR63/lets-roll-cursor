@@ -59,7 +59,7 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
             {result.skillName} vs Defesa {result.targetDefense}
           </div>
           <div className="text-xs text-text-secondary mt-2 text-center">
-            Ataque: [{result.dice?.join(', ') || result.details?.join(', ')}] + {result.bonus} = {result.total}
+            Ataque: [{result.dice?.join(', ') || (Array.isArray(result.details) ? result.details.join(', ') : '')}] + {(result as any).bonus || result.skillBonus || 0} = {result.total}
             {result.critical && ' (CRÍTICO!)'}
           </div>
           {result.hit && result.damage && (
