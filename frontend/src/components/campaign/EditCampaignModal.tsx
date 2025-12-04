@@ -13,18 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Upload, X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-
-interface Campaign {
-  id: string
-  name: string
-  description?: string | null
-  image_url?: string | null
-  system_rpg?: string | null
-  status?: string
-  created_by?: string
-  created_at?: string
-  updated_at?: string
-}
+import { Campaign } from '@/types/campaign'
 
 interface EditCampaignModalProps {
   open: boolean

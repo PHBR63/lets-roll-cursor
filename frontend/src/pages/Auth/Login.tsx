@@ -33,7 +33,8 @@ export function Login() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema) as any,
+    // @ts-expect-error - zodResolver type incompatibility with @hookform/resolvers v3.10.0
+    resolver: zodResolver(loginSchema),
   })
 
   /**

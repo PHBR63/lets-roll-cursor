@@ -44,7 +44,8 @@ export function Register() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema) as any,
+    // @ts-expect-error - zodResolver type incompatibility with @hookform/resolvers v3.10.0
+    resolver: zodResolver(registerSchema),
   })
 
   /**
