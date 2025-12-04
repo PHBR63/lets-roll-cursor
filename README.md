@@ -1,11 +1,5 @@
 # Let's Roll 🎲
 
-[![CI](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/ci.yml/badge.svg)](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/codeql.yml/badge.svg)](https://github.com/PHBR63/lets-roll-cursor/actions/workflows/codeql.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20-green.svg)](https://nodejs.org/)
-
 > Plataforma web completa para jogar RPG de mesa online, onde mestres têm controle total sobre rolagens, criaturas, itens e habilidades.
 
 ## 🚀 Demo
@@ -197,19 +191,6 @@ npm run install:all
 
 Este projeto está em desenvolvimento ativo. Sinta-se livre para contribuir!
 
-Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes sobre nosso código de conduta e processo de contribuição.
-
 ## 📄 Licença
 
 Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
-
-## 🔒 Segurança
-
-Veja [SECURITY.md](.github/SECURITY.md) para informações sobre segurança e como reportar vulnerabilidades.
-
-## 📚 Documentação Adicional
-
-- [Guia de Contribuição](CONTRIBUTING.md)
-- [Código de Conduta](CODE_OF_CONDUCT.md)
-- [Changelog](CHANGELOG.md)
-- [Git Flow](.github/GIT_FLOW.md)

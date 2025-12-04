@@ -35,15 +35,6 @@ export function CampaignDetail() {
   const [error, setError] = useState<string | null>(null)
   const { handleErrorWithToast, handleResponseError } = useApiError()
 
-  useEffect(() => {
-    if (id) {
-      loadCampaign().then(() => {
-        setLoading(false)
-      })
-      loadCharacters()
-    }
-  }, [id, user])
-
   /**
    * Carrega dados da campanha (com retry)
    */
@@ -90,6 +81,16 @@ export function CampaignDetail() {
       handleErrorWithToast(err, 'Erro ao carregar campanha')
     },
   })
+
+  useEffect(() => {
+    if (id) {
+      loadCampaign().then(() => {
+        setLoading(false)
+      })
+      loadCharacters()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, user])
 
   /**
    * Carrega personagens da campanha

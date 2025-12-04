@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { supabase } from '@/integrations/supabase/client'
 import { ALL_CONDITIONS } from '@/types/ordemParanormal'
+import { AppError } from '@/types/common'
 
 interface ApplyConditionModalProps {
   open: boolean

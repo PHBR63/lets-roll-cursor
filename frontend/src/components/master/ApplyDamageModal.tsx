@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { supabase } from '@/integrations/supabase/client'
+import { AppError } from '@/types/common'
 
 interface ApplyDamageModalProps {
   open: boolean

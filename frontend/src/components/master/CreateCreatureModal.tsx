@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { supabase } from '@/integrations/supabase/client'
+import { AppError } from '@/types/common'
 
 interface CreateCreatureModalProps {
   open: boolean

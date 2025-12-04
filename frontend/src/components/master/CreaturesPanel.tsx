@@ -20,6 +20,7 @@ import { NPCsPanel } from './NPCsPanel'
 import { SearchAndFilters } from './SearchAndFilters'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CreatureCard } from './CreatureCard'
+import { Creature } from '@/types/creature'
 
 /**
  * Painel de criaturas e NPCs

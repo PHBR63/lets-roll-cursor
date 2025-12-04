@@ -25,15 +25,6 @@ export function Dashboard() {
   const [participatingCampaigns, setParticipatingCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const cache = useCache<Campaign[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
-
-  useEffect(() => {
-    if (user) {
-      loadCampaigns().then(() => {
-        setLoading(false)
-      })
-    }
-  }, [user])
-
   const { handleErrorWithToast, handleResponseError } = useApiError()
 
   /**

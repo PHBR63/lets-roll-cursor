@@ -1,5 +1,6 @@
 import { GameBoardProvider, useGameBoardContext } from './GameBoardContext'
 import { useGameBoard } from './useGameBoard'
+import { useGameBoardInteractions } from './GameBoardInteractions'
 import { GameBoardCanvas } from './GameBoardCanvas'
 import { GameBoardToolbar } from './GameBoardToolbar'
 import { GameBoardTokens } from './GameBoardTokens'

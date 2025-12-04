@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { ApplyDamageModal } from './ApplyDamageModal'
 import { ApplyConditionModal } from './ApplyConditionModal'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
+import { CampaignParticipant } from '@/types/campaign'
 
 /**
  * Painel de jogadores para o mestre

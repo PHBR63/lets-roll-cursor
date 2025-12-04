@@ -7,6 +7,8 @@ import { AudioControls } from './AudioControls'
 import { useRealtimePlayers } from '@/hooks/useRealtimePlayers'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 import { usePresence } from '@/hooks/usePresence'
+import { CampaignParticipant } from '@/types/campaign'
+import { Character } from '@/types/character'
 
 /**
  * Sidebar com grid de cards de jogadores (2x3)

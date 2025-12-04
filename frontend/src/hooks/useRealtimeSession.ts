@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { Session } from '@/types/session'
 
 /**
  * Hook para sincronizar atualizações de sessão em tempo real

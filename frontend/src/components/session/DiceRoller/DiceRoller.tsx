@@ -33,12 +33,6 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
   const [showAnimation, setShowAnimation] = useState(false)
   const [animationResult, setAnimationResult] = useState<{ result: number; dice: number[] } | null>(null)
 
-  useEffect(() => {
-    if (campaignId && user) {
-      loadCharacter()
-    }
-  }, [campaignId, user])
-
   /**
    * Carrega personagem do usuário na campanha
    */
@@ -70,6 +64,13 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       logger.error({ error }, 'Erro ao carregar personagem')
     }
   }
+
+  useEffect(() => {
+    if (campaignId && user) {
+      loadCharacter()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId, user])
 
   const handleRoll = (result: DiceRollResultType) => {
     // Mostrar animação

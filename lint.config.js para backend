@@ -1,0 +1,16 @@
+* [33m1f96882[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/ci-workflow-errors[m[33m, [m[1;31morigin/fix/ci-workflow-errors[m[33m)[m fix: adicionar imports faltantes de tipos TypeScript
+* [33m96f9b4f[m fix: fechar memo() corretamente no CharacterStatusCard
+* [33m51ab230[m fix: corrigir erros de lint e TypeScript
+* [33mdd8d00a[m[33m ([m[1;32mmain[m[33m)[m fix: corrigir workflows CI para não usar package-lock.json
+[31m|[m * [33m3534e26[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/multi-266c54db44[m[33m)[m chore(frontend)(deps): bump react-dom and @types/react-dom in /frontend
+[31m|[m[31m/[m  
+[31m|[m * [33mdd331b8[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/types/node-24.10.1[m[33m)[m chore(frontend)(deps-dev): bump @types/node in /frontend
+[31m|[m[31m/[m  
+[31m|[m * [33mde071b5[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/react-router-dom-7.10.0[m[33m)[m chore(frontend)(deps): bump react-router-dom in /frontend
+[31m|[m[31m/[m  
+[31m|[m * [33m43d2eaf[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/tailwindcss-4.1.17[m[33m)[m chore(frontend)(deps-dev): bump tailwindcss in /frontend
+[31m|[m[31m/[m  
+[31m|[m * [33mf456cc8[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/vitejs/plugin-react-swc-4.2.2[m[33m)[m chore(frontend)(deps-dev): bump @vitejs/plugin-react-swc in /frontend
+[31m|[m[31m/[m  
+[31m|[m * [33meff9fc0[m[33m ([m[1;31morigin/dependabot/npm_and_yarn/frontend/types/react-window-2.0.0[m[33m)[m chore(frontend)(deps): bump @types/react-window in /frontend
+[31m|[m[31m/[m  
