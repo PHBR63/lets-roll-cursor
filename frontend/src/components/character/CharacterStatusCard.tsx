@@ -204,5 +204,5 @@ export const CharacterStatusCard = memo(function CharacterStatusCard({ character
       </Tooltip>
     </TooltipProvider>
   )
-}
+})
 
