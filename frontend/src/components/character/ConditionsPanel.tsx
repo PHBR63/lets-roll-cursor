@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { X, AlertCircle, Clock } from 'lucide-react'
+import { X, Clock } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { Condition } from '@/types/ordemParanormal'
 import { AddConditionModal } from './AddConditionModal'
@@ -14,8 +13,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
-  Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,

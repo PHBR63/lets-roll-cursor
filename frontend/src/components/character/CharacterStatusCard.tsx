@@ -66,12 +66,14 @@ export const CharacterStatusCard = memo(function CharacterStatusCard({ character
   const hasConditions = conditions.length > 0
 
   // Memoizar informações para o tooltip
-  const tooltipInfo = useMemo(() => [
-    character.class && `Classe: ${character.class}`,
-    character.attributes && `AGI: ${character.attributes.agi || 0} | FOR: ${character.attributes.for || 0} | INT: ${character.attributes.int || 0} | PRE: ${character.attributes.pre || 0} | VIG: ${character.attributes.vig || 0}`,
-    character.defense !== undefined && `Defesa: ${character.defense}`,
-    hasConditions && `Condições: ${conditions.join(', ')}`,
-  ].filter(Boolean).join('\n')
+  const tooltipInfo = useMemo(() => {
+    return [
+      character.class && `Classe: ${character.class}`,
+      character.attributes && `AGI: ${character.attributes.agi || 0} | FOR: ${character.attributes.for || 0} | INT: ${character.attributes.int || 0} | PRE: ${character.attributes.pre || 0} | VIG: ${character.attributes.vig || 0}`,
+      character.defense !== undefined && `Defesa: ${character.defense}`,
+      hasConditions && `Condições: ${conditions.join(', ')}`,
+    ].filter(Boolean).join('\n')
+  }, [character.class, character.attributes, character.defense, hasConditions, conditions])
 
   return (
     <TooltipProvider>

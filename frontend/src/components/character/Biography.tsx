@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Character, CharacterUpdateData } from '@/types/character'
@@ -27,7 +26,8 @@ export function Biography({ character, onUpdate }: BiographyProps) {
       onUpdate({ biography: debouncedBiography })
       setTimeout(() => setSaving(false), 500)
     }
-  }, [debouncedBiography])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedBiography, character.biography])
 
   return (
     <div className="space-y-2">

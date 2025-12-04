@@ -26,6 +26,9 @@ export default [
         window: 'readonly',
         document: 'readonly',
         console: 'readonly',
+        fetch: 'readonly',
+        alert: 'readonly',
+        FormData: 'readonly',
         // DOM types
         File: 'readonly',
         FileReader: 'readonly',

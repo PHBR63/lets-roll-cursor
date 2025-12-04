@@ -20,7 +20,7 @@ interface PlayersSidebarProps {
 
 export function PlayersSidebar({
   participants,
-  currentUserId,
+  currentUserId: _currentUserId,
   campaignId,
 }: PlayersSidebarProps) {
   const { checkUserOnline } = usePresence(campaignId || '')

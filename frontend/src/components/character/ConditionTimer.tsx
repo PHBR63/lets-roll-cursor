@@ -14,7 +14,7 @@ interface ConditionTimerProps {
   onRemove: () => void
 }
 
-export function ConditionTimer({ condition, duration, onExpire, onRemove }: ConditionTimerProps) {
+export function ConditionTimer({ condition: _condition, duration, onExpire, onRemove }: ConditionTimerProps) {
   const [remaining, setRemaining] = useState(duration)
 
   useEffect(() => {

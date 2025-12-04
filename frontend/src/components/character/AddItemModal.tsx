@@ -37,7 +37,7 @@ export function AddItemModal({
   campaignId,
   onSuccess,
 }: AddItemModalProps) {
-  const [items, setItems] = useState<any[]>([])
+  const [items, setItems] = useState<Array<{ id: string; name: string; description?: string }>>([])
   const [selectedItemId, setSelectedItemId] = useState<string>('')
   const [quantity, setQuantity] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -47,6 +47,7 @@ export function AddItemModal({
     if (open) {
       loadItems()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, campaignId])
 
   /**
