@@ -64,8 +64,9 @@ export function InvitePlayers({
       setEmail('')
       setError(null)
       onSuccess()
-    } catch (err: any) {
-      setError(err.message || 'Erro ao convidar jogador')
+    } catch (err: unknown) {
+      const error = err as Error
+      setError(error.message || 'Erro ao convidar jogador')
     } finally {
       setLoading(false)
     }

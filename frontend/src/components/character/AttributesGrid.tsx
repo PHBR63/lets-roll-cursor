@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
 import { useToast } from '@/hooks/useToast'
+import { Character, CharacterUpdateData } from '@/types/character'
 
 interface AttributesGridProps {
-  character: any
-  onUpdate: (updates: any) => void
+  character: Character
+  onUpdate: (updates: CharacterUpdateData) => void
 }
 
 /**

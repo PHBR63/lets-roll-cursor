@@ -38,32 +38,37 @@
   body {
     @apply bg-background text-text;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    /* Fundo roxo escuro sólido (#1A0033) com gradientes sutis */
+    background-color: hsl(271, 100%, 10%);
     background-image: 
-      radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+      radial-gradient(circle at 20% 50%, rgba(128, 0, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(128, 0, 255, 0.08) 0%, transparent 50%);
     background-attachment: fixed;
     min-height: 100vh;
   }
   .dark {
-    --background: 224 71.4% 4.1%;
+    /* Background: #1A0033 (roxo escuro) - hsl(271, 100%, 10%) */
+    --background: 271 100% 10%;
     --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
+    /* Card: #2A2A3A (cinza escuro) - hsl(240, 16%, 20%) */
+    --card: 240 16% 20%;
     --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
+    --popover: 240 16% 20%;
     --popover-foreground: 210 20% 98%;
     --primary: 210 20% 98%;
-    --primary-foreground: 220.9 39.3% 11%;
-    --secondary: 215 27.9% 16.9%;
+    --primary-foreground: 271 100% 10%;
+    --secondary: 240 16% 25%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 215 27.9% 16.9%;
+    --muted: 240 16% 25%;
     --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
+    /* Accent: #8000FF (roxo vibrante) - hsl(270, 100%, 50%) */
+    --accent: 270 100% 50%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    --border: 240 16% 30%;
+    --input: 240 16% 25%;
+    --ring: 270 100% 50%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -90,14 +95,15 @@
     left: 0;
     width: 100%;
     height: 100%;
-    opacity: 0.1;
+    opacity: 0.15;
     pointer-events: none;
     z-index: 0;
+    /* SVG melhorado de icosaedro wireframe */
     background-image: 
-      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 10 L70 30 L50 50 L30 30 Z M50 10 L60 40 L40 40 Z M70 30 L60 40 L80 50 L70 50 Z M50 50 L60 40 L80 50 Z M30 30 L40 40 L20 50 L30 50 Z M50 50 L40 40 L20 50 Z' stroke='white' stroke-width='0.5' fill='none'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
+      url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23C8BFE7' stroke-width='0.8' fill='none' opacity='0.6'%3E%3Cpath d='M60 10 L75 30 L60 50 L45 30 Z'/%3E%3Cpath d='M60 10 L70 40 L50 40 Z'/%3E%3Cpath d='M75 30 L70 40 L85 50 L75 50 Z'/%3E%3Cpath d='M60 50 L70 40 L85 50 Z'/%3E%3Cpath d='M45 30 L50 40 L35 50 L45 50 Z'/%3E%3Cpath d='M60 50 L50 40 L35 50 Z'/%3E%3Cpath d='M60 50 L70 60 L85 50 L75 50 Z'/%3E%3Cpath d='M60 50 L50 60 L35 50 L45 50 Z'/%3E%3Cpath d='M70 60 L75 70 L60 90 L50 70 Z'/%3E%3Cpath d='M50 60 L45 70 L60 90 L70 70 Z'/%3E%3Cpath d='M60 90 L70 100 L50 100 Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 250px 250px;
     background-position: 0 0;
-    animation: patternMove 60s linear infinite;
+    animation: patternMove 80s linear infinite;
   }
 
   @keyframes patternMove {
@@ -112,12 +118,4 @@
 
 
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 

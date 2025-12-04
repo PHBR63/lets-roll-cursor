@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
@@ -16,15 +17,15 @@ interface CampaignCardProps {
   }
 }
 
-export function CampaignCard({ campaign }: CampaignCardProps) {
+export const CampaignCard = memo(function CampaignCard({ campaign }: CampaignCardProps) {
   const navigate = useNavigate()
 
   /**
    * Navega para detalhes da campanha
    */
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     navigate(`/campaign/${campaign.id}`)
-  }
+  }, [navigate, campaign.id])
 
   return (
     <Card className="w-64 h-80 flex flex-col bg-card border-card-secondary hover:border-accent transition-colors cursor-pointer flex-shrink-0">
@@ -63,5 +64,5 @@ export function CampaignCard({ campaign }: CampaignCardProps) {
       </CardFooter>
     </Card>
   )
-}
+})
 

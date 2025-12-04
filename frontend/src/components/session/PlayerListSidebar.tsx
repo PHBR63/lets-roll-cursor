@@ -33,9 +33,9 @@ export function PlayerListSidebar({
   useEffect(() => {
     if (!participants || !characters) return
 
-    const playersWithCharacters = participants.map((participant: any) => {
+    const playersWithCharacters = participants.map((participant: CampaignParticipant) => {
       const character = characters.find(
-        (char: any) => char.user_id === participant.user?.id
+        (char: Character) => char.user_id === participant.user?.id
       )
 
       return {

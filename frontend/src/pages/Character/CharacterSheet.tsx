@@ -16,6 +16,8 @@ import { useAuth } from '@/context/AuthContext'
 import { ArrowLeft } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
+import { Character, CharacterUpdateData } from '@/types/character'
+import { AppError } from '@/types/common'
 import {
   Accordion,
   AccordionContent,
@@ -31,7 +33,7 @@ export function CharacterSheet() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [character, setCharacter] = useState<any>(null)
+  const [character, setCharacter] = useState<Character | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -88,7 +90,7 @@ export function CharacterSheet() {
   /**
    * Salva alterações do personagem (debounce automático)
    */
-  const saveCharacter = async (updates: any) => {
+  const saveCharacter = async (updates: CharacterUpdateData) => {
     if (!id || !user || saving) return
 
     setSaving(true)

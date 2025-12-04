@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
 
 /**
  * Serviço para lógica de negócio de chat
@@ -40,7 +41,7 @@ export const chatService = {
 
       return data || []
     } catch (error: any) {
-      console.error('Error fetching messages:', error)
+      logger.error({ error }, 'Error fetching messages')
       throw new Error('Erro ao buscar mensagens: ' + error.message)
     }
   },
@@ -90,7 +91,7 @@ export const chatService = {
 
       return message
     } catch (error: any) {
-      console.error('Error creating message:', error)
+      logger.error({ error }, 'Error creating message')
       throw new Error('Erro ao enviar mensagem: ' + error.message)
     }
   },

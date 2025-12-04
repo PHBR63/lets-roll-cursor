@@ -134,9 +134,10 @@ export function EditCampaignModal({
       onSuccess()
       onOpenChange(false)
       setImageFile(null)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       console.error('Erro ao atualizar campanha:', error)
-      alert(error.message || 'Erro ao atualizar campanha. Tente novamente.')
+      alert(err.message || 'Erro ao atualizar campanha. Tente novamente.')
     } finally {
       setLoading(false)
     }

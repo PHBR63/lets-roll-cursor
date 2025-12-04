@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/select'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useRealtimeSession } from '@/hooks/useRealtimeSession'
+import { Character } from '@/types/character'
+import { Creature } from '@/types/creature'
 
 /**
  * Componente Game Board
@@ -552,7 +554,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   /**
    * Adiciona token de personagem
    */
-  const handleAddCharacterToken = (character: any) => {
+  const handleAddCharacterToken = (character: Character) => {
     const newToken: Token = {
       id: `token-char-${character.id}`,
       x: 200,
@@ -570,7 +572,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   /**
    * Adiciona token de criatura
    */
-  const handleAddCreatureToken = (creature: any) => {
+  const handleAddCreatureToken = (creature: Creature) => {
     const newToken: Token = {
       id: `token-creature-${creature.id}`,
       x: 200,

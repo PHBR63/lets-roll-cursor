@@ -50,11 +50,12 @@ export function Login() {
 
       toast.success('Login realizado com sucesso!')
       navigate('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       const errorMessage =
-        error.message === 'Invalid login credentials'
+        err.message === 'Invalid login credentials'
           ? 'E-mail ou senha incorretos'
-          : error.message || 'Erro ao fazer login'
+          : err.message || 'Erro ao fazer login'
       toast.error('Erro ao fazer login', errorMessage)
     }
   }

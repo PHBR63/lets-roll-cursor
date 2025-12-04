@@ -96,7 +96,7 @@ export class ApiClient {
   /**
    * POST request
    */
-  async post<T>(url: string, data?: any, options?: ApiRequestOptions): Promise<T> {
+  async post<T>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
     const isFormData = data instanceof FormData
 
     const response = await this.fetchWithRetry(url, {
@@ -122,7 +122,7 @@ export class ApiClient {
   /**
    * PUT request
    */
-  async put<T>(url: string, data?: any, options?: ApiRequestOptions): Promise<T> {
+  async put<T>(url: string, data?: unknown, options?: ApiRequestOptions): Promise<T> {
     const isFormData = data instanceof FormData
 
     const response = await this.fetchWithRetry(url, {

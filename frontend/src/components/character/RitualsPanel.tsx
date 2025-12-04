@@ -23,12 +23,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ALL_RITUALS, type Ritual } from '@/data/rituals'
 
+import { Character } from '@/types/character'
+
 /**
  * Painel de rituais paranormais do personagem
  * Permite adicionar, remover e conjurar rituais
  */
 interface RitualsPanelProps {
-  character: any
+  character: Character
   onUpdate: () => void
 }
 

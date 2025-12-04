@@ -22,9 +22,10 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Character } from '@/types/character'
 
 interface ConditionsPanelProps {
-  character: any
+  character: Character
   onUpdate: () => void
 }
 

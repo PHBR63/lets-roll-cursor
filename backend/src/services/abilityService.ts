@@ -1,4 +1,7 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
+import { CreateAbilityData, UpdateAbilityData } from '../types/ability'
+import { AppError } from '../types/common'
 
 /**
  * Serviço para lógica de negócio de habilidades
@@ -9,7 +12,7 @@ export const abilityService = {
    * @param filters - Filtros de busca (campaignId, isGlobal)
    * @returns Lista de habilidades
    */
-  async getAbilities(filters: any) {
+  async getAbilities(filters: { campaignId?: string; isGlobal?: boolean; limit?: number; offset?: number }) {
     try {
       let query = supabase
         .from('abilities')
@@ -40,14 +43,27 @@ export const abilityService = {
         query = query.or('is_global.eq.true,campaign_id.is.null')
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      // Aplicar paginação
+      const limit = filters.limit || 20
+      const offset = filters.offset || 0
+      query = query.range(offset, offset + limit - 1)
+
+      const { data, error, count } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return data || []
-    } catch (error: any) {
-      console.error('Error fetching abilities:', error)
-      throw new Error('Erro ao buscar habilidades: ' + error.message)
+      // Retornar resultado paginado
+      return {
+        data: data || [],
+        total: count || 0,
+        limit,
+        offset,
+        hasMore: (count || 0) > offset + limit,
+      }
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching abilities')
+      throw new Error('Erro ao buscar habilidades: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -57,7 +73,7 @@ export const abilityService = {
    * @param data - Dados da habilidade
    * @returns Habilidade criada
    */
-  async createAbility(userId: string, data: any) {
+  async createAbility(userId: string, data: CreateAbilityData) {
     try {
       const { data: ability, error } = await supabase
         .from('abilities')
@@ -77,9 +93,10 @@ export const abilityService = {
       if (error) throw error
 
       return ability
-    } catch (error: any) {
-      console.error('Error creating ability:', error)
-      throw new Error('Erro ao criar habilidade: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error creating ability')
+      throw new Error('Erro ao criar habilidade: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -113,9 +130,10 @@ export const abilityService = {
       if (error) throw error
 
       return ability
-    } catch (error: any) {
-      console.error('Error fetching ability:', error)
-      throw new Error('Erro ao buscar habilidade: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching ability')
+      throw new Error('Erro ao buscar habilidade: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -125,9 +143,9 @@ export const abilityService = {
    * @param data - Dados para atualizar
    * @returns Habilidade atualizada
    */
-  async updateAbility(id: string, data: any) {
+  async updateAbility(id: string, data: UpdateAbilityData) {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       }
 
@@ -148,9 +166,10 @@ export const abilityService = {
       if (error) throw error
 
       return ability
-    } catch (error: any) {
-      console.error('Error updating ability:', error)
-      throw new Error('Erro ao atualizar habilidade: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error updating ability')
+      throw new Error('Erro ao atualizar habilidade: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -163,9 +182,10 @@ export const abilityService = {
       const { error } = await supabase.from('abilities').delete().eq('id', id)
 
       if (error) throw error
-    } catch (error: any) {
-      console.error('Error deleting ability:', error)
-      throw new Error('Erro ao deletar habilidade: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error deleting ability')
+      throw new Error('Erro ao deletar habilidade: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -185,9 +205,10 @@ export const abilityService = {
       if (error) throw error
 
       return data || []
-    } catch (error: any) {
-      console.error('Error fetching campaign abilities:', error)
-      throw new Error('Erro ao buscar habilidades da campanha: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching campaign abilities')
+      throw new Error('Erro ao buscar habilidades da campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -211,9 +232,10 @@ export const abilityService = {
       // Adicionar habilidade ao personagem
       const { characterService } = await import('./characterService')
       return await characterService.addAbilityToCharacter(characterId, abilityId)
-    } catch (error: any) {
-      console.error('Error assigning ability to character:', error)
-      throw new Error('Erro ao atribuir habilidade: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error assigning ability to character')
+      throw new Error('Erro ao atribuir habilidade: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

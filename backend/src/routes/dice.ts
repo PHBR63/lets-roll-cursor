@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
 import { diceService } from '../services/diceService'
+import { validate } from '../middleware/validation'
+import { DiceRollSchema } from '../middleware/schemas/diceSchemas'
+import { AppError } from '../types/common'
 
 /**
  * Rotas para sistema de rolagem de dados
@@ -13,33 +16,33 @@ diceRouter.use(authenticateToken)
  * Rola dados baseado na fórmula fornecida
  * Exemplo: 2d6+3, 1d20, etc.
  */
-diceRouter.post('/roll', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id
-    const { formula, sessionId, campaignId, characterId, isPrivate } = req.body
+diceRouter.post(
+  '/roll',
+  validate({ body: DiceRollSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+      const { formula, sessionId, campaignId, characterId, isPrivate } = req.body
 
-    if (!formula) {
-      return res.status(400).json({ error: 'Fórmula é obrigatória' })
+      const result = await diceService.rollDice({
+        formula,
+        userId,
+        campaignId,
+        sessionId: sessionId || null,
+        characterId: characterId || null,
+        isPrivate: isPrivate || false,
+      })
+
+      res.json(result)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
     }
-
-    if (!campaignId) {
-      return res.status(400).json({ error: 'campaignId é obrigatório' })
-    }
-
-    const result = await diceService.rollDice({
-      formula,
-      userId,
-      campaignId,
-      sessionId: sessionId || null,
-      characterId: characterId || null,
-      isPrivate: isPrivate || false,
-    })
-
-    res.json(result)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
   }
-})
+)
 
 /**
  * Obtém histórico de rolagens

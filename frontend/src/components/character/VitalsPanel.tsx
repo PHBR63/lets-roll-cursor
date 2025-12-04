@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Minus } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
+import { Character } from '@/types/character'
 
 interface VitalsPanelProps {
-  character: any
+  character: Character
   onUpdateResource: (resource: 'pv' | 'san' | 'pe', value: number, isDelta: boolean) => void
 }
 

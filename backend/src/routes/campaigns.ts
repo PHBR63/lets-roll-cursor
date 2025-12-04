@@ -2,6 +2,9 @@ import { Router, Request, Response } from 'express'
 import multer from 'multer'
 import { authenticateToken } from '../middleware/auth'
 import { campaignService } from '../services/campaignService'
+import { validate } from '../middleware/validation'
+import { CreateCampaignSchema, UpdateCampaignSchema } from '../middleware/schemas/campaignSchemas'
+import { AppError } from '../types/common'
 
 /**
  * Rotas para CRUD de campanhas
@@ -21,18 +24,25 @@ const upload = multer({
 // Listar campanhas do usuário
 campaignsRouter.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
     const campaigns = await campaignService.getUserCampaigns(userId)
     res.json(campaigns)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })
 
 // Criar nova campanha (com upload de imagem)
 campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
     
     // Parse do JSON de configuração
     let config = {}
@@ -41,22 +51,23 @@ campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Resp
     }
 
     const campaignData = {
-      title: req.body.title,
+      name: req.body.title || req.body.name,
       description: req.body.description,
       systemRpg: req.body.systemRpg || null,
       tags: req.body.tags ? JSON.parse(req.body.tags) : [],
       image: req.file ? {
         buffer: req.file.buffer,
         originalname: req.file.originalname,
-      } : null,
+      } : undefined,
       ...config,
     }
 
     const campaign = await campaignService.createCampaign(userId, campaignData)
     res.status(201).json(campaign)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })
 
 // Obter campanha por ID
@@ -64,19 +75,23 @@ campaignsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const campaign = await campaignService.getCampaignById(req.params.id)
     res.json(campaign)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })
 
 // Atualizar campanha (com upload de imagem opcional)
 campaignsRouter.put('/:id', upload.single('image'), async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
     const campaignId = req.params.id
 
-    const updateData: any = {
-      title: req.body.title,
+    const updateData: Record<string, unknown> = {
+      name: req.body.title || req.body.name,
       description: req.body.description,
       systemRpg: req.body.systemRpg,
       tags: req.body.tags ? JSON.parse(req.body.tags) : undefined,
@@ -91,26 +106,34 @@ campaignsRouter.put('/:id', upload.single('image'), async (req: Request, res: Re
 
     const campaign = await campaignService.updateCampaign(campaignId, userId, updateData)
     res.json(campaign)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })
 
 // Deletar campanha
 campaignsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
     await campaignService.deleteCampaign(req.params.id, userId)
     res.status(204).send()
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })
 
 // Convidar jogador
 campaignsRouter.post('/:id/invite', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.id
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
     const { email } = req.body
 
     if (!email) {
@@ -119,7 +142,8 @@ campaignsRouter.post('/:id/invite', async (req: Request, res: Response) => {
 
     const result = await campaignService.invitePlayer(req.params.id, userId, email)
     res.json(result)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
 })

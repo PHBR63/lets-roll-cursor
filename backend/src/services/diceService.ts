@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
 
 /**
  * Serviço para lógica de negócio de rolagem de dados
@@ -103,7 +104,7 @@ export const diceService = {
         details: rolls,
       }
     } catch (error: any) {
-      console.error('Error rolling dice:', error)
+      logger.error({ error }, 'Error rolling dice')
       throw new Error('Erro ao rolar dados: ' + error.message)
     }
   },
@@ -146,7 +147,7 @@ export const diceService = {
 
       return data || []
     } catch (error: any) {
-      console.error('Error fetching roll history:', error)
+      logger.error({ error }, 'Error fetching roll history')
       throw new Error('Erro ao buscar histórico: ' + error.message)
     }
   },

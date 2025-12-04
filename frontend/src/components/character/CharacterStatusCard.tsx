@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { AnimatedProgressBar } from '@/components/ui/animated-progress'
 import { Card } from '@/components/ui/card'
 import {
@@ -47,18 +48,25 @@ interface CharacterStatusCardProps {
   }
 }
 
-export function CharacterStatusCard({ character }: CharacterStatusCardProps) {
+export const CharacterStatusCard = memo(function CharacterStatusCard({ character }: CharacterStatusCardProps) {
   const stats = character.stats || {}
-  // Sistema Ordem Paranormal: pv, san, pe, nex
-  const vida = stats.pv || stats.vida || { current: 10, max: 20 }
-  const energia = stats.pe || stats.energia || { current: 20, max: 20 }
-  const saude = stats.san || stats.saude || { current: 15, max: 20 }
-  const xp = stats.nex || stats.xp || 0
+  
+  // Memoizar cálculos de recursos
+  const { vida, energia, saude, xp } = useMemo(() => {
+    // Sistema Ordem Paranormal: pv, san, pe, nex
+    return {
+      vida: stats.pv || stats.vida || { current: 10, max: 20 },
+      energia: stats.pe || stats.energia || { current: 20, max: 20 },
+      saude: stats.san || stats.saude || { current: 15, max: 20 },
+      xp: stats.nex || stats.xp || 0,
+    }
+  }, [stats.pv, stats.vida, stats.pe, stats.energia, stats.san, stats.saude, stats.nex, stats.xp])
+
   const conditions = character.conditions || []
   const hasConditions = conditions.length > 0
 
-  // Informações para o tooltip
-  const tooltipInfo = [
+  // Memoizar informações para o tooltip
+  const tooltipInfo = useMemo(() => [
     character.class && `Classe: ${character.class}`,
     character.attributes && `AGI: ${character.attributes.agi || 0} | FOR: ${character.attributes.for || 0} | INT: ${character.attributes.int || 0} | PRE: ${character.attributes.pre || 0} | VIG: ${character.attributes.vig || 0}`,
     character.defense !== undefined && `Defesa: ${character.defense}`,

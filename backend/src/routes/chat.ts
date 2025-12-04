@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
 import { chatService } from '../services/chatService'
+import { validate } from '../middleware/validation'
+import { CreateChatMessageSchema, ChatMessageFilterSchema } from '../middleware/schemas/chatSchemas'
+import { AppError } from '../types/common'
 
 /**
  * Rotas para chat em tempo real
@@ -31,28 +34,32 @@ chatRouter.get('/', async (req: Request, res: Response) => {
 })
 
 // Enviar mensagem
-chatRouter.post('/', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id
-    const { campaignId, sessionId, characterId, content, type, channel } = req.body
+chatRouter.post(
+  '/',
+  validate({ body: CreateChatMessageSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+      const { campaignId, sessionId, characterId, content, type, channel } = req.body
 
-    if (!campaignId || !content) {
-      return res.status(400).json({ error: 'campaignId e content são obrigatórios' })
+      const message = await chatService.createMessage({
+        campaignId,
+        sessionId: sessionId || null,
+        userId,
+        characterId: characterId || null,
+        content,
+        type: type || 'message',
+        channel: channel || 'general',
+      })
+
+      res.status(201).json(message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
     }
-
-    const message = await chatService.createMessage({
-      campaignId,
-      sessionId: sessionId || null,
-      userId,
-      characterId: characterId || null,
-      content,
-      type: type || 'message',
-      channel: channel || 'general',
-    })
-
-    res.status(201).json(message)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
   }
-})
+)
 

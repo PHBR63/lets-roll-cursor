@@ -15,6 +15,17 @@ interface PresenceStatus {
 }
 
 /**
+ * Interface para dados de presença do Supabase
+ */
+interface PresenceData {
+  username?: string
+  avatarUrl?: string
+  currentPage?: string
+  joinedAt?: string
+  lastSeen?: string
+}
+
+/**
  * Hook para gerenciar presença de usuários em tempo real
  * Usa Supabase Realtime Presence para rastrear quem está online
  */
@@ -45,7 +56,7 @@ export function usePresence(campaignId?: string, sessionId?: string) {
         const users: PresenceStatus[] = []
 
         Object.keys(state).forEach((userId) => {
-          const presences = state[userId] as any[]
+          const presences = state[userId] as PresenceData[]
           if (presences && presences.length > 0) {
             const presence = presences[0]
             users.push({

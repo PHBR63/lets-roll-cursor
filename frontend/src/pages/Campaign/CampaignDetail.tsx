@@ -24,8 +24,8 @@ export function CampaignDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [campaign, setCampaign] = useState<any>(null)
-  const [characters, setCharacters] = useState<any[]>([])
+  const [campaign, setCampaign] = useState<Campaign | null>(null)
+  const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -74,7 +74,7 @@ export function CampaignDetail() {
 
     // Verificar se usuário é mestre
     const participant = data.participants?.find(
-      (p: any) => p.user?.id === user.id && p.role === 'master'
+      (p: CampaignParticipant) => p.user?.id === user.id && p.role === 'master'
     )
     setIsMaster(!!participant)
 

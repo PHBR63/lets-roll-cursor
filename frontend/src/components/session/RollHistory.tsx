@@ -20,7 +20,9 @@ interface RollHistoryProps {
 /**
  * Item de rolagem memoizado
  */
-const RollItem = memo(({ roll, style }: { roll: any; style: React.CSSProperties }) => {
+import { DiceRollResult } from '@/types/dice'
+
+const RollItem = memo(({ roll, style }: { roll: DiceRollResult; style: React.CSSProperties }) => {
   const userName = roll.user?.username || 'Jogador'
   const characterName = roll.character?.name
   const displayName = characterName

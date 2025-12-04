@@ -18,7 +18,7 @@ export function MasterDashboard() {
   const { campaignId } = useParams<{ campaignId: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [isMaster, setIsMaster] = useState(false)
 
@@ -49,7 +49,7 @@ export function MasterDashboard() {
       if (response.ok) {
         const campaign = await response.json()
         const participant = campaign.participants?.find(
-          (p: any) => p.user?.id === user.id && p.role === 'master'
+          (p: CampaignParticipant) => p.user?.id === user.id && p.role === 'master'
         )
         const master = !!participant
         setIsMaster(master)

@@ -86,9 +86,10 @@ export function CreateCreatureModal({
       setEnergiaMax(10)
       setSaudeMax(10)
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as AppError
       console.error('Erro ao criar criatura:', error)
-      alert(error.message || 'Erro ao criar criatura. Tente novamente.')
+      alert(err.message || 'Erro ao criar criatura. Tente novamente.')
     } finally {
       setLoading(false)
     }

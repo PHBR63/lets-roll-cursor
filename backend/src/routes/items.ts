@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
 import { itemService } from '../services/itemService'
+import { validate } from '../middleware/validation'
+import { ItemFilterSchema, CreateItemSchema, UpdateItemSchema } from '../middleware/schemas/itemSchemas'
+import { AppError } from '../types/common'
 
 /**
  * Rotas para CRUD de itens
@@ -10,33 +13,47 @@ export const itemsRouter = Router()
 itemsRouter.use(authenticateToken)
 
 // Listar itens
-itemsRouter.get('/', async (req: Request, res: Response) => {
-  try {
-    const items = await itemService.getItems(req.query)
-    res.json(items)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+itemsRouter.get(
+  '/',
+  validate({ query: ItemFilterSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const result = await itemService.getItems(req.query as { campaignId?: string; isGlobal?: boolean; limit?: number; offset?: number })
+      res.json(result)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Criar item
-itemsRouter.post('/', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id
-    const item = await itemService.createItem(userId, req.body)
-    res.status(201).json(item)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+itemsRouter.post(
+  '/',
+  validate({ body: CreateItemSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+      const item = await itemService.createItem(userId, req.body)
+      res.status(201).json(item)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Obter itens de uma campanha (rota específica antes da genérica)
 itemsRouter.get('/campaign/:campaignId', async (req: Request, res: Response) => {
   try {
     const items = await itemService.getCampaignItems(req.params.campaignId)
     res.json(items)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+  } catch (error: unknown) {
+    const err = error as AppError
+    res.status(500).json({ error: err.message || 'Erro desconhecido' })
   }
 })
 
@@ -54,8 +71,9 @@ itemsRouter.post('/distribute', async (req: Request, res: Response) => {
       quantity || 1
     )
     res.status(201).json(result)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+  } catch (error: unknown) {
+    const err = error as AppError
+    res.status(500).json({ error: err.message || 'Erro desconhecido' })
   }
 })
 
@@ -64,28 +82,35 @@ itemsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const item = await itemService.getItemById(req.params.id)
     res.json(item)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+  } catch (error: unknown) {
+    const err = error as AppError
+    res.status(500).json({ error: err.message || 'Erro desconhecido' })
   }
 })
 
 // Atualizar item
-itemsRouter.put('/:id', async (req: Request, res: Response) => {
-  try {
-    const item = await itemService.updateItem(req.params.id, req.body)
-    res.json(item)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+itemsRouter.put(
+  '/:id',
+  validate({ body: UpdateItemSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const item = await itemService.updateItem(req.params.id, req.body)
+      res.json(item)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Deletar item
 itemsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     await itemService.deleteItem(req.params.id)
     res.status(204).send()
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+  } catch (error: unknown) {
+    const err = error as AppError
+    res.status(500).json({ error: err.message || 'Erro desconhecido' })
   }
 })
 

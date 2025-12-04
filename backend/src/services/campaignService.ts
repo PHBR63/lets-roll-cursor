@@ -1,4 +1,8 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
+import { CreateCampaignData, UpdateCampaignData } from '../types/campaign'
+import { AppError } from '../types/common'
+import { getCache, setCache, deleteCache, deleteCachePattern, getCampaignCacheKey } from './cache'
 
 /**
  * Serviço para lógica de negócio de campanhas
@@ -9,6 +13,14 @@ export const campaignService = {
    */
   async getUserCampaigns(userId: string) {
     try {
+      // Tentar obter do cache primeiro
+      const cacheKey = getCampaignCacheKey({ userId })
+      const cached = await getCache<unknown[]>(cacheKey)
+      if (cached) {
+        logger.debug({ cacheKey }, 'Cache hit para campanhas do usuário')
+        return cached as Array<Record<string, unknown> & { role: string }>
+      }
+
       const { data, error } = await supabase
         .from('campaign_participants')
         .select(
@@ -31,12 +43,19 @@ export const campaignService = {
 
       if (error) throw error
 
-      return data?.map((p: any) => ({
-        ...p.campaign,
-        role: p.role,
-      })) || []
-    } catch (error: any) {
-      console.error('Error fetching user campaigns:', error)
+      const result =
+        data?.map((p: { role: string; campaign: Record<string, unknown> }) => ({
+          ...p.campaign,
+          role: p.role,
+        })) || []
+
+      // Armazenar no cache (TTL: 10 minutos)
+      await setCache(cacheKey, result, 600)
+
+      return result
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching user campaigns')
       throw new Error('Erro ao buscar campanhas')
     }
   },
@@ -61,7 +80,7 @@ export const campaignService = {
         // Se o bucket não existe, criar
         if (error.message.includes('not found')) {
           // Tentar criar bucket (requer permissões admin)
-          console.warn('Bucket não encontrado. Configure o bucket "campaign-images" no Supabase.')
+          logger.warn('Bucket não encontrado. Configure o bucket "campaign-images" no Supabase.')
           throw new Error('Bucket de imagens não configurado')
         }
         throw error
@@ -73,16 +92,17 @@ export const campaignService = {
       } = supabase.storage.from('campaign-images').getPublicUrl(data.path)
 
       return publicUrl
-    } catch (error: any) {
-      console.error('Error uploading image:', error)
-      throw new Error('Erro ao fazer upload da imagem: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error uploading image')
+      throw new Error('Erro ao fazer upload da imagem: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
    * Cria uma nova campanha
    */
-  async createCampaign(userId: string, data: any) {
+  async createCampaign(userId: string, data: CreateCampaignData) {
     try {
       let imageUrl: string | null = null
 
@@ -99,7 +119,7 @@ export const campaignService = {
       const { data: campaign, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
-          name: data.title,
+          name: data.name,
           description: data.description,
           image_url: imageUrl,
           system_rpg: data.systemRpg || null,
@@ -127,10 +147,15 @@ export const campaignService = {
       // Isso pode ser feito em uma tabela separada ou como JSONB
       // Por enquanto, vamos salvar como metadados (futuro: tabela dedicada)
       
+      // Invalidar cache relacionado
+      await deleteCachePattern('campaigns:*')
+      await deleteCache(getCampaignCacheKey({ userId }))
+      
       return campaign
-    } catch (error: any) {
-      console.error('Error creating campaign:', error)
-      throw new Error('Erro ao criar campanha: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error creating campaign')
+      throw new Error('Erro ao criar campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -139,6 +164,14 @@ export const campaignService = {
    */
   async getCampaignById(id: string) {
     try {
+      // Tentar obter do cache primeiro
+      const cacheKey = getCampaignCacheKey({ campaignId: id })
+      const cached = await getCache<unknown>(cacheKey)
+      if (cached) {
+        logger.debug({ cacheKey }, 'Cache hit para campanha')
+        return cached as typeof campaign & { participants: unknown[] }
+      }
+
       const { data: campaign, error: campaignError } = await supabase
         .from('campaigns')
         .select('*')
@@ -164,12 +197,18 @@ export const campaignService = {
 
       if (participantsError) throw participantsError
 
-      return {
+      const result = {
         ...campaign,
         participants: participants || [],
       }
-    } catch (error: any) {
-      console.error('Error fetching campaign:', error)
+
+      // Armazenar no cache (TTL: 10 minutos)
+      await setCache(cacheKey, result, 600)
+
+      return result
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching campaign')
       throw new Error('Erro ao buscar campanha')
     }
   },
@@ -177,7 +216,7 @@ export const campaignService = {
   /**
    * Atualiza uma campanha (apenas mestre pode)
    */
-  async updateCampaign(id: string, userId: string, data: any) {
+  async updateCampaign(id: string, userId: string, data: UpdateCampaignData) {
     try {
       // Verificar se usuário é mestre
       const { data: participant, error: checkError } = await supabase
@@ -203,11 +242,11 @@ export const campaignService = {
         )
       }
 
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       }
 
-      if (data.title) updateData.name = data.title
+      if (data.name) updateData.name = data.name
       if (data.description !== undefined) updateData.description = data.description
       if (data.systemRpg !== undefined) updateData.system_rpg = data.systemRpg
       if (data.tags) updateData.tags = data.tags
@@ -222,10 +261,18 @@ export const campaignService = {
 
       if (error) throw error
 
+      // Invalidar cache relacionado
+      await deleteCache(getCampaignCacheKey({ campaignId: id }))
+      await deleteCachePattern('campaigns:*')
+      if (campaign.created_by) {
+        await deleteCache(getCampaignCacheKey({ userId: campaign.created_by }))
+      }
+
       return campaign
-    } catch (error: any) {
-      console.error('Error updating campaign:', error)
-      throw new Error('Erro ao atualizar campanha: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error updating campaign')
+      throw new Error('Erro ao atualizar campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -253,9 +300,10 @@ export const campaignService = {
         .eq('id', id)
 
       if (error) throw error
-    } catch (error: any) {
-      console.error('Error deleting campaign:', error)
-      throw new Error('Erro ao deletar campanha: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error deleting campaign')
+      throw new Error('Erro ao deletar campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -282,7 +330,7 @@ export const campaignService = {
       
       if (userError) throw userError
 
-      const invitedUser = users.users.find((u: any) => u.email === email)
+      const invitedUser = users.users.find((u: { email?: string }) => u.email === email)
 
       if (!invitedUser) {
         throw new Error('Usuário não encontrado')
@@ -300,9 +348,10 @@ export const campaignService = {
       if (inviteError) throw inviteError
 
       return { success: true }
-    } catch (error: any) {
-      console.error('Error inviting player:', error)
-      throw new Error('Erro ao convidar jogador: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error inviting player')
+      throw new Error('Erro ao convidar jogador: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
 
 /**
  * Middleware de autenticação
@@ -25,11 +26,15 @@ export async function authenticateToken(
     }
 
     // Adiciona o usuário ao request
-    ;(req as any).user = user
+    req.user = {
+      id: user.id,
+      email: user.email,
+      username: user.user_metadata?.username,
+    }
 
     next()
   } catch (error) {
-    console.error('Auth middleware error:', error)
+    logger.error({ error }, 'Auth middleware error')
     return res.status(401).json({ error: 'Erro ao autenticar' })
   }
 }

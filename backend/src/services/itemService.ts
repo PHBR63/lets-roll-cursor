@@ -1,4 +1,7 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
+import { CreateItemData, UpdateItemData } from '../types/item'
+import { AppError } from '../types/common'
 
 /**
  * Serviço para lógica de negócio de itens
@@ -9,7 +12,7 @@ export const itemService = {
    * @param filters - Filtros de busca (campaignId, isGlobal)
    * @returns Lista de itens
    */
-  async getItems(filters: any) {
+  async getItems(filters: { campaignId?: string; isGlobal?: boolean; limit?: number; offset?: number }) {
     try {
       let query = supabase
         .from('items')
@@ -40,14 +43,27 @@ export const itemService = {
         query = query.or('is_global.eq.true,campaign_id.is.null')
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      // Aplicar paginação
+      const limit = filters.limit || 20
+      const offset = filters.offset || 0
+      query = query.range(offset, offset + limit - 1)
+
+      const { data, error, count } = await query.order('created_at', { ascending: false })
 
       if (error) throw error
 
-      return data || []
-    } catch (error: any) {
-      console.error('Error fetching items:', error)
-      throw new Error('Erro ao buscar itens: ' + error.message)
+      // Retornar resultado paginado
+      return {
+        data: data || [],
+        total: count || 0,
+        limit,
+        offset,
+        hasMore: (count || 0) > offset + limit,
+      }
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching items')
+      throw new Error('Erro ao buscar itens: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -57,7 +73,7 @@ export const itemService = {
    * @param data - Dados do item
    * @returns Item criado
    */
-  async createItem(userId: string, data: any) {
+  async createItem(userId: string, data: CreateItemData) {
     try {
       const { data: item, error } = await supabase
         .from('items')
@@ -77,9 +93,10 @@ export const itemService = {
       if (error) throw error
 
       return item
-    } catch (error: any) {
-      console.error('Error creating item:', error)
-      throw new Error('Erro ao criar item: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error creating item')
+      throw new Error('Erro ao criar item: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -113,9 +130,10 @@ export const itemService = {
       if (error) throw error
 
       return item
-    } catch (error: any) {
-      console.error('Error fetching item:', error)
-      throw new Error('Erro ao buscar item: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching item')
+      throw new Error('Erro ao buscar item: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -125,9 +143,9 @@ export const itemService = {
    * @param data - Dados para atualizar
    * @returns Item atualizado
    */
-  async updateItem(id: string, data: any) {
+  async updateItem(id: string, data: UpdateItemData) {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       }
 
@@ -148,9 +166,10 @@ export const itemService = {
       if (error) throw error
 
       return item
-    } catch (error: any) {
-      console.error('Error updating item:', error)
-      throw new Error('Erro ao atualizar item: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error updating item')
+      throw new Error('Erro ao atualizar item: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -163,9 +182,10 @@ export const itemService = {
       const { error } = await supabase.from('items').delete().eq('id', id)
 
       if (error) throw error
-    } catch (error: any) {
-      console.error('Error deleting item:', error)
-      throw new Error('Erro ao deletar item: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error deleting item')
+      throw new Error('Erro ao deletar item: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -185,9 +205,10 @@ export const itemService = {
       if (error) throw error
 
       return data || []
-    } catch (error: any) {
-      console.error('Error fetching campaign items:', error)
-      throw new Error('Erro ao buscar itens da campanha: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching campaign items')
+      throw new Error('Erro ao buscar itens da campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -222,9 +243,10 @@ export const itemService = {
       // Adicionar ao inventário do personagem
       const { characterService } = await import('./characterService')
       return await characterService.addItemToCharacter(characterId, itemId, quantity)
-    } catch (error: any) {
-      console.error('Error distributing item:', error)
-      throw new Error('Erro ao distribuir item: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error distributing item')
+      throw new Error('Erro ao distribuir item: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

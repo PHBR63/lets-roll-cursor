@@ -89,9 +89,10 @@ export function ApplyConditionModal({
       onSuccess()
       onOpenChange(false)
       setSelectedCondition('')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as AppError
       console.error('Erro ao aplicar condição:', error)
-      alert(error.message || 'Erro ao aplicar condição. Tente novamente.')
+      alert(err.message || 'Erro ao aplicar condição. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -128,9 +129,10 @@ export function ApplyConditionModal({
       }
 
       onSuccess()
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as AppError
       console.error('Erro ao remover condição:', error)
-      alert(error.message || 'Erro ao remover condição. Tente novamente.')
+      alert(err.message || 'Erro ao remover condição. Tente novamente.')
     } finally {
       setLoading(false)
     }

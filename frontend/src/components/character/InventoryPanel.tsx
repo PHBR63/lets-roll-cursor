@@ -4,9 +4,10 @@ import { Label } from '@/components/ui/label'
 import { Trash2, Plus } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { AddItemModal } from './AddItemModal'
+import { Character, CharacterInventoryItem } from '@/types/character'
 
 interface InventoryPanelProps {
-  character: any
+  character: Character
   onUpdate: () => void
 }
 
@@ -15,7 +16,7 @@ interface InventoryPanelProps {
  * Exibe itens, peso total e moedas
  */
 export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
-  const [inventory, setInventory] = useState<any[]>([])
+  const [inventory, setInventory] = useState<CharacterInventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
 

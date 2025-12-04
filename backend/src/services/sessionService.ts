@@ -1,4 +1,7 @@
 import { supabase } from '../config/supabase'
+import { logger } from '../utils/logger'
+import { CreateSessionData, UpdateSessionData } from '../types/session'
+import { AppError } from '../types/common'
 
 /**
  * Serviço para lógica de negócio de sessões de jogo
@@ -7,7 +10,7 @@ export const sessionService = {
   /**
    * Cria uma nova sessão
    */
-  async createSession(campaignId: string, data: any) {
+  async createSession(campaignId: string, data: CreateSessionData) {
     try {
       const { data: session, error } = await supabase
         .from('sessions')
@@ -23,9 +26,10 @@ export const sessionService = {
       if (error) throw error
 
       return session
-    } catch (error: any) {
-      console.error('Error creating session:', error)
-      throw new Error('Erro ao criar sessão: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error creating session')
+      throw new Error('Erro ao criar sessão: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -46,9 +50,10 @@ export const sessionService = {
       if (error) throw error
 
       return data
-    } catch (error: any) {
-      console.error('Error fetching active session:', error)
-      throw new Error('Erro ao buscar sessão: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching active session')
+      throw new Error('Erro ao buscar sessão: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -73,9 +78,10 @@ export const sessionService = {
       if (error) throw error
 
       return data || []
-    } catch (error: any) {
-      console.error('Error fetching sessions:', error)
-      throw new Error('Erro ao buscar sessões: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching sessions')
+      throw new Error('Erro ao buscar sessões: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -93,18 +99,19 @@ export const sessionService = {
       if (error) throw error
 
       return data
-    } catch (error: any) {
-      console.error('Error fetching session:', error)
-      throw new Error('Erro ao buscar sessão: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error fetching session')
+      throw new Error('Erro ao buscar sessão: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
    * Atualiza uma sessão
    */
-  async updateSession(id: string, data: any) {
+  async updateSession(id: string, data: UpdateSessionData) {
     try {
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       }
 
@@ -122,16 +129,17 @@ export const sessionService = {
       if (error) throw error
 
       return session
-    } catch (error: any) {
-      console.error('Error updating session:', error)
-      throw new Error('Erro ao atualizar sessão: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error updating session')
+      throw new Error('Erro ao atualizar sessão: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
    * Atualiza apenas o board_state da sessão
    */
-  async updateBoardState(id: string, boardState: any) {
+  async updateBoardState(id: string, boardState: Record<string, unknown>) {
     try {
       const { data: session, error } = await supabase
         .from('sessions')
@@ -146,9 +154,10 @@ export const sessionService = {
       if (error) throw error
 
       return session
-    } catch (error: any) {
-      console.error('Error updating board state:', error)
-      throw new Error('Erro ao atualizar estado do board: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error updating board state')
+      throw new Error('Erro ao atualizar estado do board: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
@@ -170,9 +179,10 @@ export const sessionService = {
       if (error) throw error
 
       return data
-    } catch (error: any) {
-      console.error('Error ending session:', error)
-      throw new Error('Erro ao finalizar sessão: ' + error.message)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error ending session')
+      throw new Error('Erro ao finalizar sessão: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

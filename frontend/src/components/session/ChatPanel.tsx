@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, memo } from 'react'
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
@@ -84,7 +84,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const listRef = useRef<any>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
   const { handleErrorWithToast, handleResponseError } = useApiError()
   const toast = useToast()
 
@@ -161,9 +161,9 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   /**
    * Scroll para última mensagem
    */
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [])
 
   return (
     <div className="flex flex-col h-full">

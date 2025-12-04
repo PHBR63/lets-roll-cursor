@@ -130,9 +130,10 @@ export function ApplyDamageModal({
       onSuccess()
       onOpenChange(false)
       setAmount(0)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as AppError
       console.error('Erro ao aplicar dano/cura:', error)
-      alert(error.message || 'Erro ao aplicar dano/cura. Tente novamente.')
+      alert(err.message || 'Erro ao aplicar dano/cura. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -162,7 +163,7 @@ export function ApplyDamageModal({
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Tipo</Label>
-            <Select value={damageType} onValueChange={(v: any) => setDamageType(v)}>
+            <Select value={damageType} onValueChange={(v: string) => setDamageType(v)}>
               <SelectTrigger className="bg-input border-white/20">
                 <SelectValue />
               </SelectTrigger>

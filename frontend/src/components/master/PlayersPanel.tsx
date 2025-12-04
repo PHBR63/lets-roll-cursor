@@ -25,7 +25,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   const [loading, setLoading] = useState(true)
   const [showDamageModal, setShowDamageModal] = useState(false)
   const [showConditionModal, setShowConditionModal] = useState(false)
-  const [selectedPlayer, setSelectedPlayer] = useState<any>(null)
+  const [selectedPlayer, setSelectedPlayer] = useState<CampaignParticipant | null>(null)
 
   useEffect(() => {
     if (campaignId) {
@@ -77,7 +77,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
 
         // Buscar personagens de cada participante
         const playersWithCharacters = await Promise.all(
-          participants.map(async (participant: any) => {
+          participants.map(async (participant: CampaignParticipant) => {
             const charResponse = await fetch(
               `${apiUrl}/api/characters?userId=${participant.user?.id}&campaignId=${campaignId}`,
               {

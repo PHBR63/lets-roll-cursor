@@ -3,10 +3,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { useDebounce } from '@/hooks/useDebounce'
+import { Character, CharacterUpdateData } from '@/types/character'
 
 interface BiographyProps {
-  character: any
-  onUpdate: (updates: any) => void
+  character: Character
+  onUpdate: (updates: CharacterUpdateData) => void
 }
 
 /**

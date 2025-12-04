@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client'
  * Hook para sincronizar atualizações de sessão em tempo real
  */
 export function useRealtimeSession(sessionId?: string) {
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

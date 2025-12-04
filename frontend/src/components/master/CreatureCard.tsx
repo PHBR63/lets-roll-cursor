@@ -3,16 +3,17 @@ import { Card } from '@/components/ui/card'
 import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash2, Heart, Zap, Shield, Award } from 'lucide-react'
+import { Creature } from '@/types/creature'
 
 /**
  * Props do card de criatura
  */
 interface CreatureCardProps {
-  creature: any
-  onEdit: (creature: any) => void
+  creature: Creature
+  onEdit: (creature: Creature) => void
   onDelete: (creatureId: string) => void
-  onDamage: (creature: any) => void
-  onCondition: (creature: any) => void
+  onDamage: (creature: Creature) => void
+  onCondition: (creature: Creature) => void
 }
 
 /**
@@ -157,6 +158,4 @@ export const CreatureCard = memo(({
     </Card>
   )
 })
-
-CreatureCard.displayName = 'CreatureCard'
 

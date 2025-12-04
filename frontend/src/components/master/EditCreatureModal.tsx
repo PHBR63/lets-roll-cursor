@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client'
 interface EditCreatureModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  creature: any
+  creature: Creature
   onSuccess: () => void
 }
 
@@ -104,9 +104,10 @@ export function EditCreatureModal({
 
       onSuccess()
       onOpenChange(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as AppError
       console.error('Erro ao atualizar criatura:', error)
-      alert(error.message || 'Erro ao atualizar criatura. Tente novamente.')
+      alert(err.message || 'Erro ao atualizar criatura. Tente novamente.')
     } finally {
       setLoading(false)
     }

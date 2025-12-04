@@ -66,11 +66,12 @@ export function Register() {
 
       toast.success('Conta criada com sucesso!')
       navigate('/dashboard')
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error
       const errorMessage =
-        error.message === 'User already registered'
+        err.message === 'User already registered'
           ? 'Este e-mail já está cadastrado'
-          : error.message || 'Erro ao criar conta'
+          : err.message || 'Erro ao criar conta'
       toast.error('Erro ao criar conta', errorMessage)
     }
   }

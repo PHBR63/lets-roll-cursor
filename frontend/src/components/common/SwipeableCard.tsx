@@ -54,7 +54,7 @@ export function SwipeableCard({
   /**
    * Handler para arrastar (drag)
    */
-  const handleDragEnd = (_: any, info: PanInfo) => {
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
     if (disabled) return
 
     const offset = info.offset.x

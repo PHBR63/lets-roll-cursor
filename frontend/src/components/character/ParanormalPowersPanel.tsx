@@ -21,12 +21,14 @@ import {
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 
+import { Character } from '@/types/character'
+
 /**
  * Painel de poderes paranormais do personagem
  * Permite adquirir e aprimorar poderes (gasta SAN máxima)
  */
 interface ParanormalPowersPanelProps {
-  character: any
+  character: Character
   onUpdate: () => void
 }
 

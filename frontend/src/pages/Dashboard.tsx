@@ -20,10 +20,10 @@ import { useRetry } from '@/hooks/useRetry'
 export function Dashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [masteringCampaigns, setMasteringCampaigns] = useState<any[]>([])
-  const [participatingCampaigns, setParticipatingCampaigns] = useState<any[]>([])
+  const [masteringCampaigns, setMasteringCampaigns] = useState<Campaign[]>([])
+  const [participatingCampaigns, setParticipatingCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
-  const cache = useCache<any[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
+  const cache = useCache<Campaign[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
 
   useEffect(() => {
     if (user) {
@@ -46,9 +46,9 @@ export function Dashboard() {
     // Tentar obter do cache primeiro
     const cached = cache.get(cacheKey)
     if (cached) {
-      const mastering = cached.filter((c: any) => c.role === 'master')
+      const mastering = cached.filter((c: Campaign) => c.role === 'master')
       const participating = cached.filter(
-        (c: any) => c.role === 'player' || c.role === 'observer'
+        (c: Campaign) => c.role === 'player' || c.role === 'observer'
       )
       setMasteringCampaigns(mastering)
       setParticipatingCampaigns(participating)
@@ -78,9 +78,9 @@ export function Dashboard() {
     cache.set(cacheKey, campaigns)
 
     // Separar por role
-    const mastering = campaigns.filter((c: any) => c.role === 'master')
+    const mastering = campaigns.filter((c: Campaign) => c.role === 'master')
     const participating = campaigns.filter(
-      (c: any) => c.role === 'player' || c.role === 'observer'
+      (c: Campaign) => c.role === 'player' || c.role === 'observer'
     )
 
     setMasteringCampaigns(mastering)

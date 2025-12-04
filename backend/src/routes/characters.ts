@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
 import { characterService } from '../services/characterService'
+import { validate } from '../middleware/validation'
+import { CharacterFilterSchema, CreateCharacterSchema, UpdateCharacterSchema } from '../middleware/schemas/characterSchemas'
+import { AppError } from '../types/common'
 
 /**
  * Rotas para CRUD de personagens
@@ -10,25 +13,38 @@ export const charactersRouter = Router()
 charactersRouter.use(authenticateToken)
 
 // Listar personagens
-charactersRouter.get('/', async (req: Request, res: Response) => {
-  try {
-    const characters = await characterService.getCharacters(req.query)
-    res.json(characters)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+charactersRouter.get(
+  '/',
+  validate({ query: CharacterFilterSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const characters = await characterService.getCharacters(req.query)
+      res.json(characters)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Criar personagem
-charactersRouter.post('/', async (req: Request, res: Response) => {
-  try {
-    const userId = (req as any).user.id
-    const character = await characterService.createCharacter(userId, req.body)
-    res.status(201).json(character)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+charactersRouter.post(
+  '/',
+  validate({ body: CreateCharacterSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+      const character = await characterService.createCharacter(userId, req.body)
+      res.status(201).json(character)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Rotas aninhadas específicas devem vir ANTES da rota genérica /:id
 // Obter inventário do personagem
@@ -318,14 +334,19 @@ charactersRouter.get('/:id', async (req: Request, res: Response) => {
 })
 
 // Atualizar personagem
-charactersRouter.put('/:id', async (req: Request, res: Response) => {
-  try {
-    const character = await characterService.updateCharacter(req.params.id, req.body)
-    res.json(character)
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
+charactersRouter.put(
+  '/:id',
+  validate({ body: UpdateCharacterSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const character = await characterService.updateCharacter(req.params.id, req.body)
+      res.json(character)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
   }
-})
+)
 
 // Deletar personagem
 charactersRouter.delete('/:id', async (req: Request, res: Response) => {

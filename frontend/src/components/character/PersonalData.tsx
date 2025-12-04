@@ -3,10 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
+import { Character, CharacterUpdateData } from '@/types/character'
 
 interface PersonalDataProps {
-  character: any
-  onUpdate: (updates: any) => void
+  character: Character
+  onUpdate: (updates: CharacterUpdateData) => void
 }
 
 /**

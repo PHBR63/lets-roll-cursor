@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { logger } from '../utils/logger'
 
 /**
  * Middleware de tratamento de erros
@@ -10,11 +11,11 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  console.error('Error:', err)
+  logger.error({ err, url: req.url, method: req.method }, 'Request error')
 
   res.status(500).json({
     error: 'Erro interno do servidor',
-    message: err.message,
+    message: process.env.NODE_ENV === 'production' ? 'Erro interno' : err.message,
   })
 }
 

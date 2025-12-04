@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Save } from 'lucide-react'
 import { ALL_SKILLS, SkillTraining, TRAINING_BONUS } from '@/types/ordemParanormal'
 import { SkillItem } from './SkillItem'
+import { Character, CharacterUpdateData } from '@/types/character'
 
 interface SkillsGridProps {
-  character: any
-  onUpdate: (updates: any) => void
+  character: Character
+  onUpdate: (updates: CharacterUpdateData) => void
 }
 
 /**

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
-import { GameBoard } from '@/components/session/GameBoard'
+import { GameBoard } from '@/components/session/GameBoard/index'
 import { PlayerListSidebar } from '@/components/session/PlayerListSidebar'
 import { DiceRoller } from '@/components/session/DiceRoller'
 import { ChatPanel } from '@/components/session/ChatPanel'
@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
 import { NotFoundState } from '@/components/common/EmptyState'
+import { Session } from '@/types/session'
+import { CampaignParticipant } from '@/types/campaign'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -23,7 +25,7 @@ import { NotFoundState } from '@/components/common/EmptyState'
 export function SessionRoom() {
   const { id: campaignId } = useParams<{ id: string }>()
   const { user } = useAuth()
-  const [session, setSession] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [isMaster, setIsMaster] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -158,7 +160,7 @@ export function SessionRoom() {
       if (response.ok) {
         const campaign = await response.json()
         const participant = campaign.participants?.find(
-          (p: any) => p.user?.id === user.id && p.role === 'master'
+          (p: CampaignParticipant) => p.user?.id === user.id && p.role === 'master'
         )
         setIsMaster(!!participant)
         return !!participant
