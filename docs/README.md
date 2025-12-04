@@ -41,6 +41,7 @@ Planos de desenvolvimento, roadmaps e tarefas planejadas.
 | Documento | Descrição |
 |-----------|-----------|
 | [DEVELOPMENT-ROADMAP.md](planning/DEVELOPMENT-ROADMAP.md) | Roadmap completo de desenvolvimento |
+| [STATUS-PLANO-ATUAL.md](planning/STATUS-PLANO-ATUAL.md) | **Status atual do último plano verificado** |
 | [PHASE-2-PLAN.md](planning/PHASE-2-PLAN.md) | Plano de implementação da Fase 2 |
 | [SHORT-TERM-TASKS.md](planning/SHORT-TERM-TASKS.md) | Tarefas de curto prazo |
 | [NEXT-STEPS.md](planning/NEXT-STEPS.md) | Próximos passos do projeto |
@@ -49,6 +50,13 @@ Planos de desenvolvimento, roadmaps e tarefas planejadas.
 Documentação técnica sobre a arquitetura do projeto.
 
 *Seção em desenvolvimento. Documentos sobre estrutura de backend, frontend e banco de dados serão adicionados aqui.*
+
+### 🔧 Troubleshooting
+Documentação de resolução de problemas e erros comuns.
+
+| Documento | Descrição |
+|-----------|-----------|
+| [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) | Guia de resolução de erros comuns e problemas técnicos |
 
 ### 📜 Histórico (`history/`)
 Histórico de mudanças, reorganizações e otimizações implementadas.
@@ -80,9 +88,15 @@ Histórico de mudanças, reorganizações e otimizações implementadas.
 2. Consulte [COMPLIANCE-REPORT.md](analysis/COMPLIANCE-REPORT.md) para conformidade
 
 ### Quero ver o status do projeto
-1. Consulte [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md)
-2. Leia [SHORT-TERM-TASKS.md](planning/SHORT-TERM-TASKS.md) para próximas tarefas
-3. Consulte [NEXT-STEPS.md](planning/NEXT-STEPS.md) para visão futura
+1. Consulte [STATUS-PLANO-ATUAL.md](planning/STATUS-PLANO-ATUAL.md) - **Status mais recente**
+2. Consulte [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md)
+3. Leia [SHORT-TERM-TASKS.md](planning/SHORT-TERM-TASKS.md) para próximas tarefas
+4. Consulte [NEXT-STEPS.md](planning/NEXT-STEPS.md) para visão futura
+
+### Estou com problemas técnicos
+1. Consulte [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) para erros comuns
+2. Verifique os logs do console do navegador
+3. Revise a documentação específica do componente/serviço
 
 ---
 
@@ -106,6 +120,7 @@ docs/
 │   └── PROJECT-STATUS.md
 ├── planning/                          # 📅 Planos e roadmap
 │   ├── DEVELOPMENT-ROADMAP.md
+│   ├── STATUS-PLANO-ATUAL.md         # Status do último plano verificado
 │   ├── PHASE-2-PLAN.md
 │   ├── SHORT-TERM-TASKS.md
 │   └── NEXT-STEPS.md
@@ -155,6 +170,8 @@ Se você está adicionando nova documentação:
 ## ❓ Precisa de Ajuda?
 
 - Consulte o [README.md](../README.md) principal do projeto
+- **Problemas técnicos?** Veja [TROUBLESHOOTING.md](../TROUBLESHOOTING.md)
+- **Status do projeto?** Veja [STATUS-PLANO-ATUAL.md](planning/STATUS-PLANO-ATUAL.md)
 - Verifique a seção de [SHORT-TERM-TASKS.md](planning/SHORT-TERM-TASKS.md) para tarefas em progresso
 - Revise [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md) para status atual
 

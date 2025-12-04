@@ -36,8 +36,9 @@ export default defineConfig({
     minify: 'esbuild',
     sourcemap: false,
     commonjsOptions: {
-      include: [/react-window/, /react/, /react-dom/, /react-router/, /@supabase/],
+      include: [/react-window/, /react/, /react-dom/, /react-router/, /@supabase/, /tailwindcss-animate/],
       transformMixedEsModules: true,
+      esmExternals: true,
     },
     rollupOptions: {
       external: [],
@@ -76,6 +77,11 @@ export default defineConfig({
       'react-router-dom',
       '@supabase/supabase-js',
       'react-window',
+      'tailwindcss-animate',
     ],
+    esbuildOptions: {
+      // Garantir que CommonJS seja convertido para ES modules
+      target: 'esnext',
+    },
   },
 })
