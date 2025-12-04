@@ -34,7 +34,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   }
 
   return (
-    <GameBoardProvider value={{ ...gameBoardData, ...interactions }}>
+    <GameBoardProvider value={{ ...gameBoardData, ...interactions } as any}>
       <div
         ref={interactions.containerRef}
         className="flex-1 bg-card-secondary border-b border-card-secondary relative overflow-hidden touch-none"

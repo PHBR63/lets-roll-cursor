@@ -487,7 +487,7 @@ export function ParanormalPowersPanel({
         </div>
       ) : (
         <div className="space-y-3">
-          {characterPowers.map((power: ParanormalPower) => {
+          {(characterPowers as unknown as ParanormalPower[]).map((power) => {
             const canUpgrade =
               hasAffinity &&
               character.affinity === power.element &&

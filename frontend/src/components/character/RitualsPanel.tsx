@@ -48,7 +48,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
   useEffect(() => {
     // Carregar rituais do personagem (armazenados em JSONB ou tabela separada)
     // Por enquanto, vamos usar uma lista vazia e permitir adicionar
-    const characterRituals = character.rituals || []
+    const characterRituals = (character.rituals || []) as unknown as Ritual[]
     setRituals(characterRituals)
   }, [character])
 
