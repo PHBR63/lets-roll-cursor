@@ -16,12 +16,48 @@ interface SkillsGridProps {
  * Grid de perícias do sistema Ordem Paranormal
  * Exibe todas as perícias com seus atributos base e níveis de treinamento
  */
+/**
+ * Converte skill do formato antigo para o novo formato
+ */
+function convertSkillToNewFormat(
+  skillName: string,
+  skillValue: { value: number; trained: boolean } | { attribute: string; training: SkillTraining; bonus: number }
+): { attribute: string; training: SkillTraining; bonus: number } | null {
+  // Se já está no formato novo, retorna como está
+  if ('attribute' in skillValue && 'training' in skillValue && 'bonus' in skillValue) {
+    return skillValue as { attribute: string; training: SkillTraining; bonus: number }
+  }
+
+  // Se está no formato antigo, converte
+  if ('value' in skillValue && 'trained' in skillValue) {
+    const skillInfo = ALL_SKILLS[skillName]
+    if (!skillInfo) {
+      // Se a skill não existe em ALL_SKILLS, não pode converter
+      return null
+    }
+
+    // Converte trained (boolean) para training (SkillTraining)
+    const training: SkillTraining = skillValue.trained ? 'TRAINED' : 'UNTRAINED'
+    const bonus = TRAINING_BONUS[training]
+
+    return {
+      attribute: skillInfo.attribute,
+      training,
+      bonus,
+    }
+  }
+
+  // Formato desconhecido
+  return null
+}
+
 export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   const skills = character.skills || {}
   const [localSkills, setLocalSkills] = useState<Record<string, { attribute: string; training: SkillTraining; bonus: number }>>(
     Object.entries(skills).reduce((acc, [key, value]) => {
-      if ('attribute' in value && 'training' in value && 'bonus' in value) {
-        acc[key] = value as { attribute: string; training: SkillTraining; bonus: number }
+      const converted = convertSkillToNewFormat(key, value as any)
+      if (converted) {
+        acc[key] = converted
       }
       return acc
     }, {} as Record<string, { attribute: string; training: SkillTraining; bonus: number }>)
