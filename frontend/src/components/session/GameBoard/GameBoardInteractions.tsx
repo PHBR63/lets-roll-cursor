@@ -45,7 +45,7 @@ export function useGameBoardInteractions() {
           color: '#ff6b6b',
           strokeWidth: 2,
           layer: 'annotations',
-        },
+        } : null,
       }))
       return
     }
