@@ -18,6 +18,11 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Forçar resolução do React do node_modules da raiz (workspace)
+      'react': path.resolve(__dirname, '../node_modules/react'),
+      'react-dom': path.resolve(__dirname, '../node_modules/react-dom'),
+      // Forçar resolução do react-window do node_modules da raiz
+      'react-window': path.resolve(__dirname, '../node_modules/react-window/dist/react-window.js'),
     },
     // Garantir versão única do React para evitar problemas de resolução
     dedupe: ['react', 'react-dom'],
@@ -31,7 +36,8 @@ export default defineConfig({
     minify: 'esbuild',
     sourcemap: false,
     commonjsOptions: {
-      include: [/react-window/],
+      include: [/react-window/, /react/, /react-dom/, /react-router/, /@supabase/],
+      transformMixedEsModules: true,
     },
     rollupOptions: {
       external: [],
@@ -71,7 +77,5 @@ export default defineConfig({
       '@supabase/supabase-js',
       'react-window',
     ],
-    // Forçar re-otimização para garantir resolução correta
-    force: true,
   },
 })

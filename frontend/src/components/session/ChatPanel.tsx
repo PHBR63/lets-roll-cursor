@@ -4,8 +4,8 @@ import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useRealtimeChat } from '@/hooks/useRealtimeChat'
-// @ts-expect-error - react-window export issue
-import { FixedSizeList } from 'react-window'
+// Temporariamente removido react-window devido a problemas de compatibilidade com v2
+// import { List as FixedSizeList, type ListImperativeAPI, type RowComponentProps } from 'react-window'
 import { useApiError } from '@/hooks/useApiError'
 import { useToast } from '@/hooks/useToast'
 
@@ -84,7 +84,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   const [newMessage, setNewMessage] = useState('')
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const listRef = useRef<HTMLDivElement | null>(null)
+  // const listRef = useRef<ListImperativeAPI | null>(null) // Temporariamente removido
   const { handleErrorWithToast, handleResponseError } = useApiError()
   const toast = useToast()
 
@@ -94,9 +94,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   useEffect(() => {
     scrollToBottom()
     // Scroll para o final quando novas mensagens chegarem
-    if (listRef.current && memoizedMessages.length > 0) {
-      listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
-    }
+    // TODO: Implementar scroll com listRef quando a API do react-window v2 estiver correta
   }, [memoizedMessages])
 
   /**
@@ -174,21 +172,9 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
       {/* Lista de Mensagens */}
       <div className="flex-1 overflow-hidden">
         {memoizedMessages.length > 0 ? (
-          memoizedMessages.length > 20 ? (
-            // Virtualização para listas longas (>20 mensagens)
-            <FixedSizeList
-              ref={listRef}
-              height={400}
-              itemCount={memoizedMessages.length}
-              itemSize={80}
-              width="100%"
-              overscanCount={5}
-            >
-              {({ index, style }: { index: number; style: React.CSSProperties }) => (
-                <MessageItem message={memoizedMessages[index]} style={style} />
-              )}
-            </FixedSizeList>
-          ) : (
+          // TODO: Reimplementar virtualização com react-window v2 quando API estiver correta
+          // Por enquanto, renderização normal para todas as listas
+          (
             // Renderização normal para listas pequenas
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {memoizedMessages.map((message) => (

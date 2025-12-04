@@ -1,5 +1,5 @@
-// @ts-expect-error - react-window export issue
-import { FixedSizeList } from 'react-window'
+// Temporariamente removido react-window devido a problemas de compatibilidade com v2
+// import { List as FixedSizeList } from 'react-window'
 import { ReactNode } from 'react'
 
 /**
@@ -35,17 +35,12 @@ export function VirtualizedList<T>({
     return null
   }
 
+  // TODO: Reimplementar virtualização com react-window v2 quando API estiver correta
+  // Por enquanto, renderização normal
   return (
-    <FixedSizeList
-      height={height}
-      itemCount={items.length}
-      itemSize={itemHeight}
-      width="100%"
-      className={className}
-      overscanCount={overscanCount}
-    >
-      {Row}
-    </FixedSizeList>
+    <div className={className} style={{ height, overflow: 'auto' }}>
+      {items.map((item, index) => renderItem(item, index))}
+    </div>
   )
 }
 
