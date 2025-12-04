@@ -179,5 +179,20 @@ Com base no plano de **Tarefas de Curto Prazo** (`SHORT-TERM-TASKS.md`):
 
 ---
 
+---
+
+## 🔧 Correções Recentes (Dezembro 2024)
+
+### Erro: `module is not defined` em ui-vendor
+- ✅ **Corrigido** - Atualizado `tailwind.config.ts` para usar `import` ao invés de `require`
+- ✅ **Corrigido** - Atualizado `vite.config.ts` para incluir `tailwindcss-animate` em `commonjsOptions`
+- ✅ **Documentado** - Criado `docs/TROUBLESHOOTING.md` com soluções para erros comuns
+
+### Erro: MediaSession `enterpictureinpicture`
+- ℹ️ **Identificado** - Erro causado por extensões do navegador (não é do nosso código)
+- ✅ **Documentado** - Adicionado ao troubleshooting com explicação
+
+---
+
 **Última Atualização:** Dezembro 2024  
 **Próxima Revisão:** Após conclusão das tarefas de curto prazo
