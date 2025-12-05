@@ -39,6 +39,11 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
+    // Garantir que minificação não quebre inicializações
+    minifyOptions: {
+      keepNames: true, // Manter nomes de funções para evitar problemas de inicialização
+      keepClassNames: true, // Manter nomes de classes
+    },
     commonjsOptions: {
       // Incluir dependências específicas que podem ter CommonJS
       include: [
@@ -84,8 +89,11 @@ export default defineConfig({
             if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
               return 'form-vendor'
             }
+            // Manter Supabase no bundle principal ou vendor para evitar problemas de inicialização
+            // O erro "Cannot access 'oe' before initialization" pode ser causado por code splitting
             if (id.includes('@supabase')) {
-              return 'supabase-vendor'
+              // Manter Supabase junto com outras dependências para garantir ordem de inicialização
+              return 'vendor'
             }
             // Manter todas as outras dependências (incluindo Radix UI) em um único chunk vendor
             // Isso garante que o CommonJS seja transformado corretamente antes da separação
@@ -121,6 +129,8 @@ export default defineConfig({
     // Forçar ESM para dependências
     esbuildOptions: {
       format: 'esm',
+      // Garantir que variáveis sejam tratadas corretamente
+      keepNames: true,
     },
   },
 })
