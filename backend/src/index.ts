@@ -75,10 +75,8 @@ const corsOrigins: string[] = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(origin => origin.length > 0)
   : ['http://localhost:5173']
 
-// Log para debug (apenas em desenvolvimento)
-if (process.env.NODE_ENV !== 'production') {
-  logger.info({ corsOrigins }, 'CORS origins configuradas')
-}
+// Log das origens configuradas (sempre, para debug em produção)
+logger.info({ corsOrigins, corsOriginEnv: process.env.CORS_ORIGIN }, 'CORS origins configuradas')
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -98,8 +96,13 @@ app.use(cors({
       return callback(null, origin)
     }
     
-    // Origin não permitida
-    logger.warn({ origin, allowedOrigins: corsOrigins }, 'CORS: Origin não permitida')
+    // Origin não permitida - log detalhado para debug
+    logger.warn({ 
+      origin, 
+      allowedOrigins: corsOrigins,
+      corsOriginEnv: process.env.CORS_ORIGIN,
+      nodeEnv: process.env.NODE_ENV
+    }, 'CORS: Origin não permitida')
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true,

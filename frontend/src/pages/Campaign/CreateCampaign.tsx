@@ -106,7 +106,8 @@ export function CreateCampaign() {
       }
 
       // Enviar para API
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      // Normalizar URL removendo barras no final
+      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/+$/, '')
 
       const response = await fetch(`${apiUrl}/api/campaigns`, {
         method: 'POST',
