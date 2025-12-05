@@ -86,8 +86,27 @@ export function Dashboard() {
     delay: 1000,
     onError: (err) => {
       handleErrorWithToast(err, 'Erro ao carregar campanhas')
+      setLoading(false) // Garantir que loading seja false mesmo em caso de erro
     },
   })
+
+  /**
+   * Carregar campanhas quando o componente montar ou o usuário mudar
+   */
+  useEffect(() => {
+    if (user) {
+      loadCampaigns()
+        .then(() => {
+          setLoading(false)
+        })
+        .catch(() => {
+          setLoading(false)
+        })
+    } else {
+      // Se não há usuário, não precisa carregar campanhas
+      setLoading(false)
+    }
+  }, [user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Função para scrollar carrossel

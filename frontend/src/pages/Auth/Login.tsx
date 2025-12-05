@@ -58,6 +58,10 @@ export function Login() {
       if (error) throw error
 
       toast.success('Login realizado com sucesso!')
+      
+      // Aguardar um pouco para o AuthContext atualizar antes de navegar
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
       navigate('/dashboard')
     } catch (error: unknown) {
       const err = error as Error

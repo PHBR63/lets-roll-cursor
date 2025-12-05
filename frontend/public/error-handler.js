@@ -24,83 +24,59 @@
       'stop'
     ];
     
-    // Interceptar antes que qualquer extensão possa usar
-    // Usar Object.defineProperty para garantir que seja aplicado primeiro
-    if (navigator.mediaSession) {
-      // Salvar o método original ANTES de substituir
-      const originalSetActionHandler = navigator.mediaSession.setActionHandler;
-      
-      // Substituir setActionHandler com wrapper que valida ações
-      try {
-        Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
-          value: function(action, handler) {
-            // Se a ação não é suportada, simplesmente retornar sem erro
-            if (!supportedActions.includes(action)) {
-              // Ação não suportada (como 'enterpictureinpicture' de extensões)
-              // Retornar undefined silenciosamente para evitar erro
-              return undefined;
-            }
-            
-            // Se temos o método original, usar ele
-            if (originalSetActionHandler) {
-              try {
-                return originalSetActionHandler.call(navigator.mediaSession, action, handler);
-              } catch (e) {
-                // Se ainda assim der erro, ignorar silenciosamente
-                return undefined;
-              }
-            }
-            
-            // Se não temos o original, retornar undefined (não podemos fazer nada)
-            return undefined;
-          },
-          writable: true,
-          configurable: true
-        });
-      } catch (e) {
-        // Se não conseguir usar defineProperty, tentar substituição direta
-        navigator.mediaSession.setActionHandler = function(action, handler) {
-          if (!supportedActions.includes(action)) {
-            return undefined;
-          }
-          if (originalSetActionHandler) {
-            try {
-              return originalSetActionHandler.call(navigator.mediaSession, action, handler);
-            } catch (e) {
-              return undefined;
-            }
-          }
-          return undefined;
-        };
-      }
-    } else {
-      // Se mediaSession ainda não existe, interceptar quando for criado
-      let mediaSessionCreated = false;
-      const originalDefineProperty = Object.defineProperty;
-      Object.defineProperty(navigator, 'mediaSession', {
-        get: function() {
-          if (!mediaSessionCreated && this._mediaSession) {
-            mediaSessionCreated = true;
-            // Aplicar wrapper quando mediaSession for acessado pela primeira vez
-            const original = this._mediaSession.setActionHandler;
-            this._mediaSession.setActionHandler = function(action, handler) {
+    // Função para aplicar o wrapper no setActionHandler
+    const wrapMediaSession = () => {
+      if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
+        const original = navigator.mediaSession.setActionHandler;
+        try {
+          Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
+            value: function(action, handler) {
               if (!supportedActions.includes(action)) {
                 return undefined;
               }
-              if (original) {
-                try {
-                  return original.call(this, action, handler);
-                } catch (e) {
-                  return undefined;
-                }
+              try {
+                return original.call(navigator.mediaSession, action, handler);
+              } catch (e) {
+                return undefined;
               }
+            },
+            writable: true,
+            configurable: true
+          });
+        } catch (e) {
+          // Fallback: substituição direta
+          navigator.mediaSession.setActionHandler = function(action, handler) {
+            if (!supportedActions.includes(action)) return undefined;
+            try {
+              return original.call(navigator.mediaSession, action, handler);
+            } catch (e) {
               return undefined;
-            };
+            }
+          };
+        }
+      }
+    };
+    
+    // Tentar interceptar imediatamente
+    wrapMediaSession();
+    
+    // Tentar novamente após um pequeno delay (caso mediaSession ainda não exista)
+    setTimeout(wrapMediaSession, 0);
+    
+    // Interceptar quando mediaSession for criado
+    if (!navigator.mediaSession) {
+      let mediaSessionProxy = null;
+      Object.defineProperty(navigator, 'mediaSession', {
+        get: function() {
+          if (!mediaSessionProxy && this._mediaSession) {
+            mediaSessionProxy = this._mediaSession;
+            wrapMediaSession();
           }
-          return this._mediaSession;
+          return mediaSessionProxy || this._mediaSession;
         },
         set: function(value) {
           this._mediaSession = value;
+          wrapMediaSession();
         },
         configurable: true
       });
