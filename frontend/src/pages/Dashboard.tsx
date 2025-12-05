@@ -53,39 +53,57 @@ export function Dashboard() {
     }
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    const response = await fetch(`${apiUrl}/api/campaigns`, {
-      headers: {
-        Authorization: `Bearer ${session.session.access_token}`,
-      },
-    })
+    
+    try {
+      const response = await fetch(`${apiUrl}/api/campaigns`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
 
-    if (!response.ok) {
-      await handleResponseError(response, 'Erro ao carregar campanhas')
-      return null
+      if (!response.ok) {
+        await handleResponseError(response, 'Erro ao carregar campanhas')
+        return null
+      }
+
+      const campaigns = await response.json()
+
+      // Salvar no cache
+      cache.set(cacheKey, campaigns)
+
+      // Separar por role
+      const mastering = campaigns.filter((c: Campaign) => c.role === 'master')
+      const participating = campaigns.filter(
+        (c: Campaign) => c.role === 'player' || c.role === 'observer'
+      )
+
+      setMasteringCampaigns(mastering)
+      setParticipatingCampaigns(participating)
+
+      return campaigns
+    } catch (error) {
+      // Se for erro de conexão, mostrar mensagem mais amigável
+      if (error instanceof TypeError && (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION_REFUSED'))) {
+        console.warn('Backend não está disponível. Verifique se VITE_API_URL está configurada corretamente.')
+        // Não quebrar a aplicação, apenas logar o erro
+        // Retornar arrays vazios para permitir que o dashboard seja exibido
+        setMasteringCampaigns([])
+        setParticipatingCampaigns([])
+        return []
+      }
+      // Para outros erros, propagar
+      throw error
     }
-
-    const campaigns = await response.json()
-
-    // Salvar no cache
-    cache.set(cacheKey, campaigns)
-
-    // Separar por role
-    const mastering = campaigns.filter((c: Campaign) => c.role === 'master')
-    const participating = campaigns.filter(
-      (c: Campaign) => c.role === 'player' || c.role === 'observer'
-    )
-
-    setMasteringCampaigns(mastering)
-    setParticipatingCampaigns(participating)
-
-    return campaigns
   }
 
   const { execute: loadCampaigns, loading: loadingCampaigns } = useRetry(loadCampaignsFn, {
     maxRetries: 3,
     delay: 1000,
     onError: (err) => {
-      handleErrorWithToast(err, 'Erro ao carregar campanhas')
+      // Se for erro de conexão, não mostrar toast (já foi tratado no loadCampaignsFn)
+      if (!(err instanceof TypeError && (err.message.includes('Failed to fetch') || err.message.includes('ERR_CONNECTION_REFUSED')))) {
+        handleErrorWithToast(err, 'Erro ao carregar campanhas')
+      }
       setLoading(false) // Garantir que loading seja false mesmo em caso de erro
     },
   })

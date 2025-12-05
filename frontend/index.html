@@ -5,22 +5,80 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Let's Roll - Plataforma de RPG de Mesa</title>
-    <!-- Carregar error-handler ANTES de qualquer outro script, sem defer/async -->
+    <!-- Interceptar autoPip.js ANTES de qualquer coisa -->
     <script>
-      // Inline script para garantir execução imediata
       (function() {
         'use strict';
-        if (typeof navigator !== 'undefined' && navigator.mediaSession && navigator.mediaSession.setActionHandler) {
+        // Interceptar o mais cedo possível, antes de qualquer extensão
+        if (typeof navigator !== 'undefined') {
           const supportedActions = ['play', 'pause', 'seekbackward', 'seekforward', 'previoustrack', 'nexttrack', 'seekto', 'stop'];
-          const original = navigator.mediaSession.setActionHandler;
-          navigator.mediaSession.setActionHandler = function(action, handler) {
-            if (!supportedActions.includes(action)) return undefined;
-            try {
-              return original.call(navigator.mediaSession, action, handler);
-            } catch (e) {
-              return undefined;
+          
+          // Função para aplicar wrapper
+          const wrapMediaSession = () => {
+            if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
+              const original = navigator.mediaSession.setActionHandler;
+              try {
+                Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
+                  value: function(action, handler) {
+                    if (!supportedActions.includes(action)) {
+                      return undefined;
+                    }
+                    try {
+                      return original.call(navigator.mediaSession, action, handler);
+                    } catch (e) {
+                      return undefined;
+                    }
+                  },
+                  writable: true,
+                  configurable: true
+                });
+              } catch (e) {
+                // Fallback
+                navigator.mediaSession.setActionHandler = function(action, handler) {
+                  if (!supportedActions.includes(action)) return undefined;
+                  try {
+                    return original.call(navigator.mediaSession, action, handler);
+                  } catch (e) {
+                    return undefined;
+                  }
+                };
+              }
             }
           };
+          
+          // Tentar imediatamente
+          wrapMediaSession();
+          
+          // Tentar após DOMContentLoaded
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', wrapMediaSession);
+          }
+          
+          // Tentar após load
+          window.addEventListener('load', wrapMediaSession);
+          
+          // Interceptar quando mediaSession for criado
+          if (!navigator.mediaSession) {
+            let mediaSessionProxy = null;
+            try {
+              Object.defineProperty(navigator, 'mediaSession', {
+                get: function() {
+                  if (!mediaSessionProxy && this._mediaSession) {
+                    mediaSessionProxy = this._mediaSession;
+                    wrapMediaSession();
+                  }
+                  return mediaSessionProxy || this._mediaSession;
+                },
+                set: function(value) {
+                  this._mediaSession = value;
+                  wrapMediaSession();
+                },
+                configurable: true
+              });
+            } catch (e) {
+              // Se não conseguir, pelo menos tentar quando for acessado
+            }
+          }
         }
       })();
     </script>
