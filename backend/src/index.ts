@@ -48,7 +48,7 @@ if (!envLoaded) {
 }
 
 const app = express()
-const PORT = process.env.PORT || 3001
+const PORT = parseInt(process.env.PORT || '3001', 10)
 
 // Trust proxy (necessário para rate limiting funcionar corretamente atrás de proxy como Render)
 app.set('trust proxy', true)
