@@ -152,9 +152,9 @@ charactersRouter.get('/:id/inventory', async (req: Request, res: Response) => {
 // Obter carga e capacidade máxima do personagem
 charactersRouter.get('/:id/load', async (req: Request, res: Response) => {
   try {
-    const { calculateLoad, getMaxLoad } = await import('../services/character/characterInventoryService')
-    const currentLoad = await calculateLoad(req.params.id)
-    const maxLoad = await getMaxLoad(req.params.id)
+    const { characterInventoryService } = await import('../services/character/characterInventoryService')
+    const currentLoad = await characterInventoryService.calculateLoad(req.params.id)
+    const maxLoad = await characterInventoryService.getMaxLoad(req.params.id)
     const isOverloaded = currentLoad > maxLoad
     
     res.json({

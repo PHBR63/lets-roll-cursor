@@ -160,7 +160,26 @@ export const characterService = {
       }
 
       // Perícias iniciais (todas destreinadas por padrão)
-      let skills = data.skills || {}
+      // Converter formato de skills se fornecido (value/trained -> attribute/training/bonus)
+      let skills: Record<string, { attribute: string; training: string; bonus: number }> = {}
+      
+      if (data.skills) {
+        // Converter do formato antigo (value/trained) para o novo (attribute/training/bonus)
+        for (const [skillName, skillData] of Object.entries(data.skills)) {
+          if ('value' in skillData && 'trained' in skillData) {
+            // Formato antigo: converter
+            const training = skillData.trained ? 'TRAINED' : 'UNTRAINED'
+            skills[skillName] = {
+              attribute: 'INT', // Default, será ajustado pela origem se necessário
+              training,
+              bonus: skillData.trained ? 5 : 0,
+            }
+          } else {
+            // Já está no formato novo
+            skills[skillName] = skillData as any
+          }
+        }
+      }
 
       // Aplicar origem se fornecida (adiciona perícias treinadas automaticamente)
       if (data.origin) {
