@@ -89,6 +89,7 @@ export function Login() {
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
+                    autoComplete="email"
                     {...register('email')}
                     className={errors.email ? 'border-red-500' : ''}
                   />
@@ -105,6 +106,7 @@ export function Login() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
+                    autoComplete="current-password"
                     {...register('password')}
                     className={errors.password ? 'border-red-500' : ''}
                   />

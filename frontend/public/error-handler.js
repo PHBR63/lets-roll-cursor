@@ -1,54 +1,67 @@
 /**
  * Handler global de erros para evitar que erros de extensões do navegador
  * ou bibliotecas externas quebrem a aplicação
+ * 
+ * IMPORTANTE: Este script deve ser carregado ANTES de qualquer outro script
+ * para interceptar erros de extensões do navegador (como autoPip.js)
  */
 (function() {
   'use strict';
 
   // Tratar erro de MediaSession (pode ser de extensão do navegador como autoPip.js)
-  if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
-    const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
-    
-    navigator.mediaSession.setActionHandler = function(action, handler) {
-      try {
-        // Verificar se a ação é suportada (lista completa de ações válidas)
-        const supportedActions = [
-          'play', 
-          'pause', 
-          'seekbackward', 
-          'seekforward', 
-          'previoustrack', 
-          'nexttrack', 
-          'seekto', 
-          'stop'
-        ];
-        
-        // Se a ação não é suportada, simplesmente ignorar (não chamar original)
+  // Aplicar o wrapper ANTES de qualquer outro script tentar usar MediaSession
+  if (typeof navigator !== 'undefined' && navigator.mediaSession) {
+    // Verificar se setActionHandler existe
+    if (navigator.mediaSession.setActionHandler) {
+      const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+      
+      // Lista completa de ações válidas do MediaSession API
+      const supportedActions = [
+        'play', 
+        'pause', 
+        'seekbackward', 
+        'seekforward', 
+        'previoustrack', 
+        'nexttrack', 
+        'seekto', 
+        'stop'
+      ];
+      
+      // Substituir setActionHandler com wrapper que valida ações
+      navigator.mediaSession.setActionHandler = function(action, handler) {
+        // Se a ação não é suportada, simplesmente retornar sem erro
         if (!supportedActions.includes(action)) {
           // Ação não suportada (como 'enterpictureinpicture' de extensões)
-          return;
+          // Retornar undefined silenciosamente para evitar erro
+          return undefined;
         }
         
-        return originalSetActionHandler(action, handler);
-      } catch (e) {
-        // Ignorar erros de ações não suportadas
-        // Não logar para evitar poluição do console
-      }
-    };
+        try {
+          return originalSetActionHandler(action, handler);
+        } catch (e) {
+          // Se ainda assim der erro, ignorar silenciosamente
+          return undefined;
+        }
+      };
+    }
   }
 
   // Handler global de erros não capturados
+  // Usar capture phase para interceptar antes de outros handlers
   window.addEventListener('error', function(event) {
     // Ignorar erros de MediaSession (incluindo enterpictureinpicture)
     if (event.message && (
       event.message.includes('MediaSession') || 
       event.message.includes('enterpictureinpicture') ||
-      event.filename && event.filename.includes('autoPip.js')
+      event.message.includes('setActionHandler') ||
+      (event.filename && event.filename.includes('autoPip.js'))
     )) {
       event.preventDefault();
       event.stopPropagation();
+      event.stopImmediatePropagation();
       return false;
     }
+  }, true); // true = usar capture phase para interceptar primeiro
     
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
     if (event.message && (
