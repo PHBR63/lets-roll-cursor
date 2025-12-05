@@ -106,6 +106,9 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
     EM_CHAMAS: 'Em Chamas',
     FASCINADO: 'Fascinado',
     INDEFESO: 'Indefeso',
+    SOBRECARREGADO: 'Sobrecarregado',
+    VULNERAVEL: 'Vulnerável',
+    MORTO: 'Morto',
   }
 
   /**
@@ -142,6 +145,9 @@ export function ConditionsPanel({ character, onUpdate }: ConditionsPanelProps) {
     EM_CHAMAS: '1d6 dano de fogo por turno. Ação padrão para apagar',
     FASCINADO: 'Não pode agir além de observar. -2D em Percepção',
     INDEFESO: 'Inconsciente + Paralisado. Falha em Reflexos',
+    SOBRECARREGADO: 'Carga excede capacidade. -1D em todos os testes',
+    VULNERAVEL: 'Defesa reduzida em 2',
+    MORTO: 'Personagem morto. Não pode agir',
   }
 
   return (

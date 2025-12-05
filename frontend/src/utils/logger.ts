@@ -3,7 +3,7 @@
  * Desabilita logs em produção
  */
 
-const isProduction = import.meta.env.PROD
+const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
 
 interface Logger {
   log: (...args: unknown[]) => void

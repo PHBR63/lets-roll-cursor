@@ -139,7 +139,8 @@ export function RollHistory({ sessionId, campaignId }: RollHistoryProps) {
   const formatResult = (item: RollHistoryItem): string => {
     const { result } = item
     if (result.type === 'attack') {
-      return `${result.formula || 'Ataque'}: ${result.total || result.result} (${result.details?.hit ? 'Acertou' : 'Errou'})`
+      const hit = result.hit ?? (result.details as any)?.hit ?? false
+      return `${result.formula || 'Ataque'}: ${result.total || result.result} (${hit ? 'Acertou' : 'Errou'})`
     }
     if (result.type === 'skill') {
       return `${result.formula || 'Perícia'}: ${result.total || result.result}`

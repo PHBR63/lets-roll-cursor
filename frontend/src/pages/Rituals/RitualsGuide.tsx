@@ -544,7 +544,7 @@ export function RitualsGuide() {
           <Tabs defaultValue="all" className="space-y-4">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="all">Todos ({filteredRituals.length})</TabsTrigger>
-              {[1, 2, 3, 4].map((circle) => (
+              {[1, 2, 3, 4].map((circle: number) => (
                 <TabsTrigger key={circle} value={`circle-${circle}`} disabled={!ritualsByCircle[circle]}>
                   {circle}º Círculo ({ritualsByCircle[circle]?.length || 0})
                 </TabsTrigger>
@@ -554,7 +554,7 @@ export function RitualsGuide() {
             <TabsContent value="all" className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <AnimatePresence mode="wait">
-                  {filteredRituals.map((ritual) => (
+                  {filteredRituals.map((ritual: Ritual) => (
                     <motion.div
                       key={ritual.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -569,12 +569,12 @@ export function RitualsGuide() {
               </div>
             </TabsContent>
 
-            {[1, 2, 3, 4].map((circle) => (
+            {[1, 2, 3, 4].map((circle: number) => (
               <TabsContent key={circle} value={`circle-${circle}`} className="space-y-4">
                 {ritualsByCircle[circle] ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <AnimatePresence mode="wait">
-                      {ritualsByCircle[circle].map((ritual) => (
+                      {ritualsByCircle[circle].map((ritual: Ritual) => (
                         <motion.div
                           key={ritual.id}
                           initial={{ opacity: 0, y: 20 }}

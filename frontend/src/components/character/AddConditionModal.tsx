@@ -117,6 +117,9 @@ export function AddConditionModal({
     EM_CHAMAS: 'Em Chamas',
     FASCINADO: 'Fascinado',
     INDEFESO: 'Indefeso',
+    SOBRECARREGADO: 'Sobrecarregado',
+    VULNERAVEL: 'Vulnerável',
+    MORTO: 'Morto',
   }
 
   /**

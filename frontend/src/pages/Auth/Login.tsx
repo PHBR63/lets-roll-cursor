@@ -11,6 +11,7 @@ import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 /**
  * Schema de validação para login

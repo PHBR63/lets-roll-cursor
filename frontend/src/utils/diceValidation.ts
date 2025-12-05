@@ -19,7 +19,7 @@ export function validateDiceFormula(formula: string): { valid: boolean; error?: 
   try {
     diceFormulaSchema.parse(formula.trim())
     return { valid: true }
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return { valid: false, error: error.errors[0]?.message || 'Fórmula inválida' }
     }

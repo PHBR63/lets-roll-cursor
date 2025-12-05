@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useApiError } from '@/hooks/useApiError'
-import { Reload, Minus, Plus } from 'lucide-react'
+import { RefreshCcw, Minus, Plus } from 'lucide-react'
 import { AnimatedProgress } from '@/components/ui/animated-progress'
 
 interface AmmunitionPanelProps {
@@ -190,10 +190,10 @@ export function AmmunitionPanel({ characterId, sessionId, isMaster }: Ammunition
     )
   }
 
-  const getAmmunitionColor = () => {
+  const getAmmunitionColor = (): 'red' | 'blue' | 'green' | 'yellow' | 'purple' => {
     if (ammunition >= 75) return 'green'
     if (ammunition >= 50) return 'yellow'
-    if (ammunition >= 25) return 'orange'
+    if (ammunition >= 25) return 'yellow' // Usar yellow em vez de orange
     return 'red'
   }
 
@@ -232,7 +232,7 @@ export function AmmunitionPanel({ characterId, sessionId, isMaster }: Ammunition
           disabled={updating || ammunition >= 100}
           className="flex-1"
         >
-          <Reload className="w-4 h-4 mr-1" />
+          <RefreshCcw className="w-4 h-4 mr-1" />
           Recarregar
         </Button>
       </div>
