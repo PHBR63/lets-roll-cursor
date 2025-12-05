@@ -70,8 +70,28 @@ app.use(
 )
 
 // CORS
+// Permitir múltiplas origens em produção (separadas por vírgula)
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:5173']
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Permitir requisições sem origin (ex: Postman, curl)
+    if (!origin) return callback(null, true)
+    
+    // Verificar se a origin está na lista permitida
+    if (corsOrigins.includes(origin)) {
+      callback(null, true)
+    } else {
+      // Em desenvolvimento, permitir localhost em qualquer porta
+      if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    }
+  },
   credentials: true,
 }))
 
