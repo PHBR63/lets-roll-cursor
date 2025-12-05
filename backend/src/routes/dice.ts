@@ -6,6 +6,13 @@ import { DiceRollSchema } from '../middleware/schemas/diceSchemas'
 import { AppError } from '../types/common'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Dice
+ *     description: Operações relacionadas a rolagem de dados
+ */
+
+/**
  * Rotas para sistema de rolagem de dados
  */
 export const diceRouter = Router()

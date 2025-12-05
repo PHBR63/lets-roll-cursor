@@ -240,7 +240,18 @@ export function CampaignDetail() {
 
             {/* Seção Status - Grid de Personagens */}
             <div className="bg-card border border-card-secondary rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4">Status</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-white">Status</h2>
+                {/* Botão Criar Personagem - apenas para jogadores que não têm personagem */}
+                {!isMaster && characters.filter(c => c.user_id === user?.id).length === 0 && (
+                  <Button
+                    onClick={() => navigate(`/campaign/${id}/character/create`)}
+                    className="bg-accent hover:bg-accent/90"
+                  >
+                    + Criar Personagem
+                  </Button>
+                )}
+              </div>
               {characters.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {characters.map((character) => (
@@ -254,7 +265,19 @@ export function CampaignDetail() {
                 <EmptyState
                   icon={<Users className="w-8 h-8 text-text-secondary" />}
                   title="Nenhum personagem"
-                  description="Ainda não há personagens criados nesta campanha. Convide jogadores para começar!"
+                  description={
+                    isMaster
+                      ? "Ainda não há personagens criados nesta campanha. Convide jogadores para começar!"
+                      : "Você ainda não tem um personagem nesta campanha. Crie um para começar!"
+                  }
+                  action={
+                    !isMaster
+                      ? {
+                          label: '+ Criar Personagem',
+                          onClick: () => navigate(`/campaign/${id}/character/create`),
+                        }
+                      : undefined
+                  }
                 />
               )}
             </div>

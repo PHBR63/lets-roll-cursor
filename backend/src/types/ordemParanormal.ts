@@ -102,6 +102,9 @@ export type Condition =
   | 'EM_CHAMAS'
   | 'FASCINADO'
   | 'INDEFESO'
+  | 'SOBRECARREGADO'
+  | 'VULNERAVEL'
+  | 'MORTO'
 
 /**
  * Configuração de classe para cálculos

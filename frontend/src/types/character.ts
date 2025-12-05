@@ -36,6 +36,7 @@ export interface Character {
   affinity?: string
   rituals?: Array<{ id: string; name: string; [key: string]: unknown }>
   ingredients?: Array<{ id: string; name: string; [key: string]: unknown }>
+  resistances?: Record<string, number> // RD (Resistência a Dano) por tipo
   avatar_url?: string
   created_at?: string
   updated_at?: string

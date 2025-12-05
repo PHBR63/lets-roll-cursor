@@ -11,6 +11,7 @@ import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 /**
  * Schema de validação para registro
@@ -40,6 +41,7 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export function Register() {
   const navigate = useNavigate()
   const toast = useToast()
+  const { user, loading } = useAuth()
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('register')
   
   const {
@@ -51,10 +53,31 @@ export function Register() {
     resolver: zodResolver(registerSchema),
   })
 
+  // Redirecionar usuários já autenticados
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, loading, navigate])
+
   // Sincronizar tab ativa com a rota
   useEffect(() => {
     setActiveTab('register')
   }, [])
+
+  // Mostrar loading enquanto verifica autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Carregando...</div>
+      </div>
+    )
+  }
+
+  // Se usuário estiver autenticado, não renderizar nada (será redirecionado)
+  if (user) {
+    return null
+  }
 
   /**
    * Função para criar conta

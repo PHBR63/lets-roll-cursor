@@ -8,8 +8,11 @@ import { useToast } from '@/hooks/useToast'
 import { DiceRollerBasic } from './DiceRollerBasic'
 import { DiceRollerSkill } from './DiceRollerSkill'
 import { DiceRollerAttack } from './DiceRollerAttack'
+import { ChainRoller } from './ChainRoller'
+import { RollHistory } from './RollHistory'
 import { DiceRollResult } from './DiceRollResult'
 import { DiceAnimation } from '@/components/common/DiceAnimation'
+import { DTCalculator } from '@/components/common/DTCalculator'
 import { Character } from './types'
 import { logger } from '@/utils/logger'
 import { DiceRollResult as DiceRollResultType } from '@/types/dice'
@@ -98,7 +101,7 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       <h3 className="text-white font-semibold">Rolagem de Dados</h3>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="basic">Básica</TabsTrigger>
           <TabsTrigger value="skill" disabled={!character}>
             Perícia
@@ -106,6 +109,7 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
           <TabsTrigger value="attack" disabled={!character}>
             Ataque
           </TabsTrigger>
+          <TabsTrigger value="tools">Ferramentas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="space-y-4 mt-4">
@@ -135,6 +139,19 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
             onRoll={handleRoll}
           />
         </TabsContent>
+
+        <TabsContent value="tools" className="space-y-4 mt-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <DTCalculator />
+            <ChainRoller
+              onRoll={handleRoll}
+              sessionId={sessionId}
+              campaignId={campaignId}
+              characterId={character?.id}
+              isPrivate={isPrivate}
+            />
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Checkbox Privado */}
@@ -148,6 +165,9 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
           Rolagem Privada
         </Label>
       </div>
+
+      {/* Histórico de Rolagens */}
+      <RollHistory sessionId={sessionId} campaignId={campaignId} />
 
       {/* Último Resultado */}
       {lastResult && <DiceRollResult result={lastResult as any} />}

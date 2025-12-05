@@ -6,6 +6,7 @@ export interface CreateCharacterData {
   name: string
   campaignId: string
   class?: string
+  origin?: string // Origem do personagem
   attributes?: Record<string, number>
   skills?: Record<string, { value: number; trained: boolean }>
   resources?: Record<string, { current: number; max: number }>
@@ -16,6 +17,7 @@ export interface CreateCharacterData {
 export interface UpdateCharacterData {
   name?: string
   class?: string
+  origin?: string // Origem do personagem
   attributes?: Record<string, number>
   skills?: Record<string, { value: number; trained: boolean }>
   resources?: Record<string, { current: number; max: number }>

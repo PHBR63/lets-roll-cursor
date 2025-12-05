@@ -222,6 +222,87 @@ export const ordemParanormalService = {
   },
 
   /**
+   * Calcula dano final aplicando RD (Resistência a Dano)
+   * @param damage - Objeto com valor e tipo de dano
+   * @param targetResistances - RD do alvo por tipo de dano
+   * @returns Dano final após aplicar RD
+   */
+  calculateDamageWithRD(
+    damage: { value: number; type: string },
+    targetResistances: Record<string, number> = {}
+  ): {
+    rawDamage: number
+    damageType: string
+    rd: number
+    finalDamage: number
+  } {
+    const rawDamage = damage.value
+    const damageType = damage.type || 'geral'
+
+    // Buscar RD específico do tipo ou RD geral como fallback
+    const rd = targetResistances[damageType] || targetResistances.geral || 0
+
+    // Calcular dano final (não pode ser negativo)
+    const finalDamage = Math.max(0, rawDamage - rd)
+
+    return {
+      rawDamage,
+      damageType,
+      rd,
+      finalDamage,
+    }
+  },
+
+  /**
+   * Rola teste de custo de ritual (secreto)
+   * DT = 20 + Custo do Ritual
+   * Teste de Ocultismo (INT + bônus de perícia)
+   * @param character - Dados do personagem (atributos e perícias)
+   * @param ritualCost - Custo do ritual em PE
+   * @returns Resultado do teste
+   */
+  rollRitualCostTest(
+    character: {
+      attributes: { int: number }
+      skills: Record<string, { attribute: string; training: string; bonus: number }>
+    },
+    ritualCost: number
+  ): {
+    success: boolean
+    criticalFailure: boolean
+    rollResult: number
+    dt: number
+    dice: number[]
+    attributeValue: number
+    skillBonus: number
+  } {
+    const dt = 20 + ritualCost
+    const intValue = character.attributes.int || 0
+
+    // Buscar perícia Ocultismo
+    const ocultismo = character.skills['Ocultismo'] || character.skills['ocultismo']
+    const skillBonus = ocultismo?.bonus || 0
+
+    // Rolar teste de atributo (INT + bônus de Ocultismo)
+    const rollResult = this.rollAttributeTest(intValue, skillBonus)
+
+    // Verificar sucesso
+    const success = rollResult.total >= dt
+    // Falha crítica: resultado <= DT - 5
+    const criticalFailure = !success && rollResult.total <= dt - 5
+
+    return {
+      success,
+      criticalFailure,
+      rollResult: rollResult.total,
+      dt,
+      dice: rollResult.dice,
+      attributeValue: intValue,
+      skillBonus,
+    }
+  },
+
+  /**
    * Converte NEX (Nível de Exposição) em nível numérico
    * @param nex - NEX em percentual (0-99)
    * @returns Nível (0-19, onde cada 5% = 1 nível)
@@ -238,6 +319,88 @@ export const ordemParanormalService = {
   calculatePERecovery(nex: number): number {
     const level = this.calculateNEXLevel(nex)
     return level + 1 // Mínimo 1 PE, +1 por nível
+  },
+
+  /**
+   * Calcula limite de PE por turno baseado em NEX
+   * @param nex - Nível de Exposição (0-99)
+   * @returns Limite de PE que pode ser gasto por turno
+   */
+  getPELimitByNEX(nex: number): number {
+    // Tabela de limites conforme regras oficiais
+    // NEX 5%: Limite 1 PE
+    // NEX 10-15%: Limite 2 PE
+    // NEX 20-25%: Limite 3 PE
+    // ...progressão linear até NEX 99%: Limite 20 PE
+    
+    if (nex < 5) {
+      return 1 // NEX 0-4: Limite 1 PE
+    }
+    
+    if (nex < 10) {
+      return 1 // NEX 5-9: Limite 1 PE
+    }
+    
+    if (nex < 20) {
+      return 2 // NEX 10-19: Limite 2 PE
+    }
+    
+    if (nex < 30) {
+      return 3 // NEX 20-29: Limite 3 PE
+    }
+    
+    if (nex < 40) {
+      return 4 // NEX 30-39: Limite 4 PE
+    }
+    
+    if (nex < 50) {
+      return 5 // NEX 40-49: Limite 5 PE
+    }
+    
+    if (nex < 60) {
+      return 6 // NEX 50-59: Limite 6 PE
+    }
+    
+    if (nex < 70) {
+      return 7 // NEX 60-69: Limite 7 PE
+    }
+    
+    if (nex < 80) {
+      return 8 // NEX 70-79: Limite 8 PE
+    }
+    
+    if (nex < 90) {
+      return 9 // NEX 80-89: Limite 9 PE
+    }
+    
+    // NEX 90-99: Limite 10 PE (progressão linear)
+    // Para simplificar, vamos usar uma fórmula linear a partir de NEX 20
+    // Limite = Math.floor((nex - 5) / 5) + 1, mas com mínimo 1 e máximo 20
+    
+    // Progressão mais precisa: cada 5% de NEX após 5% adiciona 1 ao limite
+    // NEX 5-9: 1, NEX 10-14: 2, NEX 15-19: 2, NEX 20-24: 3, etc.
+    const baseLimit = Math.floor((nex - 5) / 5) + 1
+    return Math.min(Math.max(baseLimit, 1), 20) // Clamp entre 1 e 20
+  },
+
+  /**
+   * Calcula capacidade máxima de carga do personagem
+   * @param forAttr - Valor de Força
+   * @returns Capacidade máxima de carga (5 * FOR, mínimo 2)
+   */
+  calculateMaxLoad(forAttr: number): number {
+    const calculated = 5 * forAttr
+    return Math.max(calculated, 2) // Mínimo 2 espaços
+  },
+
+  /**
+   * Verifica se personagem está sobrecarregado
+   * @param currentLoad - Carga atual
+   * @param maxLoad - Capacidade máxima
+   * @returns Se está sobrecarregado
+   */
+  isOverloaded(currentLoad: number, maxLoad: number): boolean {
+    return currentLoad > maxLoad
   },
 
   /**
@@ -266,6 +429,113 @@ export const ordemParanormalService = {
    */
   isInsane(currentSAN: number): boolean {
     return currentSAN <= 0
+  },
+
+  /**
+   * Determina o estado de insanidade baseado em SAN atual e máxima
+   * @param currentSAN - SAN atual
+   * @param maxSAN - SAN máxima
+   * @returns Estado de insanidade e condições a aplicar
+   */
+  getInsanityState(currentSAN: number, maxSAN: number): {
+    state: 'NORMAL' | 'ABALADO_MENTAL' | 'PERTURBADO' | 'ENLOUQUECENDO' | 'TOTALMENTE_INSANO'
+    severity: number // 0-4 (0 = normal, 4 = totalmente insano)
+    conditions: Condition[]
+    message: string
+    visualFeedback: {
+      color: string // Cor para feedback visual
+      icon: string // Ícone para feedback visual
+      pulse: boolean // Se deve pulsar/animar
+    }
+  } {
+    if (maxSAN === 0) {
+      return {
+        state: 'NORMAL',
+        severity: 0,
+        conditions: [],
+        message: 'Sanidade normal',
+        visualFeedback: {
+          color: 'green',
+          icon: '✓',
+          pulse: false,
+        },
+      }
+    }
+
+    const percentage = (currentSAN / maxSAN) * 100
+
+    // Totalmente Insano (SAN = 0)
+    if (currentSAN <= 0) {
+      return {
+        state: 'TOTALMENTE_INSANO',
+        severity: 4,
+        conditions: ['ENLOUQUECENDO'],
+        message: 'Personagem está totalmente insano! (SAN = 0)',
+        visualFeedback: {
+          color: 'red',
+          icon: '⚠️',
+          pulse: true,
+        },
+      }
+    }
+
+    // Enlouquecendo (SAN <= 25%)
+    if (percentage <= 25) {
+      return {
+        state: 'ENLOUQUECENDO',
+        severity: 3,
+        conditions: ['PERTURBADO'],
+        message: `Personagem está enlouquecendo! (SAN: ${currentSAN}/${maxSAN}, ${Math.round(percentage)}%)`,
+        visualFeedback: {
+          color: 'orange',
+          icon: '⚠️',
+          pulse: true,
+        },
+      }
+    }
+
+    // Perturbado (SAN <= 50%)
+    if (percentage <= 50) {
+      return {
+        state: 'PERTURBADO',
+        severity: 2,
+        conditions: [],
+        message: `Personagem está perturbado mentalmente (SAN: ${currentSAN}/${maxSAN}, ${Math.round(percentage)}%)`,
+        visualFeedback: {
+          color: 'yellow',
+          icon: '⚡',
+          pulse: false,
+        },
+      }
+    }
+
+    // Abalado Mentalmente (SAN <= 75%)
+    if (percentage <= 75) {
+      return {
+        state: 'ABALADO_MENTAL',
+        severity: 1,
+        conditions: [],
+        message: `Personagem está mentalmente abalado (SAN: ${currentSAN}/${maxSAN}, ${Math.round(percentage)}%)`,
+        visualFeedback: {
+          color: 'blue',
+          icon: '💭',
+          pulse: false,
+        },
+      }
+    }
+
+    // Normal
+    return {
+      state: 'NORMAL',
+      severity: 0,
+      conditions: [],
+      message: 'Sanidade normal',
+      visualFeedback: {
+        color: 'green',
+        icon: '✓',
+        pulse: false,
+      },
+    }
   },
 
   /**
@@ -444,6 +714,27 @@ export const ordemParanormalService = {
         case 'INDEFESO':
           penalties.defenseBase = true // Falha automaticamente em Reflexos
           penalties.cannotReact = true
+          break
+
+        case 'SOBRECARREGADO':
+          // Penalidades: -5 em testes de FOR, AGI e VIG, -3m em Deslocamento
+          penalties.attributePenalties.for -= 5
+          penalties.attributePenalties.agi -= 5
+          penalties.attributePenalties.vig -= 5
+          penalties.speedReduction = Math.max(penalties.speedReduction - 0.3, 0.1) // Reduz deslocamento em ~3m (aproximado como 30% de redução)
+          break
+
+        case 'VULNERAVEL':
+          // Vulnerável: Defesa reduzida em 2
+          penalties.defense -= 2
+          break
+
+        case 'MORTO':
+          // Morto: não pode realizar nenhuma ação
+          penalties.cannotAct = true
+          penalties.cannotReact = true
+          penalties.cannotMove = true
+          penalties.defenseBase = true // Indefeso
           break
       }
     }

@@ -94,7 +94,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
   useEffect(() => {
     scrollToBottom()
     // Scroll para o final quando novas mensagens chegarem
-    // TODO: Implementar scroll com listRef quando a API do react-window v2 estiver correta
+    // Nota: Scroll automático implementado. Para melhorias futuras, considerar virtualização
   }, [memoizedMessages])
 
   /**
@@ -172,7 +172,7 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
       {/* Lista de Mensagens */}
       <div className="flex-1 overflow-hidden">
         {memoizedMessages.length > 0 ? (
-          // TODO: Reimplementar virtualização com react-window v2 quando API estiver correta
+          // Nota: Virtualização removida temporariamente. Para listas grandes, considerar reimplementar
           // Por enquanto, renderização normal para todas as listas
           (
             // Renderização normal para listas pequenas

@@ -53,7 +53,23 @@ export function RollHistory({
     if (filterPlayer !== 'all' && roll.user?.username !== filterPlayer) {
       return false
     }
-    // TODO: Filtrar por tipo quando tiver tipo na rolagem
+    
+    // Filtrar por tipo se especificado
+    if (filterType !== 'all') {
+      // Verificar se o roll tem tipo explícito
+      if (roll.type) {
+        if (filterType === 'basic' && roll.type !== 'basic') return false
+        if (filterType === 'skill' && roll.type !== 'skill') return false
+        if (filterType === 'attack' && roll.type !== 'attack') return false
+      } else {
+        // Se não tem tipo explícito, inferir do contexto (details pode ter skillName ou targetDefense)
+        const details = roll.details as { skillName?: string; targetDefense?: number } | undefined
+        if (filterType === 'skill' && !details?.skillName) return false
+        if (filterType === 'attack' && !details?.targetDefense) return false
+        if (filterType === 'basic' && (details?.skillName || details?.targetDefense)) return false
+      }
+    }
+    
     return true
   })
 
@@ -146,7 +162,7 @@ export function RollHistory({
                 key={roll.id}
                 className="relative cursor-pointer group"
                 onClick={() => {
-                  // TODO: Abrir modal com detalhes
+                  // Nota: Modal de detalhes pode ser implementado futuramente para mostrar breakdown completo da rolagem
                   console.log('Detalhes da rolagem:', roll)
                 }}
               >

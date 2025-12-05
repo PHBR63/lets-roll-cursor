@@ -6,6 +6,13 @@ import { CreateChatMessageSchema, ChatMessageFilterSchema } from '../middleware/
 import { AppError } from '../types/common'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Chat
+ *     description: Operações relacionadas a chat em tempo real
+ */
+
+/**
  * Rotas para chat em tempo real
  */
 export const chatRouter = Router()

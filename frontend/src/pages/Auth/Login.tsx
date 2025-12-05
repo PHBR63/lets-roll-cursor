@@ -29,6 +29,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function Login() {
   const navigate = useNavigate()
   const toast = useToast()
+  const { user, loading } = useAuth()
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
   
   const {
@@ -40,10 +41,31 @@ export function Login() {
     resolver: zodResolver(loginSchema),
   })
 
+  // Redirecionar usuários já autenticados
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, loading, navigate])
+
   // Sincronizar tab ativa com a rota
   useEffect(() => {
     setActiveTab('login')
   }, [])
+
+  // Mostrar loading enquanto verifica autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Carregando...</div>
+      </div>
+    )
+  }
+
+  // Se usuário estiver autenticado, não renderizar nada (será redirecionado)
+  if (user) {
+    return null
+  }
 
   /**
    * Função para fazer login

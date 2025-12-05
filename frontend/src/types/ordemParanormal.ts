@@ -102,6 +102,9 @@ export type Condition =
   | 'EM_CHAMAS'
   | 'FASCINADO'
   | 'INDEFESO'
+  | 'SOBRECARREGADO'
+  | 'VULNERAVEL'
+  | 'MORTO'
 
 /**
  * Dados completos do personagem no sistema Ordem Paranormal
@@ -284,5 +287,6 @@ export const ALL_CONDITIONS: Condition[] = [
   'EM_CHAMAS',
   'FASCINADO',
   'INDEFESO',
+  'SOBRECARREGADO',
 ]
 

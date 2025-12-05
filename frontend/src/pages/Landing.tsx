@@ -1,13 +1,40 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { User } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { useEffect } from 'react'
 
 /**
  * Página inicial (Landing Page)
  * Fundo roxo com icosaedros, logo central, texto lateral e botão "Conecte-se"
  * Conforme design de referência
+ * Redireciona usuários autenticados para o dashboard
  */
 export function Landing() {
+  const { user, loading } = useAuth()
+  const navigate = useNavigate()
+
+  // Redirecionar usuários autenticados para o dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [user, loading, navigate])
+
+  // Mostrar loading enquanto verifica autenticação
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">Carregando...</div>
+      </div>
+    )
+  }
+
+  // Se usuário estiver autenticado, não renderizar nada (será redirecionado)
+  if (user) {
+    return null
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative">
       {/* Botão Conecte-se no canto superior direito */}

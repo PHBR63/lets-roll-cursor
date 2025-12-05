@@ -141,7 +141,7 @@ export function RollHistory({
       </div>
       <div className="flex-1">
         {limitedRolls.length > 10 ? (
-          // TODO: Reimplementar virtualização com react-window v2 quando API estiver correta
+          // Nota: Virtualização removida temporariamente. Para listas grandes, considerar reimplementar
           // Por enquanto, renderização normal para todas as listas
           <ScrollArea className="flex-1">
             <div className="space-y-3 p-2">

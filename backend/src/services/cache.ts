@@ -192,3 +192,21 @@ export function getCreatureCacheKey(filters: {
   return parts.join(':')
 }
 
+/**
+ * Gera chave de cache para momentos
+ */
+export function getMomentCacheKey(filters: {
+  momentId?: string
+  campaignId?: string
+  sessionId?: string
+}): string {
+  const parts = ['moments']
+  if (filters.momentId) {
+    parts.push(filters.momentId)
+  } else {
+    if (filters.campaignId) parts.push(`campaign:${filters.campaignId}`)
+    if (filters.sessionId) parts.push(`session:${filters.sessionId}`)
+  }
+  return parts.join(':')
+}
+

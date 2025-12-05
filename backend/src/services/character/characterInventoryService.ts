@@ -4,6 +4,10 @@
 import { supabase } from '../../config/supabase'
 import { logger } from '../../utils/logger'
 import { AppError } from '../../types/common'
+import { ordemParanormalService } from '../ordemParanormalService'
+import { characterConditionsService } from './characterConditionsService'
+import { rankService } from '../rankService'
+import { deleteCache, getCharacterCacheKey } from '../cache'
 
 export const characterInventoryService = {
   /**
@@ -24,7 +28,8 @@ export const characterInventoryService = {
             type,
             description,
             attributes,
-            rarity
+            rarity,
+            weight
           )
         `
         )
@@ -74,6 +79,10 @@ export const characterInventoryService = {
             .single()
 
           if (insertError) throw insertError
+          
+          // Verificar carga após adicionar item
+          await this.checkAndApplyOverload(characterId)
+          
           return data
         } else {
           // Erro real de banco de dados - propagar erro
@@ -91,6 +100,10 @@ export const characterInventoryService = {
           .single()
 
         if (updateError) throw updateError
+        
+        // Verificar carga após atualizar quantidade
+        await this.checkAndApplyOverload(characterId)
+        
         return data
       }
 
@@ -107,6 +120,10 @@ export const characterInventoryService = {
         .single()
 
       if (insertError) throw insertError
+      
+      // Verificar carga após adicionar item
+      await this.checkAndApplyOverload(characterId)
+      
       return data
     } catch (error: unknown) {
       const err = error as AppError
@@ -129,6 +146,9 @@ export const characterInventoryService = {
         .eq('item_id', itemId)
 
       if (error) throw error
+
+      // Verificar carga após remover item
+      await this.checkAndApplyOverload(characterId)
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Error removing item from character')
@@ -145,6 +165,14 @@ export const characterInventoryService = {
    */
   async equipItem(characterId: string, itemId: string, equipped: boolean = true) {
     try {
+      // Se está tentando equipar, validar permissão de patente
+      if (equipped) {
+        const validation = await rankService.validateEquipPermission(characterId, itemId)
+        if (!validation.canEquip) {
+          throw new Error(validation.reason || 'Não é possível equipar este item')
+        }
+      }
+
       const { data, error } = await supabase
         .from('character_items')
         .update({ equipped })
@@ -155,11 +183,108 @@ export const characterInventoryService = {
 
       if (error) throw error
 
+      // Verificar carga após equipar/desequipar
+      await this.checkAndApplyOverload(characterId)
+
       return data
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Error equipping item')
       throw new Error('Erro ao equipar item: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Calcula carga total do inventário do personagem
+   * @param characterId - ID do personagem
+   * @returns Carga total (soma dos pesos de todos os itens)
+   */
+  async calculateLoad(characterId: string): Promise<number> {
+    try {
+      const inventory = await this.getCharacterInventory(characterId)
+      let totalLoad = 0
+
+      for (const inventoryItem of inventory) {
+        const item = inventoryItem.item as { weight?: number } | null
+        const quantity = inventoryItem.quantity || 1
+        const weight = (item?.weight || 0) * quantity
+        totalLoad += weight
+      }
+
+      return totalLoad
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error calculating load')
+      throw new Error('Erro ao calcular carga: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Obtém capacidade máxima de carga do personagem
+   * @param characterId - ID do personagem
+   * @returns Capacidade máxima (5 * FOR, mínimo 2)
+   */
+  async getMaxLoad(characterId: string): Promise<number> {
+    try {
+      const { data: character, error } = await supabase
+        .from('characters')
+        .select('attributes')
+        .eq('id', characterId)
+        .single()
+
+      if (error) throw error
+
+      const attributes = (character.attributes as { for?: number }) || {}
+      const forAttr = attributes.for || 0
+
+      return ordemParanormalService.calculateMaxLoad(forAttr)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error getting max load')
+      throw new Error('Erro ao obter capacidade máxima: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Verifica se personagem está sobrecarregado e aplica condição automaticamente
+   * @param characterId - ID do personagem
+   * @returns Se está sobrecarregado
+   */
+  async checkAndApplyOverload(characterId: string): Promise<boolean> {
+    try {
+      const currentLoad = await this.calculateLoad(characterId)
+      const maxLoad = await this.getMaxLoad(characterId)
+      const isOverloaded = ordemParanormalService.isOverloaded(currentLoad, maxLoad)
+
+      // Buscar personagem para verificar condições atuais
+      const { data: character, error: fetchError } = await supabase
+        .from('characters')
+        .select('conditions')
+        .eq('id', characterId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const currentConditions = (character.conditions as string[]) || []
+      const hasOverloaded = currentConditions.includes('SOBRECARREGADO')
+
+      // Aplicar ou remover condição Sobrecarregado
+      if (isOverloaded && !hasOverloaded) {
+        await characterConditionsService.applyCondition(characterId, 'SOBRECARREGADO' as any)
+        logger.info({ characterId, currentLoad, maxLoad }, 'Condição Sobrecarregado aplicada')
+      } else if (!isOverloaded && hasOverloaded) {
+        await characterConditionsService.removeCondition(characterId, 'SOBRECARREGADO' as any)
+        logger.info({ characterId, currentLoad, maxLoad }, 'Condição Sobrecarregado removida')
+      }
+
+      // Invalidar cache
+      await deleteCache(getCharacterCacheKey({ characterId }))
+
+      return isOverloaded
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error checking overload')
+      throw new Error('Erro ao verificar sobrecarga: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

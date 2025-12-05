@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -103,7 +103,40 @@ export function DiceRollerBasic({ sessionId, campaignId, characterId, isPrivate,
     if (e.key === 'Enter') {
       handleRollFormula()
     }
+    // Atalho: Ctrl/Cmd + Enter para rolagem rápida
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault()
+      handleRollFormula()
+    }
   }
+
+  // Atalho global: R para rolagem rápida (1d20)
+  useEffect(() => {
+    if (!campaignId) return
+
+    const handleGlobalKeyPress = (e: KeyboardEvent) => {
+      // Apenas se não estiver digitando em um input
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return
+      }
+
+      // R para rolar 1d20
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault()
+        handleRollDice(20)
+      }
+    }
+
+    window.addEventListener('keydown', handleGlobalKeyPress)
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyPress)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignId])
 
   return (
     <div className="space-y-4">

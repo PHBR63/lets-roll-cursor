@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { AudioControls } from './AudioControls'
+import { TurnActions } from './TurnActions'
+import { AmmunitionPanel } from './AmmunitionPanel'
 import { useRealtimePlayers } from '@/hooks/useRealtimePlayers'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 import { usePresence } from '@/hooks/usePresence'
@@ -26,10 +28,12 @@ export function PlayerListSidebar({
   sessionId,
   isMaster,
 }: PlayerListSidebarProps) {
+  const { user } = useAuth()
   const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
   const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
   const { checkUserOnline } = usePresence(campaignId, sessionId)
   const [players, setPlayers] = useState<any[]>([])
+  const [userCharacter, setUserCharacter] = useState<Character | null>(null)
 
   // Combinar participantes com personagens
   useEffect(() => {
@@ -47,7 +51,13 @@ export function PlayerListSidebar({
     })
 
     setPlayers(playersWithCharacters)
-  }, [participants, characters])
+
+    // Encontrar personagem do usuário atual
+    if (user) {
+      const userChar = characters.find((char: Character) => char.user_id === user.id)
+      setUserCharacter(userChar || null)
+    }
+  }, [participants, characters, user])
 
   const loading = participantsLoading || charactersLoading
 
@@ -166,6 +176,30 @@ export function PlayerListSidebar({
           })}
         </div>
       </div>
+
+      {/* Ações de Turno (apenas para personagem do usuário) */}
+      {userCharacter && (
+        <>
+          <TurnActions
+            character={userCharacter}
+            onCharacterUpdate={(updatedChar) => {
+              setUserCharacter(updatedChar)
+              // Atualizar também na lista de personagens se necessário
+              // Isso será atualizado automaticamente pelo realtime
+            }}
+          />
+          {/* Painel de Munição (apenas para personagem do usuário) */}
+          {sessionId && (
+            <div className="p-4 border-t border-card-secondary">
+              <AmmunitionPanel
+                characterId={userCharacter.id}
+                sessionId={sessionId}
+                isMaster={isMaster}
+              />
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

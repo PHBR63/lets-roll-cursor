@@ -203,17 +203,22 @@ export const characterResourcesService = {
       let newSAN = isDelta ? currentSAN + san : san
       newSAN = Math.max(0, Math.min(newSAN, maxSAN)) // Clamp entre 0 e máximo
 
-      // Verificar estados
+      // Verificar estados de insanidade
+      const insanityState = ordemParanormalService.getInsanityState(newSAN, maxSAN)
       const isInsane = ordemParanormalService.isInsane(newSAN)
-      const isLowSAN = newSAN <= maxSAN * 0.25 // 25% ou menos
 
       // Aplicar condições automáticas baseadas em SAN
       let conditions: Condition[] = [...(character.conditions || [])]
 
-      if (isInsane && !conditions.includes('ENLOUQUECENDO')) {
-        conditions.push('ENLOUQUECENDO')
-      } else if (isLowSAN && !conditions.includes('PERTURBADO') && !isInsane) {
-        conditions.push('PERTURBADO')
+      // Remover condições de insanidade antigas que não se aplicam mais
+      const oldInsanityConditions: Condition[] = ['PERTURBADO', 'ENLOUQUECENDO']
+      conditions = conditions.filter(c => !oldInsanityConditions.includes(c))
+
+      // Aplicar novas condições baseadas no estado atual
+      for (const condition of insanityState.conditions) {
+        if (!conditions.includes(condition)) {
+          conditions.push(condition)
+        }
       }
 
       const updatedStats = {
@@ -243,7 +248,7 @@ export const characterResourcesService = {
       return {
         character: data,
         isInsane,
-        isLowSAN,
+        insanityState,
       }
     } catch (error: unknown) {
       const err = error as AppError
@@ -257,9 +262,17 @@ export const characterResourcesService = {
    * @param id - ID do personagem
    * @param pe - Novo valor de PE (ou delta)
    * @param isDelta - Se pe é um delta (true) ou valor absoluto (false)
+   * @param validateTurnLimit - Se deve validar limite de PE por turno (padrão: false)
+   * @param peSpentThisTurn - PE já gasto no turno atual (para validação)
    * @returns Personagem atualizado
    */
-  async updatePE(id: string, pe: number, isDelta: boolean = false) {
+  async updatePE(
+    id: string,
+    pe: number,
+    isDelta: boolean = false,
+    validateTurnLimit: boolean = false,
+    peSpentThisTurn: number = 0
+  ) {
     try {
       const { data: character, error: fetchError } = await supabase
         .from('characters')
@@ -272,6 +285,20 @@ export const characterResourcesService = {
       const stats = character.stats || {}
       const currentPE = stats.pe?.current || 0
       const maxPE = stats.pe?.max || 0
+      const nex = stats.nex || 5
+
+      // Se está gastando PE (delta negativo) e deve validar limite
+      if (validateTurnLimit && isDelta && pe < 0) {
+        const peToSpend = Math.abs(pe)
+        const peLimit = ordemParanormalService.getPELimitByNEX(nex)
+        const totalPESpent = peSpentThisTurn + peToSpend
+
+        if (totalPESpent > peLimit) {
+          throw new Error(
+            `Limite de PE por turno excedido. Você pode gastar até ${peLimit} PE por turno (NEX ${nex}%), mas tentou gastar ${totalPESpent} PE.`
+          )
+        }
+      }
 
       let newPE = isDelta ? currentPE + pe : pe
       newPE = Math.max(0, Math.min(newPE, maxPE)) // Clamp entre 0 e máximo
@@ -308,20 +335,83 @@ export const characterResourcesService = {
   },
 
   /**
-   * Aplica dano ao personagem (físico ou mental)
+   * Gasta PE do personagem com validação de limite por turno
    * @param id - ID do personagem
-   * @param damage - Quantidade de dano
-   * @param type - Tipo de dano ('physical' ou 'mental')
+   * @param peCost - Custo em PE a ser gasto
+   * @param peSpentThisTurn - PE já gasto no turno atual (opcional)
    * @returns Personagem atualizado
    */
-  async applyDamage(id: string, damage: number, type: 'physical' | 'mental' = 'physical') {
+  async spendPE(id: string, peCost: number, peSpentThisTurn: number = 0) {
+    if (peCost <= 0) {
+      throw new Error('Custo de PE deve ser maior que zero')
+    }
+
+    return await this.updatePE(id, -peCost, true, true, peSpentThisTurn)
+  },
+
+  /**
+   * Aplica dano ao personagem (físico ou mental) com RD
+   * @param id - ID do personagem
+   * @param damage - Quantidade de dano bruto
+   * @param type - Tipo de dano ('physical' ou 'mental')
+   * @param damageType - Tipo específico de dano para RD (ex: 'balistico', 'cortante', 'perfurante', 'geral')
+   * @returns Personagem atualizado e breakdown do dano
+   */
+  async applyDamage(
+    id: string,
+    damage: number,
+    type: 'physical' | 'mental' = 'physical',
+    damageType: string = 'geral'
+  ) {
     try {
       if (type === 'physical') {
-        // Dano físico reduz PV
-        return await this.updatePV(id, -damage, true)
+        // Buscar personagem para obter resistências
+        const { data: character, error: fetchError } = await supabase
+          .from('characters')
+          .select('resistances')
+          .eq('id', id)
+          .single()
+
+        if (fetchError) throw fetchError
+
+        const resistances = (character.resistances as Record<string, number>) || {}
+
+        // Calcular dano com RD
+        const damageBreakdown = ordemParanormalService.calculateDamageWithRD(
+          { value: damage, type: damageType },
+          resistances
+        )
+
+        // Aplicar dano final ao PV
+        const result = await this.updatePV(id, -damageBreakdown.finalDamage, true)
+
+        // Log do breakdown
+        logger.info(
+          {
+            characterId: id,
+            rawDamage: damageBreakdown.rawDamage,
+            damageType: damageBreakdown.damageType,
+            rd: damageBreakdown.rd,
+            finalDamage: damageBreakdown.finalDamage,
+          },
+          'Dano aplicado com RD'
+        )
+
+        return {
+          character: result,
+          damageBreakdown,
+        }
       } else {
-        // Dano mental reduz SAN
-        return await this.updateSAN(id, -damage, true)
+        // Dano mental reduz SAN (sem RD)
+        return {
+          character: await this.updateSAN(id, -damage, true),
+          damageBreakdown: {
+            rawDamage: damage,
+            damageType: 'mental',
+            rd: 0,
+            finalDamage: damage,
+          },
+        }
       }
     } catch (error: unknown) {
       const err = error as AppError

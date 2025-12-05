@@ -48,7 +48,7 @@ const options: swaggerJsdoc.Options = {
       { name: 'Chat', description: 'Chat em tempo real' },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/index.ts'], // Caminhos para arquivos com anotações JSDoc
+  apis: ['./src/routes/*.ts', './src/index.ts', './src/config/swagger-schemas.ts'], // Caminhos para arquivos com anotações JSDoc
 }
 
 const swaggerSpec = swaggerJsdoc(options)

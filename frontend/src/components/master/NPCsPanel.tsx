@@ -4,6 +4,10 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { CreateItemModal } from './CreateItemModal'
+import { EditItemModal } from './EditItemModal'
+import { CreateAbilityModal } from './CreateAbilityModal'
+import { EditAbilityModal } from './EditAbilityModal'
 
 /**
  * Painel de NPCs com Tabs
@@ -17,6 +21,17 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
   const [items, setItems] = useState<any[]>([])
   const [abilities, setAbilities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Estados para modais de itens
+  const [createItemModalOpen, setCreateItemModalOpen] = useState(false)
+  const [editItemModalOpen, setEditItemModalOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [itemModalType, setItemModalType] = useState<'equipment' | 'item'>('item')
+  
+  // Estados para modais de habilidades
+  const [createAbilityModalOpen, setCreateAbilityModalOpen] = useState(false)
+  const [editAbilityModalOpen, setEditAbilityModalOpen] = useState(false)
+  const [selectedAbility, setSelectedAbility] = useState<any>(null)
 
   useEffect(() => {
     if (campaignId) {
@@ -43,8 +58,9 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        setItems(data || [])
+        const result = await response.json()
+        // A API retorna { data: [], total, limit, offset, hasMore }
+        setItems(result.data || result || [])
       }
     } catch (error) {
       console.error('Erro ao carregar itens:', error)
@@ -71,8 +87,9 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        setAbilities(data || [])
+        const result = await response.json()
+        // A API retorna { data: [], total, limit, offset, hasMore }
+        setAbilities(result.data || result || [])
       }
     } catch (error) {
       console.error('Erro ao carregar habilidades:', error)
@@ -180,8 +197,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar item:', item)
+                          setSelectedItem(item)
+                          setEditItemModalOpen(true)
                         }}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
@@ -204,8 +221,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
-                // TODO: Criar novo equipamento
-                console.log('Criar equipamento')
+                setItemModalType('equipment')
+                setCreateItemModalOpen(true)
               }}
               className="w-full mt-2"
             >
@@ -242,8 +259,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar item:', item)
+                          setSelectedItem(item)
+                          setEditItemModalOpen(true)
                         }}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
@@ -266,8 +283,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
-                // TODO: Criar novo item
-                console.log('Criar item')
+                setItemModalType('item')
+                setCreateItemModalOpen(true)
               }}
               className="w-full mt-2"
             >
@@ -304,8 +321,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar habilidade:', ability)
+                          setSelectedAbility(ability)
+                          setEditAbilityModalOpen(true)
                         }}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
@@ -328,8 +345,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
-                // TODO: Criar nova habilidade
-                console.log('Criar habilidade')
+                setCreateAbilityModalOpen(true)
               }}
               className="w-full mt-2"
             >
@@ -346,6 +362,51 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modais de Itens */}
+      <CreateItemModal
+        open={createItemModalOpen}
+        onOpenChange={setCreateItemModalOpen}
+        campaignId={campaignId}
+        itemType={itemModalType}
+        onSuccess={() => {
+          loadItems()
+          setCreateItemModalOpen(false)
+        }}
+      />
+
+      <EditItemModal
+        open={editItemModalOpen}
+        onOpenChange={setEditItemModalOpen}
+        item={selectedItem}
+        onSuccess={() => {
+          loadItems()
+          setEditItemModalOpen(false)
+          setSelectedItem(null)
+        }}
+      />
+
+      {/* Modais de Habilidades */}
+      <CreateAbilityModal
+        open={createAbilityModalOpen}
+        onOpenChange={setCreateAbilityModalOpen}
+        campaignId={campaignId}
+        onSuccess={() => {
+          loadAbilities()
+          setCreateAbilityModalOpen(false)
+        }}
+      />
+
+      <EditAbilityModal
+        open={editAbilityModalOpen}
+        onOpenChange={setEditAbilityModalOpen}
+        ability={selectedAbility}
+        onSuccess={() => {
+          loadAbilities()
+          setEditAbilityModalOpen(false)
+          setSelectedAbility(null)
+        }}
+      />
     </div>
   )
 }

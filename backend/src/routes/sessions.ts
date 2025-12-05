@@ -6,6 +6,13 @@ import { CreateSessionSchema, UpdateSessionSchema, SessionFilterSchema } from '.
 import { AppError } from '../types/common'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Sessions
+ *     description: Operações relacionadas a sessões de jogo
+ */
+
+/**
  * Rotas para gerenciamento de sessões de jogo
  */
 export const sessionsRouter = Router()
@@ -97,6 +104,79 @@ sessionsRouter.post('/:id/end', async (req: Request, res: Response) => {
   try {
     const session = await sessionService.endSession(req.params.id)
     res.json(session)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Rotas de munição abstrata
+sessionsRouter.get('/:sessionId/ammunition/:characterId', async (req: Request, res: Response) => {
+  try {
+    const { ammunitionService } = await import('../services/ammunitionService')
+    const state = await ammunitionService.getAmmunitionState(
+      req.params.characterId,
+      req.params.sessionId
+    )
+    res.json(state)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+sessionsRouter.post('/:sessionId/ammunition/:characterId/spend', async (req: Request, res: Response) => {
+  try {
+    const { ammunitionService } = await import('../services/ammunitionService')
+    const { amount = 1 } = req.body
+    const state = await ammunitionService.spendAmmunition(
+      req.params.characterId,
+      req.params.sessionId,
+      amount
+    )
+    res.json(state)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+sessionsRouter.post('/:sessionId/ammunition/:characterId/reload', async (req: Request, res: Response) => {
+  try {
+    const { ammunitionService } = await import('../services/ammunitionService')
+    const { amount = 50 } = req.body
+    const state = await ammunitionService.reloadAmmunition(
+      req.params.characterId,
+      req.params.sessionId,
+      amount
+    )
+    res.json(state)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+sessionsRouter.put('/:sessionId/ammunition/:characterId', async (req: Request, res: Response) => {
+  try {
+    const { ammunitionService } = await import('../services/ammunitionService')
+    const { amount } = req.body
+    if (amount === undefined) {
+      return res.status(400).json({ error: 'amount é obrigatório' })
+    }
+    const state = await ammunitionService.setAmmunition(
+      req.params.characterId,
+      req.params.sessionId,
+      amount
+    )
+    res.json(state)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+sessionsRouter.post('/:sessionId/ammunition/reset', async (req: Request, res: Response) => {
+  try {
+    const { ammunitionService } = await import('../services/ammunitionService')
+    const { resetTo = 100 } = req.body
+    await ammunitionService.resetSessionAmmunition(req.params.sessionId, resetTo)
+    res.json({ message: 'Munição da sessão resetada' })
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }

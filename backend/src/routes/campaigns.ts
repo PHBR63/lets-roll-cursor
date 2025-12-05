@@ -194,6 +194,28 @@ campaignsRouter.delete('/:id', async (req: Request, res: Response) => {
 })
 
 // Convidar jogador
+// Atualizar patente da campanha
+campaignsRouter.put('/:id/rank', async (req: Request, res: Response) => {
+  try {
+    const { rank } = req.body
+    if (!rank) {
+      return res.status(400).json({ error: 'rank é obrigatório' })
+    }
+    
+    const validRanks = ['RECRUTA', 'OPERADOR', 'AGENTE_ESPECIAL', 'OFICIAL_OPERACOES', 'ELITE']
+    if (!validRanks.includes(rank)) {
+      return res.status(400).json({ error: 'Patente inválida' })
+    }
+
+    const { rankService } = await import('../services/rankService')
+    await rankService.updateCampaignRank(req.params.id, rank)
+    
+    res.json({ message: 'Patente atualizada com sucesso', rank })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 campaignsRouter.post('/:id/invite', async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id

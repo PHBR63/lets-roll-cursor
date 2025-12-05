@@ -15,6 +15,8 @@ import { characterClassAbilitiesService } from './character/characterClassAbilit
 import { characterConditionsService } from './character/characterConditionsService'
 import { characterResourcesService } from './character/characterResourcesService'
 import { characterAttributesService } from './character/characterAttributesService'
+import { originService } from './originService'
+import { Origin } from '../types/origin'
 
 /**
  * Serviço para lógica de negócio de personagens
@@ -87,26 +89,58 @@ export const characterService = {
     try {
       // Valores padrão para sistema Ordem Paranormal
       const attributes = data.attributes || {
-        agi: 0,
-        for: 0,
-        int: 0,
-        pre: 0,
-        vig: 0,
+        agi: 1,
+        for: 1,
+        int: 1,
+        pre: 1,
+        vig: 1,
+      }
+
+      // Validação de atributos na criação (conforme regras oficiais)
+      const agi: number = typeof attributes.agi === 'number' ? attributes.agi : 1
+      const forAttr: number = typeof attributes.for === 'number' ? attributes.for : 1
+      const int: number = typeof attributes.int === 'number' ? attributes.int : 1
+      const pre: number = typeof attributes.pre === 'number' ? attributes.pre : 1
+      const vig: number = typeof attributes.vig === 'number' ? attributes.vig : 1
+
+      // Validar soma total (deve ser 9: 5 base + 4 distribuídos)
+      const totalAttributes = agi + forAttr + int + pre + vig
+      if (totalAttributes !== 9) {
+        throw new Error(
+          `Soma de atributos inválida: ${totalAttributes}. A soma deve ser exatamente 9 (5 base + 4 pontos distribuídos).`
+        )
+      }
+
+      // Validar máximo inicial de 3 por atributo
+      const attributeValues = [agi, forAttr, int, pre, vig]
+      const exceedsMax = attributeValues.some(attr => attr > 3)
+      if (exceedsMax) {
+        throw new Error('Nenhum atributo pode exceder 3 na criação de personagem.')
+      }
+
+      // Validar que apenas um atributo pode ser 0 (se houver)
+      const zeroCount = attributeValues.filter(attr => attr === 0).length
+      if (zeroCount > 1) {
+        throw new Error('Apenas um atributo pode ser reduzido para 0 na criação.')
       }
 
       const characterClass: CharacterClass = (data.class as CharacterClass) || 'COMBATENTE'
       const nex: number = typeof data.nex === 'number' ? data.nex : 5 // NEX inicial padrão
 
-      // Extrair valores de atributos garantindo que sejam números
-      const vig: number = typeof attributes.vig === 'number' ? attributes.vig : 0
-      const pre: number = typeof attributes.pre === 'number' ? attributes.pre : 0
-      const agi: number = typeof attributes.agi === 'number' ? attributes.agi : 0
+      // Usar atributos validados
+      const validatedAttributes = {
+        agi,
+        for: forAttr,
+        int,
+        pre,
+        vig,
+      }
 
       // Calcular recursos máximos baseado em classe e atributos
-      const maxPV = ordemParanormalService.calculateMaxPV(characterClass, vig, nex)
+      const maxPV = ordemParanormalService.calculateMaxPV(characterClass, validatedAttributes.vig, nex)
       const maxSAN = ordemParanormalService.calculateMaxSAN(characterClass, nex)
-      const maxPE = ordemParanormalService.calculateMaxPE(characterClass, pre, nex)
-      const defense = ordemParanormalService.calculateDefense(agi)
+      const maxPE = ordemParanormalService.calculateMaxPE(characterClass, validatedAttributes.pre, nex)
+      const defense = ordemParanormalService.calculateDefense(validatedAttributes.agi)
 
       // Estrutura de stats no formato Ordem Paranormal
       const stats = data.stats || {
@@ -126,7 +160,16 @@ export const characterService = {
       }
 
       // Perícias iniciais (todas destreinadas por padrão)
-      const skills = data.skills || {}
+      let skills = data.skills || {}
+
+      // Aplicar origem se fornecida (adiciona perícias treinadas automaticamente)
+      if (data.origin) {
+        try {
+          skills = originService.applyOriginSkills(data.origin as Origin, skills as any)
+        } catch (originError) {
+          logger.warn({ error: originError, origin: data.origin }, 'Error applying origin, continuing without origin skills')
+        }
+      }
 
       const { data: character, error } = await supabase
         .from('characters')
@@ -136,9 +179,10 @@ export const characterService = {
           name: data.name,
           avatar_url: data.avatarUrl || null,
           class: characterClass,
+          origin: data.origin || null,
           path: data.path || null,
           affinity: data.affinity || null,
-          attributes: attributes,
+          attributes: validatedAttributes,
           stats: stats,
           skills: skills,
           conditions: data.conditions || [],
@@ -273,6 +317,29 @@ export const characterService = {
       if (data.affinity !== undefined) updateData.affinity = data.affinity
       if (data.conditions !== undefined) updateData.conditions = data.conditions
 
+      // Se origem foi alterada, aplicar/remover perícias automaticamente
+      if (data.origin !== undefined) {
+        const oldOrigin = (currentCharacter.origin as Origin) || null
+        const newOrigin = data.origin as Origin | null
+
+        // Se mudou de origem, remover perícias da origem anterior
+        if (oldOrigin && oldOrigin !== newOrigin) {
+          const skillsWithoutOldOrigin = originService.removeOriginSkills(
+            oldOrigin,
+            (currentCharacter.skills as any) || {}
+          )
+          updateData.skills = skillsWithoutOldOrigin
+        }
+
+        // Aplicar perícias da nova origem
+        if (newOrigin) {
+          const currentSkills = (updateData.skills as any) || (currentCharacter.skills as any) || {}
+          updateData.skills = originService.applyOriginSkills(newOrigin, currentSkills)
+        }
+
+        updateData.origin = newOrigin
+      }
+
       // Se atributos foram fornecidos, usar serviço especializado
       if (data.attributes !== undefined) {
         return await characterAttributesService.updateAttributes(id, data.attributes)
@@ -358,6 +425,9 @@ export const characterService = {
   addItemToCharacter: characterInventoryService.addItemToCharacter,
   removeItemFromCharacter: characterInventoryService.removeItemFromCharacter,
   equipItem: characterInventoryService.equipItem,
+  calculateLoad: characterInventoryService.calculateLoad,
+  getMaxLoad: characterInventoryService.getMaxLoad,
+  checkAndApplyOverload: characterInventoryService.checkAndApplyOverload,
 
   // Habilidades
   getCharacterAbilities: characterAbilitiesService.getCharacterAbilities,
@@ -371,12 +441,15 @@ export const characterService = {
   // Condições
   applyCondition: characterConditionsService.applyCondition,
   removeCondition: characterConditionsService.removeCondition,
+  processTurn: characterConditionsService.processTurn,
+  stopBleeding: characterConditionsService.stopBleeding,
 
   // Recursos
   updateNEX: characterResourcesService.updateNEX,
   updatePV: characterResourcesService.updatePV,
   updateSAN: characterResourcesService.updateSAN,
   updatePE: characterResourcesService.updatePE,
+  spendPE: characterResourcesService.spendPE,
   applyDamage: characterResourcesService.applyDamage,
   recoverPE: characterResourcesService.recoverPE,
 

@@ -35,8 +35,8 @@ export function VirtualizedList<T>({
     return null
   }
 
-  // TODO: Reimplementar virtualização com react-window v2 quando API estiver correta
-  // Por enquanto, renderização normal
+  // Nota: Virtualização com react-window foi removida temporariamente devido a problemas de compatibilidade
+  // Por enquanto, usa renderização normal. Para listas muito grandes (>1000 itens), considerar reimplementar
   return (
     <div className={className} style={{ height, overflow: 'auto' }}>
       {items.map((item, index) => renderItem(item, index))}

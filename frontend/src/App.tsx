@@ -16,6 +16,7 @@ const CreateCampaign = lazy(() => import('./pages/Campaign/CreateCampaign').then
 const CampaignDetail = lazy(() => import('./pages/Campaign/CampaignDetail').then(m => ({ default: m.CampaignDetail })))
 const SessionRoom = lazy(() => import('./pages/GameSession/SessionRoom').then(m => ({ default: m.SessionRoom })))
 const CharacterSheet = lazy(() => import('./pages/Character/CharacterSheet').then(m => ({ default: m.CharacterSheet })))
+const CreateCharacter = lazy(() => import('./pages/Character/CreateCharacter').then(m => ({ default: m.CreateCharacter })))
 const MasterDashboard = lazy(() => import('./pages/Master/Dashboard').then(m => ({ default: m.MasterDashboard })))
 const RitualsGuide = lazy(() => import('./pages/Rituals/RitualsGuide').then(m => ({ default: m.RitualsGuide })))
 
@@ -97,6 +98,16 @@ function App() {
                     <ProtectedRoute>
                       <ErrorBoundary>
                         <CharacterSheet />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/campaign/:campaignId/character/create"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <CreateCharacter />
                       </ErrorBoundary>
                     </ProtectedRoute>
                   }

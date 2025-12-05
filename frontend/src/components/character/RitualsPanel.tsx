@@ -22,6 +22,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ALL_RITUALS, type Ritual } from '@/data/rituals'
+import { usePELimit } from '@/hooks/usePELimit'
 
 import { Character } from '@/types/character'
 
@@ -44,6 +45,11 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
   const [conjuring, setConjuring] = useState<string | null>(null)
   const [filterCircle, setFilterCircle] = useState<string>('all')
   const [filterElement, setFilterElement] = useState<string>('all')
+  const [peSpentThisTurn, setPeSpentThisTurn] = useState(0) // Rastrear PE gasto no turno atual
+
+  // Calcular limite de PE por turno
+  const nex = character.stats?.nex || 5
+  const { limit: peLimit, canSpend, getRemaining } = usePELimit(nex)
 
   useEffect(() => {
     // Carregar rituais do personagem (armazenados em JSONB ou tabela separada)
@@ -144,6 +150,18 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
       return
     }
 
+    // Verificar limite de PE por turno
+    if (!canSpend(ritual.cost.pe, peSpentThisTurn)) {
+      const remaining = getRemaining(peSpentThisTurn)
+      alert(
+        `Limite de PE por turno excedido!\n` +
+          `Você pode gastar até ${peLimit} PE por turno (NEX ${nex}%).\n` +
+          `Você já gastou ${peSpentThisTurn} PE neste turno.\n` +
+          `Este ritual custa ${ritual.cost.pe} PE, mas você só tem ${remaining} PE restantes.`
+      )
+      return
+    }
+
     // Verificar se tem SAN suficiente (se necessário)
     if (ritual.cost.san && san.current < ritual.cost.san) {
       alert('SAN insuficiente para conjurar este ritual')
@@ -177,36 +195,50 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
-      // Atualizar PE e SAN
-      const updatedStats = {
-        ...stats,
-        pe: {
-          ...pe,
-          current: Math.max(0, pe.current - ritual.cost.pe),
-        },
-        san: ritual.cost.san
-          ? {
-              ...san,
-              current: Math.max(0, san.current - ritual.cost.san),
-            }
-          : san,
-      }
-
-      const response = await fetch(`${apiUrl}/api/characters/${character.id}`, {
-        method: 'PUT',
+      // Conjurar ritual com teste de custo
+      const response = await fetch(`${apiUrl}/api/characters/${character.id}/conjure-ritual`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.session.access_token}`,
         },
         body: JSON.stringify({
-          stats: updatedStats,
+          ritualCost: ritual.cost.pe,
+          peSpentThisTurn,
         }),
       })
 
-      if (response.ok) {
-        alert(`Ritual "${ritual.name}" conjurado com sucesso!`)
-        onUpdate()
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(errorData.error || 'Erro ao conjurar ritual')
+        return
       }
+
+      const result = await response.json()
+
+      // Atualizar PE gasto no turno atual
+      setPeSpentThisTurn(prev => prev + ritual.cost.pe)
+
+      // Mostrar resultado do teste
+      let message = `Ritual "${ritual.name}" `
+      if (result.success) {
+        message += `conjurado com sucesso!\n\n${result.message}`
+      } else if (result.criticalFailure) {
+        message += `FALHA CRÍTICA!\n\n${result.message}\n\n⚠️ ATENÇÃO: Sua SAN máxima foi reduzida permanentemente!`
+      } else {
+        message += `falhou no teste de custo.\n\n${result.message}`
+      }
+
+      // Mostrar detalhes do teste
+      message += `\n\nTeste de Custo:\n`
+      message += `- Dados rolados: ${result.testResult.dice.join(', ')}\n`
+      message += `- INT: ${result.testResult.attributeValue}\n`
+      message += `- Bônus de Ocultismo: +${result.testResult.skillBonus}\n`
+      message += `- Total: ${result.testResult.rollResult}\n`
+      message += `- DT: ${result.testResult.dt} (20 + ${ritual.cost.pe} PE)`
+
+      alert(message)
+      onUpdate()
     } catch (error) {
       console.error('Erro ao conjurar ritual:', error)
       alert('Erro ao conjurar ritual. Tente novamente.')
@@ -228,7 +260,24 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
   return (
     <div className="bg-card rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">Rituais Paranormais</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl font-bold text-white">Rituais Paranormais</h2>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-text-secondary">Limite PE/turno:</span>
+            <span className="text-yellow-400 font-semibold">{peLimit}</span>
+            <span className="text-text-secondary">(NEX {nex}%)</span>
+            {peSpentThisTurn > 0 && (
+              <>
+                <span className="text-text-secondary">| Gasto:</span>
+                <span className="text-orange-400 font-semibold">{peSpentThisTurn}</span>
+                <span className="text-text-secondary">| Restante:</span>
+                <span className={`font-semibold ${getRemaining(peSpentThisTurn) > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {getRemaining(peSpentThisTurn)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">

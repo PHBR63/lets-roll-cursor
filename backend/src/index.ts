@@ -7,6 +7,8 @@ import { authRouter } from './routes/auth'
 import { campaignsRouter } from './routes/campaigns'
 import { charactersRouter } from './routes/characters'
 import { creaturesRouter } from './routes/creatures'
+import { threatTemplatesRouter } from './routes/threatTemplates'
+import { originsRouter } from './routes/origins'
 import { itemsRouter } from './routes/items'
 import { abilitiesRouter } from './routes/abilities'
 import { sessionsRouter } from './routes/sessions'
@@ -136,6 +138,8 @@ app.use('/api/auth', authLimiter, authRouter)
 app.use('/api/campaigns', createLimiter, campaignsRouter)
 app.use('/api/characters', charactersRouter)
 app.use('/api/creatures', createLimiter, creaturesRouter)
+app.use('/api/threat-templates', createLimiter, threatTemplatesRouter)
+app.use('/api/origins', createLimiter, originsRouter)
 app.use('/api/items', createLimiter, itemsRouter)
 app.use('/api/abilities', createLimiter, abilitiesRouter)
 app.use('/api/sessions', sessionsRouter)
