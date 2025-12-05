@@ -11,11 +11,23 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  logger.error({ err, url: req.url, method: req.method }, 'Request error')
+  // Log detalhado do erro
+  logger.error({ 
+    err, 
+    errorMessage: err.message,
+    errorStack: err.stack,
+    url: req.url, 
+    method: req.method,
+    body: req.body,
+    user: req.user?.id
+  }, 'Request error')
 
+  // Em produção, não expor detalhes do erro, mas logar tudo
+  const isProduction = process.env.NODE_ENV === 'production'
+  
   res.status(500).json({
     error: 'Erro interno do servidor',
-    message: process.env.NODE_ENV === 'production' ? 'Erro interno' : err.message,
+    message: isProduction ? 'Erro interno' : err.message,
   })
 }
 
