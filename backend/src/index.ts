@@ -71,26 +71,36 @@ app.use(
 
 // CORS
 // Permitir múltiplas origens em produção (separadas por vírgula)
-const corsOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+const corsOrigins: string[] = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(origin => origin.length > 0)
   : ['http://localhost:5173']
+
+// Log para debug (apenas em desenvolvimento)
+if (process.env.NODE_ENV !== 'production') {
+  logger.info({ corsOrigins }, 'CORS origins configuradas')
+}
 
 app.use(cors({
   origin: (origin, callback) => {
     // Permitir requisições sem origin (ex: Postman, curl)
-    if (!origin) return callback(null, true)
+    if (!origin) {
+      return callback(null, true)
+    }
     
     // Verificar se a origin está na lista permitida
     if (corsOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      // Em desenvolvimento, permitir localhost em qualquer porta
-      if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
-        callback(null, true)
-      } else {
-        callback(new Error('Not allowed by CORS'))
-      }
+      // Retornar a origin exata (não um valor modificado)
+      return callback(null, origin)
     }
+    
+    // Em desenvolvimento, permitir localhost em qualquer porta
+    if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
+      return callback(null, origin)
+    }
+    
+    // Origin não permitida
+    logger.warn({ origin, allowedOrigins: corsOrigins }, 'CORS: Origin não permitida')
+    callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
 }))

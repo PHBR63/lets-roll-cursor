@@ -25,9 +25,11 @@ CORS_ORIGIN=https://seu-frontend.vercel.app,https://seu-dominio.com
 PORT=3001
 ```
 
-**Nota sobre CORS_ORIGIN:**
-- Pode conter múltiplas URLs separadas por vírgula
-- Exemplo: `https://letsroll.vercel.app,https://letsroll.app`
+**⚠️ IMPORTANTE sobre CORS_ORIGIN:**
+- Deve ser a URL **exata** do seu frontend (sem barra no final)
+- Pode conter múltiplas URLs separadas por vírgula (sem espaços extras)
+- **NÃO** inclua barras no final: use `https://lets-roll.vercel.app` (não `https://lets-roll.vercel.app/`)
+- Exemplo para múltiplos domínios: `https://lets-roll.vercel.app,https://letsroll.app`
 - Se não configurado, aceita apenas `http://localhost:5173` (desenvolvimento)
 
 ### Variáveis Opcionais (Redis - Cache)

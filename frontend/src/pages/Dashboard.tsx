@@ -52,7 +52,8 @@ export function Dashboard() {
       throw new Error('Sessão não encontrada')
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    // Normalizar URL removendo barras no final
+    const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/+$/, '')
     
     try {
       const response = await fetch(`${apiUrl}/api/campaigns`, {

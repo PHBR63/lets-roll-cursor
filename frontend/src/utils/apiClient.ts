@@ -20,7 +20,9 @@ export class ApiClient {
   private baseUrl: string
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    // Normalizar URL removendo barras no final
+    const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    this.baseUrl = rawUrl.replace(/\/+$/, '')
   }
 
   /**
