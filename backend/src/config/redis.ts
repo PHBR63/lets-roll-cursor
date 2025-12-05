@@ -16,7 +16,7 @@ export function initRedis(): Redis | null {
   }
 
   const redisUrl = process.env.REDIS_URL
-  const redisHost = process.env.REDIS_HOST || 'localhost'
+  const redisHost = process.env.REDIS_HOST
   const redisPort = parseInt(process.env.REDIS_PORT || '6379', 10)
   const redisPassword = process.env.REDIS_PASSWORD
 
