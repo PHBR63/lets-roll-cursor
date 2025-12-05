@@ -164,24 +164,34 @@ app.use(errorHandler)
 /**
  * Inicia o servidor Express
  */
-// Inicializar Redis antes de iniciar o servidor (não bloqueia se não configurado)
-initRedis()
+async function startServer() {
+  try {
+    // Inicializar Redis antes de iniciar o servidor (não bloqueia se não configurado)
+    initRedis()
 
-// Verificar se Supabase está configurado antes de iniciar
-try {
-  // Importar supabase para verificar se está configurado
-  const { supabase } = await import('./config/supabase')
-  logger.info('Supabase configurado e pronto')
-} catch (error) {
-  logger.error({ error }, 'Erro ao inicializar Supabase - servidor não iniciará')
-  process.exit(1)
+    // Verificar conexão com Supabase antes de iniciar o servidor
+    const { supabase } = await import('./config/supabase')
+    
+    // Fazer uma query simples para verificar se a conexão funciona
+    const { data, error } = await supabase.from('campaigns').select('count').limit(0)
+    if (error && error.code !== 'PGRST116') { // PGRST116 = relation does not exist (esperado se tabela não existe)
+      throw error
+    }
+    
+    logger.info('Supabase configurado e pronto')
+
+    // Iniciar servidor (0.0.0.0 para aceitar conexões de qualquer interface)
+    app.listen(PORT, '0.0.0.0', () => {
+      logger.info(`Server running on port ${PORT}`)
+      logger.info(`Health check available at http://0.0.0.0:${PORT}/health`)
+    })
+  } catch (error) {
+    logger.error({ error }, 'Erro ao inicializar Supabase - servidor não iniciará')
+    process.exit(1) // Sair com código de erro
+  }
 }
 
-// Iniciar servidor (0.0.0.0 para aceitar conexões de qualquer interface)
-app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Server running on port ${PORT}`)
-  logger.info(`Health check available at http://0.0.0.0:${PORT}/health`)
-})
+startServer()
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
