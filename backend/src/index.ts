@@ -165,28 +165,41 @@ app.use(errorHandler)
  * Inicia o servidor Express
  */
 async function startServer() {
+  console.log('🚀 Iniciando servidor...')
+  logger.info('🚀 Iniciando servidor...')
+  
   // Inicializar Redis antes de iniciar o servidor (não bloqueia se não configurado)
+  console.log('📦 Inicializando Redis...')
   initRedis()
 
   // Verificar conexão com Supabase (não bloqueia se houver erro, apenas loga)
   try {
+    console.log('🔌 Verificando conexão com Supabase...')
     const { supabase } = await import('./config/supabase')
     
     // Fazer uma query simples para verificar se a conexão funciona
     const { data, error } = await supabase.from('campaigns').select('count').limit(0)
     if (error && error.code !== 'PGRST116') { // PGRST116 = relation does not exist (esperado se tabela não existe)
+      console.warn('⚠️ Aviso: Problema ao verificar conexão com Supabase, mas servidor continuará iniciando')
       logger.warn({ error }, 'Aviso: Problema ao verificar conexão com Supabase, mas servidor continuará iniciando')
     } else {
+      console.log('✅ Supabase configurado e pronto')
       logger.info('Supabase configurado e pronto')
     }
   } catch (error) {
     // Se houver erro ao importar ou verificar Supabase, apenas logar mas não bloquear
+    console.error('❌ Erro ao verificar Supabase, mas servidor continuará iniciando:', error)
     logger.error({ error }, 'Erro ao verificar Supabase, mas servidor continuará iniciando')
   }
 
   // Iniciar servidor (0.0.0.0 para aceitar conexões de qualquer interface)
   // SEMPRE inicia o servidor, mesmo se houver problemas com Supabase
+  console.log(`🌐 Iniciando servidor na porta ${PORT}...`)
+  logger.info(`Iniciando servidor na porta ${PORT}...`)
+  
   app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT}`)
+    console.log(`✅ Health check available at http://0.0.0.0:${PORT}/health`)
     logger.info(`✅ Server running on port ${PORT}`)
     logger.info(`✅ Health check available at http://0.0.0.0:${PORT}/health`)
   })
@@ -194,20 +207,28 @@ async function startServer() {
 
 // Tratamento de erros não capturados para evitar saída silenciosa
 process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection:', reason)
   logger.error({ reason, promise }, 'Unhandled Rejection')
   // Não sair do processo, apenas logar
 })
 
 process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error)
   logger.error({ error }, 'Uncaught Exception')
   // Não sair do processo imediatamente, apenas logar
   // O servidor deve continuar rodando
 })
 
+console.log('📝 Configurando servidor...')
+logger.info('Configurando servidor...')
+
 startServer().catch((error) => {
+  console.error('❌ Erro crítico ao iniciar servidor:', error)
   logger.error({ error }, 'Erro crítico ao iniciar servidor')
   // Tentar iniciar o servidor mesmo assim
+  console.log('🔄 Tentando iniciar servidor em modo de recuperação...')
   app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✅ Server running on port ${PORT} (modo de recuperação)`)
     logger.info(`✅ Server running on port ${PORT} (modo de recuperação)`)
   })
 })
