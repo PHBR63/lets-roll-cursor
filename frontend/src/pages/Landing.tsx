@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button'
 import { User } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useEffect } from 'react'
+import { Vortex } from '@/components/ui/vortex'
 
 /**
  * Página inicial (Landing Page)
- * Fundo roxo com icosaedros, logo central, texto lateral e botão "Conecte-se"
+ * Fundo com efeito Vortex animado, logo central, texto lateral e botão "Conecte-se"
  * Conforme design de referência
  * Redireciona usuários autenticados para o dashboard
  */
@@ -36,7 +37,19 @@ export function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative">
+    <Vortex
+      className="fixed inset-0 z-0"
+      containerClassName="min-h-screen"
+      particleCount={500}
+      rangeY={150}
+      baseHue={270}
+      baseSpeed={0.1}
+      rangeSpeed={1.2}
+      baseRadius={1.5}
+      rangeRadius={2.5}
+      backgroundColor="hsl(271, 100%, 10%)"
+    >
+      <div className="min-h-screen flex flex-col items-center justify-center relative z-10">
       {/* Botão Conecte-se no canto superior direito */}
       <div className="absolute top-4 right-4 z-20">
         <Link to="/login">
@@ -98,7 +111,8 @@ export function Landing() {
 
       {/* Barra roxa no rodapé */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-accent-light z-10" />
-    </div>
+      </div>
+    </Vortex>
   )
 }
 
