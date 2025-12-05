@@ -1,6 +1,7 @@
 import { characterService } from '../characterService'
 import { supabase } from '../../config/supabase'
 import { ordemParanormalService } from '../ordemParanormalService'
+import * as cacheModule from '../cache'
 
 // Mock do Supabase
 jest.mock('../../config/supabase', () => ({
@@ -28,6 +29,46 @@ jest.mock('../ordemParanormalService', () => ({
   },
 }))
 
+// Mock do cache
+jest.mock('../cache', () => ({
+  getCache: jest.fn(),
+  setCache: jest.fn(),
+  deleteCache: jest.fn(),
+  deleteCachePattern: jest.fn(),
+  getCharacterCacheKey: jest.fn((filters: any) => {
+    if (filters.characterId) return `characters:${filters.characterId}`
+    if (filters.campaignId) return `characters:campaign:${filters.campaignId}`
+    if (filters.userId) return `characters:user:${filters.userId}`
+    return 'characters:all'
+  }),
+}))
+
+// Mock dos serviços especializados
+jest.mock('../character/characterInventoryService', () => ({
+  characterInventoryService: {
+    getCharacterInventory: jest.fn().mockResolvedValue([]),
+    addItemToCharacter: jest.fn(),
+    removeItemFromCharacter: jest.fn(),
+    equipItem: jest.fn(),
+  },
+}))
+
+jest.mock('../character/characterAbilitiesService', () => ({
+  characterAbilitiesService: {
+    getCharacterAbilities: jest.fn().mockResolvedValue([]),
+    addAbilityToCharacter: jest.fn(),
+    removeAbilityFromCharacter: jest.fn(),
+  },
+}))
+
+jest.mock('../character/characterClassAbilitiesService', () => ({
+  characterClassAbilitiesService: {
+    grantClassAbilities: jest.fn().mockResolvedValue(undefined),
+    getUnlockedClassAbilities: jest.fn(),
+    getNewlyUnlockedClassAbilities: jest.fn(),
+  },
+}))
+
 describe('characterService - Sistema Ordem Paranormal', () => {
   const mockCharacter = {
     id: 'char-123',
@@ -51,6 +92,331 @@ describe('characterService - Sistema Ordem Paranormal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(cacheModule.getCache as jest.Mock).mockResolvedValue(null)
+    ;(cacheModule.setCache as jest.Mock).mockResolvedValue(undefined)
+    ;(cacheModule.deleteCache as jest.Mock).mockResolvedValue(undefined)
+    ;(cacheModule.deleteCachePattern as jest.Mock).mockResolvedValue(undefined)
+  })
+
+  describe('getCharacters', () => {
+    it('deve buscar personagens com filtro por campaignId', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: [mockCharacter],
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await characterService.getCharacters({ campaignId: 'camp-123' })
+
+      expect(mockQuery.eq).toHaveBeenCalledWith('campaign_id', 'camp-123')
+      expect(result).toEqual([mockCharacter])
+      expect(cacheModule.setCache).toHaveBeenCalled()
+    })
+
+    it('deve buscar personagens com filtro por userId', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: [mockCharacter],
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await characterService.getCharacters({ userId: 'user-123' })
+
+      expect(mockQuery.eq).toHaveBeenCalledWith('user_id', 'user-123')
+      expect(result).toEqual([mockCharacter])
+    })
+
+    it('deve retornar do cache se disponível', async () => {
+      const cachedData = [mockCharacter]
+      ;(cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
+
+      const result = await characterService.getCharacters({ campaignId: 'camp-123' })
+
+      expect(result).toEqual(cachedData)
+      expect(supabase.from).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar erro se busca falhar', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await expect(
+        characterService.getCharacters({ campaignId: 'camp-123' })
+      ).rejects.toThrow('Erro ao buscar personagens')
+    })
+  })
+
+  describe('createCharacter', () => {
+    it('deve criar personagem com valores padrão', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+
+      const result = await characterService.createCharacter('user-123', {
+        name: 'New Character',
+        campaignId: 'camp-123',
+        class: 'COMBATENTE',
+      })
+
+      expect(result).toEqual(mockCharacter)
+      expect(ordemParanormalService.calculateMaxPV).toHaveBeenCalled()
+      expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
+    })
+
+    it('deve criar personagem com atributos customizados', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(25)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(5)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
+
+      await characterService.createCharacter('user-123', {
+        name: 'New Character',
+        campaignId: 'camp-123',
+        class: 'ESPECIALISTA',
+        attributes: { agi: 3, for: 2, int: 1, pre: 2, vig: 3 },
+        nex: 10,
+      })
+
+      expect(ordemParanormalService.calculateMaxPV).toHaveBeenCalledWith('ESPECIALISTA', 3, 10)
+    })
+
+    it('deve lançar erro se criação falhar', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+        })
+      ).rejects.toThrow('Erro ao criar personagem')
+    })
+  })
+
+  describe('getCharacterById', () => {
+    it('deve buscar personagem por ID', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await characterService.getCharacterById('char-123')
+
+      expect(mockQuery.eq).toHaveBeenCalledWith('id', 'char-123')
+      expect(result).toHaveProperty('inventory')
+      expect(result).toHaveProperty('abilities')
+      expect(cacheModule.setCache).toHaveBeenCalled()
+    })
+
+    it('deve retornar do cache se disponível', async () => {
+      const cachedData = { ...mockCharacter, inventory: [], abilities: [] }
+      ;(cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
+
+      const result = await characterService.getCharacterById('char-123')
+
+      expect(result).toEqual(cachedData)
+      expect(supabase.from).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar erro se personagem não encontrado', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Not found', code: 'PGRST116' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await expect(characterService.getCharacterById('char-999')).rejects.toThrow(
+        'Erro ao buscar personagem'
+      )
+    })
+  })
+
+  describe('updateCharacter', () => {
+    it('deve atualizar campos básicos do personagem', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+        update: jest.fn().mockReturnThis(),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      const result = await characterService.updateCharacter('char-123', {
+        name: 'Updated Name',
+        path: 'New Path',
+      })
+
+      expect(mockQuery.update).toHaveBeenCalled()
+      expect(cacheModule.deleteCache).toHaveBeenCalled()
+    })
+
+    it('deve usar serviço especializado para atualizar atributos', async () => {
+      const updateAttributesSpy = jest
+        .spyOn(characterService, 'updateAttributes' as any)
+        .mockResolvedValue(mockCharacter)
+
+      await characterService.updateCharacter('char-123', {
+        attributes: { agi: 3, for: 2, int: 1, pre: 2, vig: 3 },
+      })
+
+      expect(updateAttributesSpy).toHaveBeenCalledWith('char-123', {
+        agi: 3,
+        for: 2,
+        int: 1,
+        pre: 2,
+        vig: 3,
+      })
+
+      updateAttributesSpy.mockRestore()
+    })
+
+    it('deve usar serviço especializado para atualizar skills', async () => {
+      const updateSkillsSpy = jest
+        .spyOn(characterService, 'updateSkills' as any)
+        .mockResolvedValue(mockCharacter)
+
+      await characterService.updateCharacter('char-123', {
+        skills: { Luta: { attribute: 'FOR', training: 'COMPETENT' } },
+      })
+
+      expect(updateSkillsSpy).toHaveBeenCalled()
+      updateSkillsSpy.mockRestore()
+    })
+
+    it('deve lançar erro se personagem não encontrado', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Not found' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await expect(
+        characterService.updateCharacter('char-999', { name: 'New Name' })
+      ).rejects.toThrow('Erro ao atualizar personagem')
+    })
+  })
+
+  describe('deleteCharacter', () => {
+    it('deve deletar personagem e invalidar cache', async () => {
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { campaign_id: 'camp-123', user_id: 'user-123' },
+          error: null,
+        }),
+      }
+
+      const mockDeleteQuery = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ error: null }),
+      }
+
+      ;(supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockSelectQuery)
+        .mockReturnValueOnce(mockDeleteQuery)
+
+      await characterService.deleteCharacter('char-123')
+
+      expect(mockDeleteQuery.eq).toHaveBeenCalledWith('id', 'char-123')
+      expect(cacheModule.deleteCache).toHaveBeenCalled()
+      expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
+    })
+
+    it('deve lançar erro se deleção falhar', async () => {
+      const mockSelectQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { campaign_id: 'camp-123', user_id: 'user-123' },
+          error: null,
+        }),
+      }
+
+      const mockDeleteQuery = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({ error: { message: 'Delete failed' } }),
+      }
+
+      ;(supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockSelectQuery)
+        .mockReturnValueOnce(mockDeleteQuery)
+
+      await expect(characterService.deleteCharacter('char-123')).rejects.toThrow(
+        'Erro ao deletar personagem'
+      )
+    })
   })
 
   describe('updateAttributes', () => {
