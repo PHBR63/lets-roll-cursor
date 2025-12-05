@@ -8,6 +8,7 @@ import { AcquirablesStep } from '@/components/wizard/AcquirablesStep'
 import { PersonalitiesStep } from '@/components/wizard/PersonalitiesStep'
 import { WizardState } from '@/types/wizard'
 import { useAuth } from '@/context/AuthContext'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 /**
  * Página de criação de campanha
@@ -106,8 +107,7 @@ export function CreateCampaign() {
       }
 
       // Enviar para API
-      // Normalizar URL removendo barras no final
-      const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/+$/, '')
+      const apiUrl = getApiBaseUrl()
 
       const response = await fetch(`${apiUrl}/api/campaigns`, {
         method: 'POST',

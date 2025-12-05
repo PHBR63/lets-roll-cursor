@@ -12,6 +12,7 @@ import { useCache } from '@/hooks/useCache'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
 import { Campaign } from '@/types/campaign'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 /**
  * Dashboard principal
@@ -52,8 +53,7 @@ export function Dashboard() {
       throw new Error('Sessão não encontrada')
     }
 
-    // Normalizar URL removendo barras no final
-    const apiUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/+$/, '')
+    const apiUrl = getApiBaseUrl()
     
     try {
       const response = await fetch(`${apiUrl}/api/campaigns`, {

@@ -10,10 +10,18 @@ export function normalizeApiUrl(baseUrl: string): string {
 }
 
 /**
+ * Obtém a URL base da API normalizada
+ * Use esta função em vez de import.meta.env.VITE_API_URL diretamente
+ */
+export function getApiBaseUrl(): string {
+  return normalizeApiUrl(import.meta.env.VITE_API_URL || 'http://localhost:3001')
+}
+
+/**
  * Constrói uma URL completa da API
  */
 export function getApiUrl(endpoint: string): string {
-  const baseUrl = normalizeApiUrl(import.meta.env.VITE_API_URL || 'http://localhost:3001')
+  const baseUrl = getApiBaseUrl()
   
   // Garantir que o endpoint começa com /
   const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`

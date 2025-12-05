@@ -73,7 +73,7 @@ export function initRedis(): Redis | null {
 
     // Silenciar erros de conexão após algumas tentativas
     let errorCount = 0
-    redisClient.on('error', (error) => {
+    redisClient.on('error', (error: Error & { code?: string }) => {
       errorCount++
       // Só logar os primeiros 3 erros para não poluir os logs
       if (errorCount <= 3) {
@@ -96,7 +96,7 @@ export function initRedis(): Redis | null {
     })
 
     // Conectar
-    redisClient.connect().catch((error) => {
+    redisClient.connect().catch((error: Error & { code?: string }) => {
       // Só logar se for um erro diferente de ECONNREFUSED ou se for o primeiro erro
       if (error.code !== 'ECONNREFUSED' || errorCount === 0) {
         logger.error({ error }, 'Erro ao conectar Redis')
