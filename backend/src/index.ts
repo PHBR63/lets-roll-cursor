@@ -164,11 +164,23 @@ app.use(errorHandler)
 /**
  * Inicia o servidor Express
  */
-// Inicializar Redis antes de iniciar o servidor
+// Inicializar Redis antes de iniciar o servidor (não bloqueia se não configurado)
 initRedis()
 
-app.listen(PORT, () => {
+// Verificar se Supabase está configurado antes de iniciar
+try {
+  // Importar supabase para verificar se está configurado
+  const { supabase } = await import('./config/supabase')
+  logger.info('Supabase configurado e pronto')
+} catch (error) {
+  logger.error({ error }, 'Erro ao inicializar Supabase - servidor não iniciará')
+  process.exit(1)
+}
+
+// Iniciar servidor (0.0.0.0 para aceitar conexões de qualquer interface)
+app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`)
+  logger.info(`Health check available at http://0.0.0.0:${PORT}/health`)
 })
 
 // Graceful shutdown
