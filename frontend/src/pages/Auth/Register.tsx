@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 /**
  * Schema de validação para registro
@@ -39,6 +40,8 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export function Register() {
   const navigate = useNavigate()
   const toast = useToast()
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('register')
+  
   const {
     register,
     handleSubmit,
@@ -47,6 +50,11 @@ export function Register() {
     // @ts-expect-error - zodResolver type incompatibility with @hookform/resolvers v3.10.0
     resolver: zodResolver(registerSchema),
   })
+
+  // Sincronizar tab ativa com a rota
+  useEffect(() => {
+    setActiveTab('register')
+  }, [])
 
   /**
    * Função para criar conta
@@ -80,16 +88,16 @@ export function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-background border-card-secondary">
-        <Tabs defaultValue="register" className="w-full">
+        <Tabs value={activeTab} onValueChange={(value) => {
+          if (value === 'login') {
+            navigate('/login')
+          } else {
+            setActiveTab(value as 'login' | 'register')
+          }
+        }} className="w-full">
           <CardHeader>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger 
-                value="login" 
-                onClick={() => navigate('/login')}
-                className="cursor-pointer"
-              >
-                Entrar
-              </TabsTrigger>
+              <TabsTrigger value="login">Entrar</TabsTrigger>
               <TabsTrigger value="register">Registrar-se</TabsTrigger>
             </TabsList>
           </CardHeader>
