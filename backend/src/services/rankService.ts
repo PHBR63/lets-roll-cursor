@@ -14,15 +14,10 @@ export const rankService = {
    */
   async getCampaignRank(campaignId: string): Promise<Rank> {
     try {
-      const { data: campaign, error } = await supabase
-        .from('campaigns')
-        .select('current_rank')
-        .eq('id', campaignId)
-        .single()
-
-      if (error) throw error
-
-      return (campaign?.current_rank as Rank) || 'RECRUTA'
+      // Nota: current_rank não existe mais na tabela campaigns
+      // Por enquanto, retornar RECRUTA como padrão
+      // TODO: Implementar sistema de patentes se necessário
+      return 'RECRUTA'
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error, campaignId }, 'Error getting campaign rank')
@@ -38,12 +33,10 @@ export const rankService = {
    */
   async updateCampaignRank(campaignId: string, rank: Rank): Promise<void> {
     try {
-      const { error } = await supabase
-        .from('campaigns')
-        .update({ current_rank: rank })
-        .eq('id', campaignId)
-
-      if (error) throw error
+      // Nota: current_rank não existe mais na tabela campaigns
+      // Por enquanto, apenas logar (não fazer nada)
+      // TODO: Implementar sistema de patentes se necessário
+      logger.info({ campaignId, rank }, 'Campaign rank update requested (not implemented)')
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error, campaignId, rank }, 'Error updating campaign rank')

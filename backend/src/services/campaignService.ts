@@ -211,7 +211,7 @@ export const campaignService = {
           tags: data.tags || [],
           status: 'active',
           created_by: userId,
-          current_rank: data.currentRank || 'RECRUTA', // Patente padrão: RECRUTA
+          // Nota: current_rank não existe na tabela campaigns, foi removido
         })
         .select()
         .single()
@@ -346,7 +346,7 @@ export const campaignService = {
       if (data.description !== undefined) updateData.description = data.description
       if (data.systemRpg !== undefined) updateData.system_rpg = data.systemRpg
       if (data.tags) updateData.tags = data.tags
-      if (data.currentRank) updateData.current_rank = data.currentRank
+      // Nota: current_rank não existe na tabela campaigns, foi removido
       if (imageUrl) updateData.image_url = imageUrl
 
       const { data: campaign, error } = await supabase

@@ -13,6 +13,23 @@
         if (typeof navigator !== 'undefined') {
           const supportedActions = ['play', 'pause', 'seekbackward', 'seekforward', 'previoustrack', 'nexttrack', 'seekto', 'stop'];
           
+          // Ignorar erros de MediaSession relacionados a extensões
+          const originalError = window.onerror;
+          window.onerror = function(message, source, lineno, colno, error) {
+            if (message && (
+              message.includes('MediaSession') || 
+              message.includes('enterpictureinpicture') ||
+              message.includes('setActionHandler') ||
+              (source && source.includes('autoPip.js'))
+            )) {
+              return true; // Suprimir erro
+            }
+            if (originalError) {
+              return originalError.call(this, message, source, lineno, colno, error);
+            }
+            return false;
+          };
+          
           // Função para aplicar wrapper
           const wrapMediaSession = () => {
             if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
