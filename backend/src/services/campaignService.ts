@@ -265,7 +265,14 @@ export const campaignService = {
       const cached = await getCache<unknown>(cacheKey)
       if (cached) {
         logger.debug({ cacheKey }, 'Cache hit para campanha')
-        return cached as typeof campaign & { participants: unknown[] }
+        const cachedCampaign = cached as Record<string, unknown> & { participants?: unknown[] }
+        // Garantir que participants seja sempre um array
+        return {
+          ...cachedCampaign,
+          participants: Array.isArray(cachedCampaign.participants) 
+            ? cachedCampaign.participants 
+            : [],
+        }
       }
 
       const { data: campaign, error: campaignError } = await supabase

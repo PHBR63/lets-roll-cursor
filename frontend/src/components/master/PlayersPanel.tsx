@@ -24,6 +24,9 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   const { characters: realtimeCharacters } = useRealtimeCharacters(campaignId)
   const [players, setPlayers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Garantir que players seja sempre um array
+  const safePlayers = Array.isArray(players) ? players : []
   const [showDamageModal, setShowDamageModal] = useState(false)
   const [showConditionModal, setShowConditionModal] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState<{ character: { id: string; stats?: Record<string, unknown>; conditions?: string[] }; user?: { id: string; username: string; avatar_url?: string } } | null>(null)
@@ -38,8 +41,9 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   useEffect(() => {
     if (realtimeCharacters.length > 0 && players.length > 0) {
       // Atualizar stats dos personagens nos players
-      setPlayers((prev) =>
-        prev.map((player) => {
+      setPlayers((prev) => {
+        const safePrev = Array.isArray(prev) ? prev : []
+        return safePrev.map((player) => {
           const updatedChar = realtimeCharacters.find(
             (char) => char.id === player.character?.id
           )
@@ -51,9 +55,9 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
           }
           return player
         })
-      )
+      })
     }
-  }, [realtimeCharacters])
+  }, [realtimeCharacters, players.length])
 
   /**
    * Carrega jogadores da campanha
@@ -74,7 +78,10 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
 
       if (response.ok) {
         const campaign = await response.json()
-        const participants = campaign.participants || []
+        // Garantir que participants seja sempre um array
+        const participants = Array.isArray(campaign.participants) 
+          ? campaign.participants 
+          : []
 
         // Buscar personagens de cada participante
         const playersWithCharacters = await Promise.all(
@@ -121,7 +128,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
     return <div className="text-text-secondary text-sm">Carregando jogadores...</div>
   }
 
-  if (players.length === 0) {
+  if (safePlayers.length === 0) {
     return (
       <div className="text-text-secondary text-sm text-center py-8">
         Nenhum jogador na campanha
@@ -133,7 +140,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
     <div className="flex flex-col h-full">
       <h2 className="text-white font-semibold text-lg mb-4">Jogadores</h2>
       <div className="flex-1 overflow-y-auto space-y-3">
-        {players.map((player) => {
+        {safePlayers.map((player) => {
           const character = player.character
           if (!character) {
             return (
