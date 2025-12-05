@@ -11,5 +11,6 @@ export interface UpdateSessionData {
   name?: string
   notes?: string
   endedAt?: string | null
+  board_state?: Record<string, unknown> | null
 }
 

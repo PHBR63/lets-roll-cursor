@@ -18,6 +18,7 @@ import { errorHandler } from './middleware/errorHandler'
 import { generalLimiter, authLimiter, createLimiter } from './middleware/rateLimit'
 import { logger } from './utils/logger'
 import { initRedis, closeRedis } from './config/redis'
+import { setupSwagger } from './config/swagger'
 
 // Carregar variáveis de ambiente
 // Tenta múltiplos caminhos para garantir que encontra o .env

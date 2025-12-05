@@ -44,10 +44,14 @@ export const campaignService = {
       if (error) throw error
 
       const result =
-        data?.map((p: { role: string; campaign: Record<string, unknown> }) => ({
-          ...p.campaign,
-          role: p.role,
-        })) || []
+        data?.map((p: { role: string; campaign: Record<string, unknown> | Record<string, unknown>[] }) => {
+          // O Supabase pode retornar campaign como array ou objeto único
+          const campaign = Array.isArray(p.campaign) ? p.campaign[0] : p.campaign
+          return {
+            ...campaign,
+            role: p.role,
+          }
+        }) || []
 
       // Armazenar no cache (TTL: 10 minutos)
       await setCache(cacheKey, result, 600)
