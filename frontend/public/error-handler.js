@@ -10,8 +10,8 @@
 
   // Tratar erro de MediaSession (pode ser de extensão do navegador como autoPip.js)
   // Aplicar o wrapper ANTES de qualquer outro script tentar usar MediaSession
-  // Usar Object.defineProperty para garantir que o wrapper seja aplicado mesmo se já houver tentativas
-  if (typeof navigator !== 'undefined' && navigator.mediaSession) {
+  // Interceptar na criação do objeto navigator.mediaSession se possível
+  if (typeof navigator !== 'undefined') {
     // Lista completa de ações válidas do MediaSession API
     const supportedActions = [
       'play', 
@@ -24,38 +24,87 @@
       'stop'
     ];
     
-    // Salvar o método original ANTES de substituir
-    const originalSetActionHandler = navigator.mediaSession.setActionHandler 
-      ? (function() {
-          const original = navigator.mediaSession.setActionHandler;
-          return function(action, handler) {
-            return original.call(navigator.mediaSession, action, handler);
-          };
-        })()
-      : null;
-    
-    // Substituir setActionHandler com wrapper que valida ações
-    navigator.mediaSession.setActionHandler = function(action, handler) {
-      // Se a ação não é suportada, simplesmente retornar sem erro
-      if (!supportedActions.includes(action)) {
-        // Ação não suportada (como 'enterpictureinpicture' de extensões)
-        // Retornar undefined silenciosamente para evitar erro
-        return undefined;
-      }
+    // Interceptar antes que qualquer extensão possa usar
+    // Usar Object.defineProperty para garantir que seja aplicado primeiro
+    if (navigator.mediaSession) {
+      // Salvar o método original ANTES de substituir
+      const originalSetActionHandler = navigator.mediaSession.setActionHandler;
       
-      // Se temos o método original, usar ele
-      if (originalSetActionHandler) {
-        try {
-          return originalSetActionHandler(action, handler);
-        } catch (e) {
-          // Se ainda assim der erro, ignorar silenciosamente
+      // Substituir setActionHandler com wrapper que valida ações
+      try {
+        Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
+          value: function(action, handler) {
+            // Se a ação não é suportada, simplesmente retornar sem erro
+            if (!supportedActions.includes(action)) {
+              // Ação não suportada (como 'enterpictureinpicture' de extensões)
+              // Retornar undefined silenciosamente para evitar erro
+              return undefined;
+            }
+            
+            // Se temos o método original, usar ele
+            if (originalSetActionHandler) {
+              try {
+                return originalSetActionHandler.call(navigator.mediaSession, action, handler);
+              } catch (e) {
+                // Se ainda assim der erro, ignorar silenciosamente
+                return undefined;
+              }
+            }
+            
+            // Se não temos o original, retornar undefined (não podemos fazer nada)
+            return undefined;
+          },
+          writable: true,
+          configurable: true
+        });
+      } catch (e) {
+        // Se não conseguir usar defineProperty, tentar substituição direta
+        navigator.mediaSession.setActionHandler = function(action, handler) {
+          if (!supportedActions.includes(action)) {
+            return undefined;
+          }
+          if (originalSetActionHandler) {
+            try {
+              return originalSetActionHandler.call(navigator.mediaSession, action, handler);
+            } catch (e) {
+              return undefined;
+            }
+          }
           return undefined;
-        }
+        };
       }
-      
-      // Se não temos o original, retornar undefined (não podemos fazer nada)
-      return undefined;
-    };
+    } else {
+      // Se mediaSession ainda não existe, interceptar quando for criado
+      let mediaSessionCreated = false;
+      const originalDefineProperty = Object.defineProperty;
+      Object.defineProperty(navigator, 'mediaSession', {
+        get: function() {
+          if (!mediaSessionCreated && this._mediaSession) {
+            mediaSessionCreated = true;
+            // Aplicar wrapper quando mediaSession for acessado pela primeira vez
+            const original = this._mediaSession.setActionHandler;
+            this._mediaSession.setActionHandler = function(action, handler) {
+              if (!supportedActions.includes(action)) {
+                return undefined;
+              }
+              if (original) {
+                try {
+                  return original.call(this, action, handler);
+                } catch (e) {
+                  return undefined;
+                }
+              }
+              return undefined;
+            };
+          }
+          return this._mediaSession;
+        },
+        set: function(value) {
+          this._mediaSession = value;
+        },
+        configurable: true
+      });
+    }
   }
 
   // Handler global de erros não capturados
