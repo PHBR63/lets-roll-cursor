@@ -19,6 +19,14 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
+  fileFilter: (req, file, cb) => {
+    // Aceitar apenas imagens
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true)
+    } else {
+      cb(new Error('Apenas arquivos de imagem são permitidos'))
+    }
+  },
 })
 
 // Listar campanhas do usuário
@@ -38,6 +46,11 @@ campaignsRouter.get('/', async (req: Request, res: Response) => {
 
 // Criar nova campanha (com upload de imagem)
 campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Response) => {
+  // Tratar erro de arquivo muito grande
+  if (req.file === undefined && req.headers['content-type']?.includes('multipart/form-data')) {
+    // Se não há arquivo mas o content-type é multipart, pode ser erro de tamanho
+    // O multer já rejeitou, então vamos tratar no catch
+  }
   try {
     const userId = req.user?.id
     if (!userId) {

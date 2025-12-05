@@ -50,6 +50,9 @@ if (!envLoaded) {
 const app = express()
 const PORT = process.env.PORT || 3001
 
+// Trust proxy (necessário para rate limiting funcionar corretamente atrás de proxy como Render)
+app.set('trust proxy', true)
+
 // Security middleware - Helmet
 app.use(
   helmet({

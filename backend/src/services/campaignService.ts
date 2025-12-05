@@ -112,11 +112,21 @@ export const campaignService = {
 
       // Upload de imagem se houver
       if (data.image) {
-        imageUrl = await this.uploadImage(
-          data.image.buffer,
-          data.image.originalname,
-          userId
-        )
+        try {
+          imageUrl = await this.uploadImage(
+            data.image.buffer,
+            data.image.originalname,
+            userId
+          )
+        } catch (imageError) {
+          // Se o bucket não estiver configurado, continuar sem imagem
+          if (imageError instanceof Error && imageError.message.includes('Bucket de imagens não configurado')) {
+            logger.warn('Bucket não configurado, criando campanha sem imagem')
+            imageUrl = null
+          } else {
+            throw imageError
+          }
+        }
       }
 
       // Criar campanha
