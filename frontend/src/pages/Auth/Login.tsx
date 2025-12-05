@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,8 +68,12 @@ export function Login() {
           <CardHeader>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register" asChild>
-                <Link to="/register">Registrar-se</Link>
+              <TabsTrigger 
+                value="register" 
+                onClick={() => navigate('/register')}
+                className="cursor-pointer"
+              >
+                Registrar-se
               </TabsTrigger>
             </TabsList>
           </CardHeader>
