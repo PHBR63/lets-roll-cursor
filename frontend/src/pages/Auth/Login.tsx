@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader } from '@/components/ui/card'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -64,16 +64,18 @@ export function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-background border-card-secondary">
-        <CardHeader>
-          <Tabs defaultValue="login" className="w-full">
+        <Tabs defaultValue="login" className="w-full">
+          <CardHeader>
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">
+              <TabsTrigger value="register" asChild>
                 <Link to="/register">Registrar-se</Link>
               </TabsTrigger>
             </TabsList>
+          </CardHeader>
 
-            <TabsContent value="login">
+          <CardContent>
+            <TabsContent value="login" className="mt-0">
               <div className="flex justify-center mb-6">
                 <div className="bg-card p-8 rounded-lg border border-card-secondary">
                   <p className="text-white">Logo</p>
@@ -129,8 +131,8 @@ export function Login() {
                 </Button>
               </form>
             </TabsContent>
-          </Tabs>
-        </CardHeader>
+          </CardContent>
+        </Tabs>
       </Card>
     </div>
   )
