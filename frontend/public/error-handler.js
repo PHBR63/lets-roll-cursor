@@ -10,40 +10,52 @@
 
   // Tratar erro de MediaSession (pode ser de extensão do navegador como autoPip.js)
   // Aplicar o wrapper ANTES de qualquer outro script tentar usar MediaSession
+  // Usar Object.defineProperty para garantir que o wrapper seja aplicado mesmo se já houver tentativas
   if (typeof navigator !== 'undefined' && navigator.mediaSession) {
-    // Verificar se setActionHandler existe
-    if (navigator.mediaSession.setActionHandler) {
-      const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+    // Lista completa de ações válidas do MediaSession API
+    const supportedActions = [
+      'play', 
+      'pause', 
+      'seekbackward', 
+      'seekforward', 
+      'previoustrack', 
+      'nexttrack', 
+      'seekto', 
+      'stop'
+    ];
+    
+    // Salvar o método original ANTES de substituir
+    const originalSetActionHandler = navigator.mediaSession.setActionHandler 
+      ? (function() {
+          const original = navigator.mediaSession.setActionHandler;
+          return function(action, handler) {
+            return original.call(navigator.mediaSession, action, handler);
+          };
+        })()
+      : null;
+    
+    // Substituir setActionHandler com wrapper que valida ações
+    navigator.mediaSession.setActionHandler = function(action, handler) {
+      // Se a ação não é suportada, simplesmente retornar sem erro
+      if (!supportedActions.includes(action)) {
+        // Ação não suportada (como 'enterpictureinpicture' de extensões)
+        // Retornar undefined silenciosamente para evitar erro
+        return undefined;
+      }
       
-      // Lista completa de ações válidas do MediaSession API
-      const supportedActions = [
-        'play', 
-        'pause', 
-        'seekbackward', 
-        'seekforward', 
-        'previoustrack', 
-        'nexttrack', 
-        'seekto', 
-        'stop'
-      ];
-      
-      // Substituir setActionHandler com wrapper que valida ações
-      navigator.mediaSession.setActionHandler = function(action, handler) {
-        // Se a ação não é suportada, simplesmente retornar sem erro
-        if (!supportedActions.includes(action)) {
-          // Ação não suportada (como 'enterpictureinpicture' de extensões)
-          // Retornar undefined silenciosamente para evitar erro
-          return undefined;
-        }
-        
+      // Se temos o método original, usar ele
+      if (originalSetActionHandler) {
         try {
           return originalSetActionHandler(action, handler);
         } catch (e) {
           // Se ainda assim der erro, ignorar silenciosamente
           return undefined;
         }
-      };
-    }
+      }
+      
+      // Se não temos o original, retornar undefined (não podemos fazer nada)
+      return undefined;
+    };
   }
 
   // Handler global de erros não capturados
@@ -61,7 +73,6 @@
       event.stopImmediatePropagation();
       return false;
     }
-  }, true); // true = usar capture phase para interceptar primeiro
     
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
     if (event.message && (
@@ -104,7 +115,7 @@
         });
       }
     }
-  });
+  }, true); // true = usar capture phase para interceptar primeiro
 
   // Handler de rejeições de promises não tratadas
   window.addEventListener('unhandledrejection', function(event) {

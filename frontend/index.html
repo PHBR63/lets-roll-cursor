@@ -5,6 +5,25 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Let's Roll - Plataforma de RPG de Mesa</title>
+    <!-- Carregar error-handler ANTES de qualquer outro script, sem defer/async -->
+    <script>
+      // Inline script para garantir execução imediata
+      (function() {
+        'use strict';
+        if (typeof navigator !== 'undefined' && navigator.mediaSession && navigator.mediaSession.setActionHandler) {
+          const supportedActions = ['play', 'pause', 'seekbackward', 'seekforward', 'previoustrack', 'nexttrack', 'seekto', 'stop'];
+          const original = navigator.mediaSession.setActionHandler;
+          navigator.mediaSession.setActionHandler = function(action, handler) {
+            if (!supportedActions.includes(action)) return undefined;
+            try {
+              return original.call(navigator.mediaSession, action, handler);
+            } catch (e) {
+              return undefined;
+            }
+          };
+        }
+      })();
+    </script>
     <script src="/error-handler.js"></script>
   </head>
   <body>
