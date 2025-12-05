@@ -108,6 +108,11 @@ export const campaignService = {
    */
   async createCampaign(userId: string, data: CreateCampaignData) {
     try {
+      // Validação básica
+      if (!data.name || data.name.trim().length === 0) {
+        throw new Error('Nome da campanha é obrigatório')
+      }
+
       let imageUrl: string | null = null
 
       // Upload de imagem se houver
@@ -133,8 +138,8 @@ export const campaignService = {
       const { data: campaign, error: campaignError } = await supabase
         .from('campaigns')
         .insert({
-          name: data.name,
-          description: data.description,
+          name: data.name.trim(),
+          description: data.description || null,
           image_url: imageUrl,
           system_rpg: data.systemRpg || null,
           tags: data.tags || [],
@@ -144,7 +149,17 @@ export const campaignService = {
         .select()
         .single()
 
-      if (campaignError) throw campaignError
+      if (campaignError) {
+        logger.error({ campaignError, data }, 'Erro ao inserir campanha no Supabase')
+        // Melhorar mensagem de erro do Supabase
+        if (campaignError.code === '23505') {
+          throw new Error('Já existe uma campanha com este nome')
+        }
+        if (campaignError.code === '23503') {
+          throw new Error('Usuário não encontrado')
+        }
+        throw new Error('Erro ao criar campanha: ' + (campaignError.message || 'Erro desconhecido'))
+      }
 
       // Criar participante como mestre
       const { error: participantError } = await supabase

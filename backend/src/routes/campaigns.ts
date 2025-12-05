@@ -94,8 +94,18 @@ campaignsRouter.post('/', (req, res, next) => {
       }
     }
 
+    // Validação básica dos dados obrigatórios
+    const campaignName = req.body.title || req.body.name
+    if (!campaignName || campaignName.trim().length === 0) {
+      return res.status(400).json({ error: 'Nome da campanha é obrigatório' })
+    }
+
+    if (campaignName.length > 100) {
+      return res.status(400).json({ error: 'Nome da campanha deve ter no máximo 100 caracteres' })
+    }
+
     const campaignData = {
-      name: req.body.title || req.body.name,
+      name: campaignName.trim(),
       description: req.body.description || '',
       systemRpg: req.body.systemRpg || null,
       tags,
@@ -111,6 +121,12 @@ campaignsRouter.post('/', (req, res, next) => {
   } catch (error: unknown) {
     console.error('Erro ao criar campanha:', error)
     const err = error as AppError
+    
+    // Retornar erro 400 se for erro de validação do Supabase
+    if (err.message?.includes('violates') || err.message?.includes('constraint') || err.message?.includes('invalid')) {
+      return res.status(400).json({ error: err.message || 'Dados inválidos' })
+    }
+    
     res.status(500).json({ error: err.message || 'Erro desconhecido' })
   }
 })
