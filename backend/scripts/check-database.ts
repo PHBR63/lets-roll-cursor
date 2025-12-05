@@ -31,6 +31,17 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceKey) {
   console.error('❌ Erro: SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY são obrigatórios')
+  console.error('\n📝 Como configurar:')
+  console.error('1. Crie um arquivo .env na pasta backend/')
+  console.error('2. Adicione as variáveis:')
+  console.error('   SUPABASE_URL=https://seu-projeto.supabase.co')
+  console.error('   SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key')
+  console.error('\n💡 Dica: Use o arquivo .env.example como referência')
+  console.error('   cp .env.example .env')
+  console.error('\n🔍 Onde encontrar as chaves:')
+  console.error('   - Acesse: https://supabase.com/dashboard')
+  console.error('   - Vá em: Project Settings > API')
+  console.error('   - Copie: URL e service_role key')
   process.exit(1)
 }
 

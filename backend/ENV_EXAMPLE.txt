@@ -1,0 +1,23 @@
+# Variáveis de ambiente para o backend
+# Copie este conteúdo para um arquivo .env na pasta backend/
+
+# Supabase
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sua_service_role_key_aqui
+
+# Redis (opcional)
+REDIS_URL=redis://localhost:6379
+# OU
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# CORS (opcional, padrão: http://localhost:5173)
+CORS_ORIGIN=http://localhost:5173
+
+# Porta do servidor (opcional, padrão: 3001)
+PORT=3001
+
+# Ambiente (opcional, padrão: development)
+NODE_ENV=development
+
