@@ -45,12 +45,21 @@ campaignsRouter.get('/', async (req: Request, res: Response) => {
 })
 
 // Criar nova campanha (com upload de imagem)
-campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Response) => {
-  // Tratar erro de arquivo muito grande
-  if (req.file === undefined && req.headers['content-type']?.includes('multipart/form-data')) {
-    // Se não há arquivo mas o content-type é multipart, pode ser erro de tamanho
-    // O multer já rejeitou, então vamos tratar no catch
-  }
+campaignsRouter.post('/', (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      // Tratar erros do multer antes de chegar ao handler
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'Arquivo muito grande. Tamanho máximo: 5MB' })
+      }
+      if (err.message?.includes('Apenas arquivos de imagem')) {
+        return res.status(400).json({ error: 'Apenas arquivos de imagem são permitidos' })
+      }
+      return res.status(400).json({ error: 'Erro ao processar arquivo: ' + err.message })
+    }
+    next()
+  })
+}, async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id
     if (!userId) {
