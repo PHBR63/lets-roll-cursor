@@ -116,7 +116,12 @@ campaignsRouter.post('/', (req, res, next) => {
       ...config,
     }
 
-    const campaign = await campaignService.createCampaign(userId, campaignData)
+    const campaign = await campaignService.createCampaign(
+      userId, 
+      campaignData,
+      req.user?.email,
+      req.user?.username
+    )
     res.status(201).json(campaign)
   } catch (error: unknown) {
     console.error('Erro ao criar campanha:', error)

@@ -104,10 +104,76 @@ export const campaignService = {
   },
 
   /**
+   * Garante que o usuário existe na tabela public.users
+   * Se não existir, cria o registro com dados mínimos
+   */
+  async ensureUserExists(userId: string, email?: string, username?: string) {
+    try {
+      // Verificar se o usuário já existe
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', userId)
+        .single()
+
+      if (existingUser) {
+        // Usuário já existe
+        return
+      }
+
+      // Se não encontrou (erro PGRST116 = no rows), criar registro
+      if (checkError && checkError.code === 'PGRST116') {
+        // Gerar username se não fornecido
+        let generatedUsername = username
+        if (!generatedUsername) {
+          if (email) {
+            // Usar parte do email antes do @
+            generatedUsername = email.split('@')[0]
+          } else {
+            // Fallback: usar parte do ID
+            generatedUsername = `user_${userId.substring(0, 8)}`
+          }
+        }
+
+        // Criar registro na tabela public.users
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: userId,
+            username: generatedUsername,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+
+        if (insertError) {
+          // Se já existe (concorrência), tudo bem - outro processo criou
+          if (insertError.code !== '23505') { // 23505 = unique violation
+            logger.error({ userId, insertError }, 'Erro ao criar usuário na tabela public.users')
+            throw insertError
+          }
+        } else {
+          logger.info({ userId, username: generatedUsername }, 'Usuário criado na tabela public.users')
+        }
+      } else if (checkError) {
+        // Outro erro ao verificar
+        logger.error({ userId, checkError }, 'Erro ao verificar existência do usuário')
+        throw checkError
+      }
+    } catch (error) {
+      logger.error({ userId, error }, 'Erro ao garantir existência do usuário')
+      // Não bloquear se houver erro, apenas logar
+      // O erro será capturado quando tentar criar a campanha
+    }
+  },
+
+  /**
    * Cria uma nova campanha
    */
-  async createCampaign(userId: string, data: CreateCampaignData) {
+  async createCampaign(userId: string, data: CreateCampaignData, email?: string, username?: string) {
     try {
+      // Garantir que o usuário existe na tabela public.users
+      await this.ensureUserExists(userId, email, username)
+
       // Validação básica
       if (!data.name || data.name.trim().length === 0) {
         throw new Error('Nome da campanha é obrigatório')
