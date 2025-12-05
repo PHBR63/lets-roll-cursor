@@ -73,14 +73,21 @@ app.use(
 // Permitir múltiplas origens em produção (separadas por vírgula)
 const corsOrigins: string[] = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(origin => origin.length > 0)
-  : ['http://localhost:5173']
+  : process.env.NODE_ENV === 'production' 
+    ? [] // Em produção, se não configurado, não permitir nenhuma origin (segurança)
+    : ['http://localhost:5173'] // Em desenvolvimento, permitir localhost
 
 // Log das origens configuradas (sempre, para debug em produção)
-logger.info({ corsOrigins, corsOriginEnv: process.env.CORS_ORIGIN }, 'CORS origins configuradas')
+logger.info({ corsOrigins, corsOriginEnv: process.env.CORS_ORIGIN, nodeEnv: process.env.NODE_ENV }, 'CORS origins configuradas')
+
+// Avisar se CORS_ORIGIN não está configurado em produção
+if (process.env.NODE_ENV === 'production' && corsOrigins.length === 0) {
+  logger.warn('⚠️ CORS_ORIGIN não configurado em produção! Configure a variável CORS_ORIGIN no Render.')
+}
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requisições sem origin (ex: Postman, curl)
+    // Permitir requisições sem origin (ex: Postman, curl, server-to-server)
     if (!origin) {
       return callback(null, true)
     }
@@ -106,6 +113,11 @@ app.use(cors({
     callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }))
 
 // Body parser
