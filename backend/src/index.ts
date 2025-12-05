@@ -158,7 +158,7 @@ app.get('/health', (req, res) => {
 // Nota: Em produção no Vercel, o frontend é servido separadamente
 // Este código serve apenas para desenvolvimento local ou outros serviços
 
-// Error handler
+// Error handler (deve ser o último middleware)
 app.use(errorHandler)
 
 /**

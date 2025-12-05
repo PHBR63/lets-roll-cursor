@@ -4,7 +4,11 @@ const supabaseUrl = process.env.SUPABASE_URL
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error('Missing Supabase environment variables')
+  console.error('❌ ERRO CRÍTICO: Variáveis de ambiente do Supabase não configuradas!')
+  console.error('   SUPABASE_URL:', supabaseUrl ? '✅ configurado' : '❌ faltando')
+  console.error('   SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceRoleKey ? '✅ configurado' : '❌ faltando')
+  console.error('   Configure essas variáveis no Render Dashboard > Environment Variables')
+  throw new Error('Missing Supabase environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required')
 }
 
 /**
