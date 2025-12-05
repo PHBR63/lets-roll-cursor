@@ -44,17 +44,39 @@ campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Resp
       return res.status(401).json({ error: 'Usuário não autenticado' })
     }
     
-    // Parse do JSON de configuração
+    // Parse do JSON de configuração com tratamento de erro
     let config = {}
     if (req.body.config) {
-      config = JSON.parse(req.body.config)
+      try {
+        config = typeof req.body.config === 'string' 
+          ? JSON.parse(req.body.config) 
+          : req.body.config
+      } catch (parseError) {
+        console.error('Erro ao fazer parse do config:', parseError)
+        config = {}
+      }
+    }
+
+    // Parse de tags com tratamento de erro
+    let tags: string[] = []
+    if (req.body.tags) {
+      try {
+        tags = typeof req.body.tags === 'string' 
+          ? JSON.parse(req.body.tags) 
+          : Array.isArray(req.body.tags) 
+            ? req.body.tags 
+            : []
+      } catch (parseError) {
+        console.error('Erro ao fazer parse das tags:', parseError)
+        tags = []
+      }
     }
 
     const campaignData = {
       name: req.body.title || req.body.name,
-      description: req.body.description,
+      description: req.body.description || '',
       systemRpg: req.body.systemRpg || null,
-      tags: req.body.tags ? JSON.parse(req.body.tags) : [],
+      tags,
       image: req.file ? {
         buffer: req.file.buffer,
         originalname: req.file.originalname,
@@ -64,10 +86,11 @@ campaignsRouter.post('/', upload.single('image'), async (req: Request, res: Resp
 
     const campaign = await campaignService.createCampaign(userId, campaignData)
     res.status(201).json(campaign)
-    } catch (error: unknown) {
-      const err = error as AppError
-      res.status(500).json({ error: err.message || 'Erro desconhecido' })
-    }
+  } catch (error: unknown) {
+    console.error('Erro ao criar campanha:', error)
+    const err = error as AppError
+    res.status(500).json({ error: err.message || 'Erro desconhecido' })
+  }
 })
 
 // Obter campanha por ID
