@@ -62,15 +62,34 @@
       // Não prevenir o erro, mas logar para debug
     }
     
-    // Log de erros de 'module is not defined' para debug (não prevenir, apenas logar)
+    // Tratar erro de 'module is not defined' (código CommonJS não transformado)
     if (event.message && event.message.includes('module is not defined')) {
-      console.warn('Module error detected (may be from extension or untransformed code):', {
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-      });
-      // Não prevenir o erro, apenas logar para debug
+      // Verificar se é de um arquivo vendor (nossa responsabilidade)
+      const isVendorFile = event.filename && (
+        event.filename.includes('vendor') || 
+        event.filename.includes('chunk') ||
+        event.filename.includes('assets/js')
+      );
+      
+      if (isVendorFile) {
+        // Erro em arquivo vendor - problema de build, prevenir e logar detalhes
+        console.error('CommonJS não transformado detectado no bundle:', {
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          stack: event.error?.stack,
+        });
+        // Prevenir o erro para não quebrar a aplicação
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      } else {
+        // Pode ser de extensão do navegador - apenas logar
+        console.warn('Module error (possivelmente de extensão do navegador):', {
+          filename: event.filename,
+        });
+      }
     }
   });
 

@@ -45,14 +45,13 @@ export default defineConfig({
       keepClassNames: true, // Manter nomes de classes
     },
     commonjsOptions: {
-      // Incluir dependências específicas que podem ter CommonJS
-      include: [
-        /react-window/,
-        /react/,
-        /react-dom/,
-        /react-router/,
-        /@supabase/,
-        /@radix-ui/,
+      // Incluir TODAS as dependências do node_modules que podem ter CommonJS
+      // Usar regex mais abrangente para capturar todas as dependências
+      include: [/node_modules/],
+      // Excluir apenas arquivos que sabemos que são ESM puro
+      exclude: [
+        /node_modules\/@vitejs/,
+        /node_modules\/vite/,
       ],
       transformMixedEsModules: true,
       // Forçar transformação de CommonJS para ESM
@@ -60,14 +59,22 @@ export default defineConfig({
       // Converter require para import
       requireReturnsDefault: 'auto',
       // Garantir que module.exports seja transformado
-      defaultIsModuleExports: true,
+      defaultIsModuleExports: 'auto',
+      // Garantir que exports seja transformado corretamente
+      esmExternals: true,
+      // Forçar transformação de todas as dependências CommonJS
+      ignoreDynamicRequires: false,
+      // Garantir que require() seja transformado mesmo em contextos dinâmicos
+      ignore: [],
     },
     rollupOptions: {
       external: [],
+      // Garantir que plugins CommonJS sejam aplicados antes do code splitting
+      plugins: [],
       output: {
-        // Garantir formato ESM
+        // Garantir formato ESM puro
         format: 'es',
-        // Evitar uso de 'module' e 'exports'
+        // Evitar uso de 'module' e 'exports' no código gerado
         generatedCode: {
           constBindings: true,
           objectShorthand: true,
@@ -76,6 +83,8 @@ export default defineConfig({
         interop: 'auto',
         // Garantir que exports seja tratado corretamente
         exports: 'named',
+        // Garantir formato ESM puro (sem CommonJS)
+        preserveModules: false,
         // Code splitting manual para melhor cache
         // NOTA: React e React-DOM não devem ser separados em chunks para evitar problemas de resolução
         // NOTA: Radix UI mantido junto para evitar problemas de transformação CommonJS
