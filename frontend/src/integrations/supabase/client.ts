@@ -8,12 +8,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Validar que estamos usando a chave anônima, não a service_role key
-// A service_role key geralmente começa com "eyJ" mas tem um padrão diferente
-// A anon key também começa com "eyJ", mas vamos validar pelo tamanho e estrutura
-if (supabaseAnonKey.includes('service_role') || supabaseAnonKey.length > 500) {
-  console.error('ERRO CRÍTICO: Parece que você está usando a SERVICE_ROLE_KEY no frontend!')
-  console.error('Use apenas a ANON_KEY no frontend. A SERVICE_ROLE_KEY deve ser usada apenas no backend.')
-  throw new Error('Forbidden use of secret API key in browser. Use only ANON_KEY in frontend.')
+// A service_role key geralmente é mais longa e pode conter "service_role" no payload JWT
+// Vamos fazer uma validação básica: se a chave for muito longa (>400 chars) ou contiver indicadores de service_role
+try {
+  // Tentar decodificar o JWT para verificar o tipo de chave
+  const parts = supabaseAnonKey.split('.')
+  if (parts.length === 3) {
+    // Decodificar o payload (segunda parte do JWT)
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    // Se contém 'role' e não é 'anon', provavelmente é service_role
+    if (payload.role && payload.role !== 'anon' && payload.role !== 'authenticated') {
+      console.error('ERRO CRÍTICO: Parece que você está usando a SERVICE_ROLE_KEY no frontend!')
+      console.error('Use apenas a ANON_KEY no frontend. A SERVICE_ROLE_KEY deve ser usada apenas no backend.')
+      throw new Error('Forbidden use of secret API key in browser. Use only ANON_KEY in frontend.')
+    }
+  }
+} catch (e) {
+  // Se não conseguir decodificar, fazer validação simples
+  if (supabaseAnonKey.includes('service_role') || supabaseAnonKey.length > 500) {
+    console.error('ERRO CRÍTICO: Parece que você está usando a SERVICE_ROLE_KEY no frontend!')
+    console.error('Use apenas a ANON_KEY no frontend. A SERVICE_ROLE_KEY deve ser usada apenas no backend.')
+    throw new Error('Forbidden use of secret API key in browser. Use only ANON_KEY in frontend.')
+  }
 }
 
 /**
