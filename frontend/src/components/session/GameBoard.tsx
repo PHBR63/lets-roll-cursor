@@ -28,6 +28,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { useRealtimeSession } from '@/hooks/useRealtimeSession'
 import { Character } from '@/types/character'
 import { Creature } from '@/types/creature'
+import { logger } from '@/utils/logger'
 
 /**
  * Componente Game Board
@@ -191,7 +192,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
         if (boardState.layers) setLayers(boardState.layers)
       }
     } catch (error) {
-      console.error('Erro ao carregar estado do board:', error)
+      logger.error('Erro ao carregar estado do board:', error)
     } finally {
       setLoading(false)
     }
@@ -224,7 +225,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
         }),
       })
     } catch (error) {
-      console.error('Erro ao salvar estado do board:', error)
+      logger.error('Erro ao salvar estado do board:', error)
     }
   }
 
@@ -268,7 +269,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
         setCreatures(creatures || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar personagens/criaturas:', error)
+      logger.error('Erro ao carregar personagens/criaturas:', error)
     }
   }
 
@@ -321,7 +322,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
 
       setImageUrl(publicUrl)
     } catch (error) {
-      console.error('Erro ao fazer upload:', error)
+      logger.error('Erro ao fazer upload:', error)
       alert('Erro ao fazer upload da imagem. Tente novamente.')
     } finally {
       setUploading(false)

@@ -55,7 +55,10 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   const skills = character.skills || {}
   const [localSkills, setLocalSkills] = useState<Record<string, { attribute: string; training: SkillTraining; bonus: number }>>(
     Object.entries(skills).reduce((acc, [key, value]) => {
-      const converted = convertSkillToNewFormat(key, value as any)
+      const converted = convertSkillToNewFormat(
+        key, 
+        value as { value: number; trained: boolean } | { attribute: string; training: SkillTraining; bonus: number }
+      )
       if (converted) {
         acc[key] = converted
       }

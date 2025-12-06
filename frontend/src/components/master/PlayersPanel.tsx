@@ -9,6 +9,7 @@ import { ApplyDamageModal } from './ApplyDamageModal'
 import { ApplyConditionModal } from './ApplyConditionModal'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 import { CampaignParticipant } from '@/types/campaign'
+import { logger } from '@/utils/logger'
 
 /**
  * Painel de jogadores para o mestre
@@ -104,7 +105,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
         setPlayers(playersWithCharacters)
       }
     } catch (error) {
-      console.error('Erro ao carregar jogadores:', error)
+      logger.error('Erro ao carregar jogadores:', error)
     } finally {
       setLoading(false)
     }

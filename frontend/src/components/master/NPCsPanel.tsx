@@ -6,6 +6,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { Item } from '@/types/item'
 import { Ability } from '@/types/ability'
+import { logger } from '@/utils/logger'
 
 /**
  * Painel de NPCs com Tabs
@@ -19,6 +20,17 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
   const [items, setItems] = useState<Item[]>([])
   const [abilities, setAbilities] = useState<Ability[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Estados para modais de itens
+  const [createItemModalOpen, setCreateItemModalOpen] = useState(false)
+  const [editItemModalOpen, setEditItemModalOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+  const [itemModalType, setItemModalType] = useState<'equipment' | 'item'>('item')
+  
+  // Estados para modais de habilidades
+  const [createAbilityModalOpen, setCreateAbilityModalOpen] = useState(false)
+  const [editAbilityModalOpen, setEditAbilityModalOpen] = useState(false)
+  const [selectedAbility, setSelectedAbility] = useState<Ability | null>(null)
 
   useEffect(() => {
     if (campaignId) {
@@ -49,7 +61,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         setItems(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar itens:', error)
+      logger.error('Erro ao carregar itens:', error)
     } finally {
       setLoading(false)
     }
@@ -77,7 +89,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         setAbilities(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar habilidades:', error)
+      logger.error('Erro ao carregar habilidades:', error)
     }
   }
 
@@ -103,7 +115,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         loadItems()
       }
     } catch (error) {
-      console.error('Erro ao remover item:', error)
+      logger.error('Erro ao remover item:', error)
       alert('Erro ao remover item. Tente novamente.')
     }
   }
@@ -130,7 +142,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         loadAbilities()
       }
     } catch (error) {
-      console.error('Erro ao remover habilidade:', error)
+      logger.error('Erro ao remover habilidade:', error)
       alert('Erro ao remover habilidade. Tente novamente.')
     }
   }
@@ -206,8 +218,9 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
-                // TODO: Criar novo equipamento
-                console.log('Criar equipamento')
+                logger.debug('Criar novo equipamento')
+                setItemModalType('equipment')
+                setCreateItemModalOpen(true)
               }}
               className="w-full mt-2"
             >
@@ -306,9 +319,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar habilidade:', ability)
+                          logger.debug('Editar habilidade:', ability)
+                          setSelectedAbility(ability)
+                          setEditAbilityModalOpen(true)
                         }}
+                        aria-label={`Editar habilidade ${ability.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -330,8 +345,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
-                // TODO: Criar nova habilidade
-                console.log('Criar habilidade')
+                logger.debug('Criar nova habilidade')
+                setCreateAbilityModalOpen(true)
               }}
               className="w-full mt-2"
             >

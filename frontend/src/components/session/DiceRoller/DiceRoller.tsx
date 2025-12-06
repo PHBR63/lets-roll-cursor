@@ -61,7 +61,7 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
         }
       }
     } catch (error) {
-      logger.error({ error }, 'Erro ao carregar personagem')
+      logger.error('Erro ao carregar personagem:', error)
     }
   }
 
