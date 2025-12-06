@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './context/AuthContext'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Auth/Login'
@@ -131,6 +132,7 @@ function App() {
           </BrowserRouter>
           <Toaster />
           <PWAInstallPrompt />
+          <Analytics />
         </div>
       </AuthProvider>
     </ErrorBoundary>
