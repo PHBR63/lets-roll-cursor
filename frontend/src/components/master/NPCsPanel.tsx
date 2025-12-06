@@ -194,9 +194,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar item:', item)
+                          logger.debug('Editar item:', item)
+                          setSelectedItem(item)
+                          setEditItemModalOpen(true)
                         }}
+                        aria-label={`Editar item ${item.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -257,9 +259,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
-                          // TODO: Editar
-                          console.log('Editar item:', item)
+                          logger.debug('Editar item:', item)
+                          setSelectedItem(item)
+                          setEditItemModalOpen(true)
                         }}
+                        aria-label={`Editar item ${item.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -282,7 +286,9 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               variant="outline"
               onClick={() => {
                 // TODO: Criar novo item
-                console.log('Criar item')
+                logger.debug('Criar item')
+                setItemModalType('item')
+                setCreateItemModalOpen(true)
               }}
               className="w-full mt-2"
             >
