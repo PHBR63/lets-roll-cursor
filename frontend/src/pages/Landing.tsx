@@ -40,13 +40,13 @@ export function Landing() {
     <Vortex
       className="fixed inset-0 z-0"
       containerClassName="min-h-screen"
-      particleCount={500}
-      rangeY={150}
+      particleCount={400}
+      rangeY={800}
       baseHue={270}
-      baseSpeed={0.1}
-      rangeSpeed={1.2}
-      baseRadius={1.5}
-      rangeRadius={2.5}
+      baseSpeed={0.0}
+      rangeSpeed={1.5}
+      baseRadius={1}
+      rangeRadius={2}
       backgroundColor="hsl(271, 100%, 10%)"
     >
       <div className="min-h-screen flex flex-col items-center justify-center relative z-10">
