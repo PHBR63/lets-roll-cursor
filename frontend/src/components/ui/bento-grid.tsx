@@ -95,6 +95,3 @@ export function BentoCard({
     </Comp>
   )
 }
-
-export { BentoGrid, BentoCard }
-
