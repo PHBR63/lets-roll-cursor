@@ -108,6 +108,12 @@ app.use(cors({
       return callback(null, origin)
     }
     
+    // Permitir domínios de preview do Vercel (qualquer domínio que termine com .vercel.app)
+    if (origin.endsWith('.vercel.app')) {
+      logger.info({ origin, type: 'vercel-preview' }, 'CORS: Origin de preview do Vercel permitida')
+      return callback(null, origin)
+    }
+    
     // Origin não permitida - log detalhado para debug
     logger.warn({ 
       origin, 

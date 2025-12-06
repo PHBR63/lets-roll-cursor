@@ -1,54 +1,45 @@
-import { useToast as useShadcnToast } from '@/hooks/use-toast'
+import { toast as sonnerToast } from 'sonner'
 
 /**
- * Hook personalizado para exibir toasts
+ * Hook personalizado para exibir toasts usando Sonner
  * Facilita o uso de notificações em toda a aplicação
  */
 export function useToast() {
-  const { toast } = useShadcnToast()
-
   return {
     /**
      * Exibe toast de sucesso
      */
     success: (title: string, description?: string) => {
-      toast({
-        title,
+      sonnerToast.success(title, {
         description,
-        variant: 'default',
-        className: 'bg-green-600 text-white border-green-500',
+        duration: 3000,
       })
     },
     /**
      * Exibe toast de erro
      */
     error: (title: string, description?: string) => {
-      toast({
-        title,
+      sonnerToast.error(title, {
         description,
-        variant: 'destructive',
+        duration: 4000,
       })
     },
     /**
      * Exibe toast de informação
      */
     info: (title: string, description?: string) => {
-      toast({
-        title,
+      sonnerToast.info(title, {
         description,
-        variant: 'default',
-        className: 'bg-blue-600 text-white border-blue-500',
+        duration: 3000,
       })
     },
     /**
      * Exibe toast de aviso
      */
     warning: (title: string, description?: string) => {
-      toast({
-        title,
+      sonnerToast.warning(title, {
         description,
-        variant: 'default',
-        className: 'bg-yellow-600 text-white border-yellow-500',
+        duration: 3000,
       })
     },
   }

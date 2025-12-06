@@ -50,7 +50,11 @@ export function MasterDashboard() {
 
       if (response.ok) {
         const campaign = await response.json()
-        const participant = campaign.participants?.find(
+        // Garantir que participants seja sempre um array
+        const participants = Array.isArray(campaign.participants) 
+          ? campaign.participants 
+          : []
+        const participant = participants.find(
           (p: CampaignParticipant) => p.user?.id === user.id && p.role === 'master'
         )
         const master = !!participant

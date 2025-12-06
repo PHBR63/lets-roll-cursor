@@ -70,7 +70,8 @@ export function useRealtimeCharacters(campaignId?: string) {
 
       if (response.ok) {
         const data = await response.json()
-        setCharacters(data || [])
+        // Garantir que data seja sempre um array
+        setCharacters(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error('Erro ao carregar personagens:', error)

@@ -39,17 +39,20 @@ export function RollHistory({
     )
   }
 
+  // Garantir que rolls seja sempre um array
+  const safeRolls = Array.isArray(rolls) ? rolls : []
+
   // Obter lista única de jogadores
   const players = Array.from(
     new Set(
-      rolls
+      safeRolls
         .map((roll) => roll.user?.username)
         .filter((name): name is string => !!name)
     )
   )
 
   // Filtrar rolagens
-  const filteredRolls = rolls.filter((roll) => {
+  const filteredRolls = safeRolls.filter((roll) => {
     if (filterPlayer !== 'all' && roll.user?.username !== filterPlayer) {
       return false
     }

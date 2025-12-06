@@ -4,7 +4,8 @@ import * as TabsPrimitive from "@radix-ui/react-tabs"
 import { cn } from "@/lib/utils"
 
 /**
- * Componente de tabs roxas
+ * Componente de tabs roxas com underline animado
+ * Baseado no componente do 21st.dev Magic UI
  */
 const Tabs = TabsPrimitive.Root
 
@@ -15,7 +16,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-card p-1 text-text-secondary",
+      "inline-flex h-10 items-center justify-center rounded-md bg-[#2A2A3A] p-1 text-[#A0A0A0] relative",
+      "border border-[#8000FF]/20",
       className
     )}
     {...props}
@@ -30,7 +32,15 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-accent data-[state=active]:text-white",
+      "relative inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium",
+      "ring-offset-background transition-all duration-300",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8000FF] focus-visible:ring-offset-2",
+      "disabled:pointer-events-none disabled:opacity-50",
+      "data-[state=active]:text-[#8000FF]",
+      "data-[state=inactive]:text-[#A0A0A0] hover:text-white",
+      "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-[#8000FF]",
+      "after:scale-x-0 after:transition-transform after:duration-300 after:origin-center",
+      "data-[state=active]:after:scale-x-100",
       className
     )}
     {...props}

@@ -68,7 +68,8 @@ export function useRealtimeRolls(sessionId?: string, campaignId?: string) {
 
       if (response.ok) {
         const data = await response.json()
-        setRolls(data || [])
+        // Garantir que data seja sempre um array
+        setRolls(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       console.error('Erro ao carregar rolagens:', error)

@@ -21,7 +21,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="border-b border-card-secondary bg-card/50 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 border-b border-[#8000FF]/20 bg-[#2A2A3A]/80 backdrop-blur-md supports-[backdrop-filter]:bg-[#2A2A3A]/60">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center">
           <div className="bg-card p-3 rounded-lg border border-card-secondary">

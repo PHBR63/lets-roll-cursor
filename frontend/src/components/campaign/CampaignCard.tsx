@@ -1,8 +1,9 @@
 import { memo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { BentoCard } from '@/components/ui/bento-grid'
 import { LazyImage } from '@/components/common/LazyImage'
+import { Gamepad2 } from 'lucide-react'
 
 /**
  * Card de campanha estilo lobby
@@ -27,42 +28,45 @@ export const CampaignCard = memo(function CampaignCard({ campaign }: CampaignCar
     navigate(`/campaign/${campaign.id}`)
   }, [navigate, campaign.id])
 
+  const statusText = campaign.status === 'active' ? 'Ativa' : 
+                     campaign.status === 'paused' ? 'Pausada' : 'Encerrada'
+
   return (
-    <Card className="w-64 h-80 flex flex-col bg-card border-card-secondary hover:border-accent transition-colors cursor-pointer flex-shrink-0">
-      <CardContent className="flex-1 p-0" onClick={handleClick}>
-        <div className="w-full h-48 border-b border-card-secondary overflow-hidden">
-          {campaign.image_url ? (
+    <BentoCard
+      className="w-64 h-80 flex-shrink-0"
+      name={campaign.name}
+      description={statusText}
+      icon={<Gamepad2 className="w-6 h-6" />}
+      backgroundImage={campaign.image_url || undefined}
+      onClick={handleClick}
+    >
+      <div className="mt-4 flex flex-col gap-3">
+        {campaign.image_url && (
+          <div className="w-full h-32 rounded-md overflow-hidden border border-[#8000FF]/20">
             <LazyImage
               src={campaign.image_url}
               alt={campaign.name}
-              className="w-full h-full"
-              fallback={<span className="text-text-secondary">Imagem</span>}
+              className="w-full h-full object-cover"
+              fallback={
+                <div className="w-full h-full bg-[#2A2A3A] flex items-center justify-center">
+                  <Gamepad2 className="w-8 h-8 text-[#8000FF]/50" />
+                </div>
+              }
             />
-          ) : (
-            <div className="w-full h-full bg-card-secondary flex items-center justify-center">
-              <span className="text-text-secondary">Imagem</span>
-            </div>
-          )}
-        </div>
-        <div className="p-4">
-          <h3 className="text-white font-semibold">{campaign.name}</h3>
-          {campaign.status && (
-            <p className="text-text-secondary text-xs mt-1">
-              {campaign.status === 'active' ? 'Ativa' : 
-               campaign.status === 'paused' ? 'Pausada' : 'Encerrada'}
-            </p>
-          )}
-        </div>
-      </CardContent>
-      <CardFooter className="p-4 pt-0">
+          </div>
+        )}
         <Button
-          onClick={handleClick}
-          className="w-full bg-accent hover:bg-accent/90 ml-auto"
+          variant="shimmer"
+          onClick={(e) => {
+            e.stopPropagation()
+            handleClick()
+          }}
+          className="w-full"
         >
           Iniciar
         </Button>
-      </CardFooter>
-    </Card>
+      </div>
+    </BentoCard>
   )
 })
 

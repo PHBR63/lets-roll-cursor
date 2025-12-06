@@ -18,14 +18,27 @@
           const originalUnhandledRejection = window.onunhandledrejection;
           
           window.onerror = function(message, source, lineno, colno, error) {
-            if (message && typeof message === 'string' && (
-              message.includes('MediaSession') || 
-              message.includes('enterpictureinpicture') ||
-              message.includes('setActionHandler') ||
-              (source && source.includes('autoPip.js'))
-            )) {
-              return true; // Suprimir erro
+            // Verificar se é erro relacionado ao autoPip.js ou MediaSession
+            const isAutoPipError = (
+              (message && typeof message === 'string' && (
+                message.includes('MediaSession') || 
+                message.includes('enterpictureinpicture') ||
+                message.includes('setActionHandler') ||
+                message.includes('Failed to execute') ||
+                message.includes('not a valid enum value')
+              )) ||
+              (source && typeof source === 'string' && source.includes('autoPip.js')) ||
+              (error && error.message && typeof error.message === 'string' && (
+                error.message.includes('MediaSession') ||
+                error.message.includes('enterpictureinpicture')
+              ))
+            );
+            
+            if (isAutoPipError) {
+              // Suprimir completamente o erro
+              return true;
             }
+            
             if (originalError) {
               return originalError.call(this, message, source, lineno, colno, error);
             }
@@ -33,19 +46,29 @@
           };
 
           // Também capturar unhandled rejections
-          window.onunhandledrejection = function(event) {
-            if (event.reason && typeof event.reason === 'object' && event.reason.message) {
-              const msg = event.reason.message;
-              if (msg.includes('MediaSession') || msg.includes('enterpictureinpicture') || msg.includes('setActionHandler')) {
-                event.preventDefault();
-                return false;
-              }
+          window.addEventListener('unhandledrejection', function(event) {
+            const reason = event.reason;
+            const isAutoPipError = (
+              (reason && typeof reason === 'object' && reason.message && (
+                reason.message.includes('MediaSession') ||
+                reason.message.includes('enterpictureinpicture') ||
+                reason.message.includes('setActionHandler') ||
+                reason.message.includes('Failed to execute') ||
+                reason.message.includes('not a valid enum value')
+              )) ||
+              (reason && typeof reason === 'string' && (
+                reason.includes('MediaSession') ||
+                reason.includes('enterpictureinpicture')
+              )) ||
+              (reason && reason.stack && reason.stack.includes('autoPip.js'))
+            );
+            
+            if (isAutoPipError) {
+              event.preventDefault();
+              event.stopPropagation();
+              return false;
             }
-            if (originalUnhandledRejection) {
-              return originalUnhandledRejection.call(this, event);
-            }
-            return true;
-          };
+          });
           
           // Função para aplicar wrapper
           const wrapMediaSession = () => {

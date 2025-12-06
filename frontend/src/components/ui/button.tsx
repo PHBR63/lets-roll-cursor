@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { ShimmerButton } from "./shimmer-button"
 
 /**
  * Variantes do botão seguindo o design system
@@ -13,6 +14,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-accent text-white hover:bg-accent/90",
+        shimmer: "", // Usa ShimmerButton component
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
@@ -38,15 +40,28 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+    Omit<VariantProps<typeof buttonVariants>, 'variant'> {
+  variant?: "default" | "shimmer" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined
   asChild?: boolean
 }
 
 /**
  * Componente de botão reutilizável com tema roxo
+ * Suporta variante shimmer para efeito de brilho
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
+    // Se for variante shimmer, usar ShimmerButton
+    if (variant === "shimmer") {
+      return (
+        <ShimmerButton
+          ref={ref}
+          className={cn(buttonVariants({ size }), className)}
+          {...(props as any)}
+        />
+      )
+    }
+
     const Comp = asChild ? Slot : "button"
     return (
       <Comp

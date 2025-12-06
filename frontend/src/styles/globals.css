@@ -114,6 +114,11 @@
       background-position: 200px 200px;
     }
   }
+
+  /* Animação de rotação lenta para dados */
+  .animate-spin-slow {
+    animation: spin 3s linear infinite;
+  }
 }
 
 

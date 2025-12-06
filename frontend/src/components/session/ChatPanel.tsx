@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo, memo, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ChatBubble, ChatBubbleContainer } from '@/components/ui/chat-bubble'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { useRealtimeChat } from '@/hooks/useRealtimeChat'
@@ -35,46 +36,25 @@ interface Message {
 }
 
 /**
- * Item de mensagem memoizado
+ * Item de mensagem usando ChatBubble
  */
-const MessageItem = memo(({ message, style }: { message: Message; style: React.CSSProperties }) => (
-  <div style={style}>
-    <div className="flex gap-3 hover:bg-card-secondary/50 p-2 rounded transition-colors mx-2">
-      {/* Avatar */}
-      <div className="w-8 h-8 rounded-full bg-accent flex-shrink-0 flex items-center justify-center">
-        {message.user?.avatar_url ? (
-          <img
-            src={message.user.avatar_url}
-            alt={message.user.username}
-            className="w-full h-full object-cover rounded-full"
-          />
-        ) : (
-          <span className="text-white text-xs">
-            {message.user?.username?.charAt(0).toUpperCase() || 'U'}
-          </span>
-        )}
-      </div>
-
-      {/* Conteúdo */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="text-white font-semibold text-sm">
-            {message.character?.name || message.user?.username || 'Usuário'}
-          </span>
-          <span className="text-text-secondary text-xs">
-            {new Date(message.created_at).toLocaleTimeString('pt-BR', {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </span>
-        </div>
-        <p className="text-text-secondary text-sm mt-1 whitespace-pre-wrap">
-          {message.content}
-        </p>
-      </div>
-    </div>
-  </div>
-))
+const MessageItem = memo(({ message }: { message: Message }) => {
+  const { user } = useAuth()
+  const isOwn = message.user_id === user?.id
+  
+  return (
+    <ChatBubble
+      message={message.content}
+      username={message.character?.name || message.user?.username || 'Usuário'}
+      avatar={message.user?.avatar_url}
+      timestamp={new Date(message.created_at).toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+      })}
+      isOwn={isOwn}
+    />
+  )
+})
 
 MessageItem.displayName = 'MessageItem'
 
@@ -172,17 +152,12 @@ export function ChatPanel({ sessionId, campaignId }: ChatPanelProps) {
       {/* Lista de Mensagens */}
       <div className="flex-1 overflow-hidden">
         {memoizedMessages.length > 0 ? (
-          // Nota: Virtualização removida temporariamente. Para listas grandes, considerar reimplementar
-          // Por enquanto, renderização normal para todas as listas
-          (
-            // Renderização normal para listas pequenas
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              {memoizedMessages.map((message) => (
-                <MessageItem key={message.id} message={message} style={{}} />
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          )
+          <ChatBubbleContainer className="flex-1 overflow-y-auto">
+            {memoizedMessages.map((message) => (
+              <MessageItem key={message.id} message={message} />
+            ))}
+            <div ref={messagesEndRef} />
+          </ChatBubbleContainer>
         ) : (
           <div className="text-text-secondary text-sm text-center py-8">
             Nenhuma mensagem ainda. Seja o primeiro a falar!

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { StepIndicator } from '@/components/layout/StepIndicator'
+import { StepperForm, StepperFormActions } from '@/components/ui/stepper-form'
 import { BaseRPGStep } from '@/components/wizard/BaseRPGStep'
 import { AcquirablesStep } from '@/components/wizard/AcquirablesStep'
 import { PersonalitiesStep } from '@/components/wizard/PersonalitiesStep'
@@ -177,16 +178,35 @@ export function CreateCampaign() {
             Criador de Mesa de RPG
           </h1>
 
-          <StepIndicator currentStep={wizardState.step} />
-
           <div className="bg-card border border-card-secondary rounded-lg p-8">
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-white">Criando campanha...</div>
-              </div>
-            ) : (
-              renderCurrentStep()
-            )}
+            <StepperForm
+              steps={['Dados Base', 'Adquiríveis', 'Personalidades']}
+              currentStep={wizardState.step}
+              onStepChange={(step) => {
+                if (step <= wizardState.step || step === wizardState.step + 1) {
+                  setWizardState((prev) => ({ ...prev, step: step as 1 | 2 | 3 }))
+                }
+              }}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-white">Criando campanha...</div>
+                </div>
+              ) : (
+                <>
+                  {renderCurrentStep()}
+                  <StepperFormActions
+                    onNext={handleNext}
+                    onPrevious={handleBack}
+                    onFinish={handleSubmit}
+                    canGoNext={wizardState.step < 3}
+                    canGoPrevious={wizardState.step > 1}
+                    isLastStep={wizardState.step === 3}
+                    isLoading={loading}
+                  />
+                </>
+              )}
+            </StepperForm>
           </div>
         </div>
       </main>
