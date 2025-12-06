@@ -103,6 +103,8 @@ export function PlayerListSidebar({
                           src={player.user.avatar_url}
                           alt={player.user.username}
                           className="w-full h-full object-cover rounded-full"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-12 h-12 bg-accent rounded-full" />
@@ -119,6 +121,8 @@ export function PlayerListSidebar({
                             src={character.avatar_url}
                             alt={character.name}
                             className="w-full h-full object-cover rounded-full"
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <span className="text-text-secondary text-xs">Char</span>

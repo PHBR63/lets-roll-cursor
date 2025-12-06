@@ -670,6 +670,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 alt="Mapa do jogo"
                 className="w-full h-full object-contain select-none"
                 draggable={false}
+                loading="lazy"
+                decoding="async"
               />
             </div>
           )}
@@ -852,6 +854,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                       height: `${token.size}px`,
                       objectFit: 'cover',
                     }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div
@@ -885,10 +889,11 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 onClick={handleZoomOut}
                 disabled={zoom <= 0.5}
                 className="text-white hover:bg-accent touch-manipulation"
+                aria-label="Diminuir zoom"
               >
                 <ZoomOut className="w-4 h-4" />
               </Button>
-              <span className="text-white text-xs md:text-sm px-1 md:px-2 flex items-center">
+              <span className="text-white text-xs md:text-sm px-1 md:px-2 flex items-center" aria-label={`Zoom atual: ${Math.round(zoom * 100)}%`}>
                 {Math.round(zoom * 100)}%
               </span>
               <Button
@@ -897,6 +902,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 onClick={handleZoomIn}
                 disabled={zoom >= 3}
                 className="text-white hover:bg-accent touch-manipulation"
+                aria-label="Aumentar zoom"
               >
                 <ZoomIn className="w-4 h-4" />
               </Button>
@@ -905,7 +911,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant="ghost"
                 onClick={handleReset}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Resetar"
+                aria-label="Resetar zoom e posição"
               >
                 <RotateCcw className="w-4 h-4" />
               </Button>
@@ -914,7 +920,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant={showGrid ? 'default' : 'ghost'}
                 onClick={() => setShowGrid(!showGrid)}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Grid"
+                aria-label={showGrid ? 'Ocultar grid' : 'Mostrar grid'}
               >
                 <Grid className="w-4 h-4" />
               </Button>
@@ -928,7 +934,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                   }
                 }}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Medição"
+                aria-label={measurementMode ? 'Desativar modo medição' : 'Ativar modo medição'}
               >
                 <Ruler className="w-4 h-4" />
               </Button>
@@ -941,7 +947,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant={drawingMode === 'line' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'line' ? 'none' : 'line')}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Linha"
+                aria-label={drawingMode === 'line' ? 'Desativar desenho de linha' : 'Ativar desenho de linha'}
               >
                 <Minus className="w-4 h-4" />
               </Button>
@@ -950,7 +956,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant={drawingMode === 'circle' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'circle' ? 'none' : 'circle')}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Círculo"
+                aria-label={drawingMode === 'circle' ? 'Desativar desenho de círculo' : 'Ativar desenho de círculo'}
               >
                 <Circle className="w-4 h-4" />
               </Button>
@@ -959,7 +965,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 variant={drawingMode === 'rect' ? 'default' : 'ghost'}
                 onClick={() => setDrawingMode(drawingMode === 'rect' ? 'none' : 'rect')}
                 className="text-white hover:bg-accent touch-manipulation"
-                title="Retângulo"
+                aria-label={drawingMode === 'rect' ? 'Desativar desenho de retângulo' : 'Ativar desenho de retângulo'}
               >
                 <Square className="w-4 h-4" />
               </Button>
@@ -1052,7 +1058,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                   variant="ghost"
                   onClick={handleRemoveToken}
                   className="w-full mt-2 text-white hover:bg-destructive touch-manipulation"
-                  title="Remover Token"
+                  aria-label="Remover token selecionado"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Remover Token
@@ -1072,6 +1078,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               className="bg-accent hover:bg-accent/90"
+              aria-label="Carregar mapa ou imagem do cenário"
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploading ? 'Enviando...' : 'Carregar Mapa/Imagem'}
@@ -1096,6 +1103,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="bg-card/80 backdrop-blur-sm text-white hover:bg-accent"
+            aria-label="Trocar imagem do mapa"
           >
             <Upload className="w-4 h-4 mr-2" />
             {uploading ? 'Enviando...' : 'Trocar Imagem'}

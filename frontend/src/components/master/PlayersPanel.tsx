@@ -178,6 +178,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                     variant="ghost"
                     onClick={() => handleOpenCharacterSheet(character.id)}
                     className="h-6 w-6 p-0 text-white hover:bg-accent"
+                    aria-label={`Abrir ficha do personagem ${character.name}`}
                   >
                     <ExternalLink className="w-3 h-3" />
                   </Button>
@@ -241,6 +242,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                       setSelectedPlayer({ character, user: player.user })
                       setShowDamageModal(true)
                     }}
+                    aria-label={`Aplicar dano ou cura em ${character.name}`}
                   >
                     Dano/Cura
                   </Button>
@@ -252,6 +254,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                       setSelectedPlayer({ character, user: player.user })
                       setShowConditionModal(true)
                     }}
+                    aria-label={`Aplicar condição em ${character.name}`}
                   >
                     Condição
                   </Button>
