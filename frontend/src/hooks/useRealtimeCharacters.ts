@@ -27,18 +27,27 @@ export function useRealtimeCharacters(campaignId?: string) {
           filter: `campaign_id=eq.${campaignId}`,
         },
         (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setCharacters((prev) =>
-              prev.map((char) =>
-                char.id === payload.new.id ? payload.new : char
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedChar = payload.new as Character
+            if (updatedChar.id) {
+              setCharacters((prev) =>
+                prev.map((char) =>
+                  char.id === updatedChar.id ? updatedChar : char
+                )
               )
-            )
-          } else if (payload.eventType === 'INSERT') {
-            setCharacters((prev) => [...prev, payload.new])
-          } else if (payload.eventType === 'DELETE') {
-            setCharacters((prev) =>
-              prev.filter((char) => char.id !== payload.old.id)
-            )
+            }
+          } else if (payload.eventType === 'INSERT' && payload.new) {
+            const newChar = payload.new as Character
+            if (newChar.id) {
+              setCharacters((prev) => [...prev, newChar])
+            }
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const deletedChar = payload.old as { id: string }
+            if (deletedChar.id) {
+              setCharacters((prev) =>
+                prev.filter((char) => char.id !== deletedChar.id)
+              )
+            }
           }
         }
       )

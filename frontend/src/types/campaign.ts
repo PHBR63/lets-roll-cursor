@@ -1,6 +1,7 @@
 /**
  * Tipos relacionados a campanhas
  */
+import { Character } from './character'
 
 export interface Campaign {
   id: string
@@ -27,7 +28,7 @@ export interface CampaignParticipant {
     id: string
     name: string
     [key: string]: unknown
-  }
+  } | Character
   user?: {
     id: string
     username: string

@@ -36,11 +36,27 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
     character.class as CharacterClass | undefined,
     attributesForHook,
     nex,
-    stats
+    stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
+      ? {
+          pv: stats.pv,
+          san: stats.san,
+          pe: stats.pe,
+          nex: stats.nex,
+        }
+      : undefined
   )
 
   // Validar e ajustar stats com os valores calculados
-  const validatedStats = validateStats(stats)
+  const validatedStats = validateStats(
+    stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
+      ? {
+          pv: stats.pv,
+          san: stats.san,
+          pe: stats.pe,
+          nex: stats.nex,
+        }
+      : undefined
+  )
   
   const pv = validatedStats.pv
   const san = validatedStats.san

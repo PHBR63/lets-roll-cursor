@@ -42,11 +42,17 @@ export function PlayerListSidebar({
 
       return {
         ...participant,
-        character,
+        character: character
+          ? ({
+              id: character.id,
+              name: character.name,
+              ...character,
+            } as CampaignParticipant['character'])
+          : undefined,
       }
     })
 
-    setPlayers(playersWithCharacters)
+    setPlayers(playersWithCharacters as CampaignParticipant[])
   }, [participants, characters])
 
   const loading = participantsLoading || charactersLoading
@@ -84,10 +90,10 @@ export function PlayerListSidebar({
           {players.slice(0, 6).map((player, index) => {
             const character = player.character
             // Usar dados do sistema Ordem Paranormal
-            const stats = character?.stats || {}
-            const pv = stats.pv || { current: 0, max: 0 }
-            const san = stats.san || { current: 0, max: 0 }
-            const pe = stats.pe || { current: 0, max: 0 }
+            const stats = (character?.stats as Record<string, unknown>) || {}
+            const pv = (stats.pv as { current: number; max: number }) || { current: 0, max: 0 }
+            const san = (stats.san as { current: number; max: number }) || { current: 0, max: 0 }
+            const pe = (stats.pe as { current: number; max: number }) || { current: 0, max: 0 }
 
             return (
               <Card
@@ -116,10 +122,10 @@ export function PlayerListSidebar({
                   {character && (
                     <div className="absolute bottom-0 left-0 right-0 h-2/3 flex items-end justify-center pb-2">
                       <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center border-2 border-white/20">
-                        {character.avatar_url ? (
+                        {character.avatar_url && typeof character.avatar_url === 'string' ? (
                           <img
                             src={character.avatar_url}
-                            alt={character.name}
+                            alt={character.name || 'Personagem'}
                             className="w-full h-full object-cover rounded-full"
                             loading="lazy"
                             decoding="async"

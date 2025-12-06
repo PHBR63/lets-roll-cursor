@@ -47,7 +47,11 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
           if (updatedChar) {
             return {
               ...player,
-              character: updatedChar,
+              character: {
+                id: updatedChar.id,
+                name: updatedChar.name,
+                ...updatedChar,
+              } as CampaignParticipant['character'],
             }
           }
           return player
@@ -152,11 +156,11 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
             )
           }
 
-          const stats = character.stats || {}
-          const pv = stats.pv || { current: 0, max: 0 }
-          const san = stats.san || { current: 0, max: 0 }
-          const pe = stats.pe || { current: 0, max: 0 }
-          const nex = stats.nex || 0
+          const stats = (character.stats || {}) as Record<string, unknown>
+          const pv = (stats.pv as { current: number; max: number }) || { current: 0, max: 0 }
+          const san = (stats.san as { current: number; max: number }) || { current: 0, max: 0 }
+          const pe = (stats.pe as { current: number; max: number }) || { current: 0, max: 0 }
+          const nex = (stats.nex as number) || 0
 
           const pvPercent = pv.max > 0 ? (pv.current / pv.max) * 100 : 0
           const sanPercent = san.max > 0 ? (san.current / san.max) * 100 : 0

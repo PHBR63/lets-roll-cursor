@@ -81,7 +81,7 @@ export function RollHistory({
 
     const headers = ['Data', 'Jogador', 'Personagem', 'Fórmula', 'Resultado', 'Detalhes']
     const rows = rolls.map((roll) => {
-      const date = new Date(roll.created_at).toLocaleString('pt-BR')
+      const date = roll.created_at ? new Date(roll.created_at).toLocaleString('pt-BR') : '-'
       const userName = roll.user?.username || 'Desconhecido'
       const characterName = roll.character?.name || '-'
       const formula = roll.formula || '-'
