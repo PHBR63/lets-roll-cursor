@@ -90,7 +90,7 @@ export function PlayerListSidebar({
           {players.slice(0, 6).map((player, index) => {
             const character = player.character
             // Usar dados do sistema Ordem Paranormal
-            const stats = (character?.stats as Record<string, unknown>) || {}
+            const stats = (character && 'stats' in character ? (character.stats as Record<string, unknown>) : {}) || {}
             const pv = (stats.pv as { current: number; max: number }) || { current: 0, max: 0 }
             const san = (stats.san as { current: number; max: number }) || { current: 0, max: 0 }
             const pe = (stats.pe as { current: number; max: number }) || { current: 0, max: 0 }
@@ -122,10 +122,10 @@ export function PlayerListSidebar({
                   {character && (
                     <div className="absolute bottom-0 left-0 right-0 h-2/3 flex items-end justify-center pb-2">
                       <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center border-2 border-white/20">
-                        {character.avatar_url && typeof character.avatar_url === 'string' ? (
+                        {character && 'avatar_url' in character && typeof character.avatar_url === 'string' ? (
                           <img
                             src={character.avatar_url}
-                            alt={character.name || 'Personagem'}
+                            alt={('name' in character && typeof character.name === 'string') ? character.name : 'Personagem'}
                             className="w-full h-full object-cover rounded-full"
                             loading="lazy"
                             decoding="async"
@@ -141,7 +141,7 @@ export function PlayerListSidebar({
                   {character && (
                     <div className="absolute bottom-0 left-0 right-0 pb-1">
                       <p className="text-white text-xs font-semibold text-center">
-                        {character.name}
+                        {'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}
                       </p>
                     </div>
                   )}

@@ -180,16 +180,18 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleOpenCharacterSheet(character.id)}
+                    onClick={() => handleOpenCharacterSheet('id' in character && typeof character.id === 'string' ? character.id : '')}
                     className="h-6 w-6 p-0 text-white hover:bg-accent"
-                    aria-label={`Abrir ficha do personagem ${character.name}`}
+                    aria-label={`Abrir ficha do personagem ${'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}`}
                   >
                     <ExternalLink className="w-3 h-3" />
                   </Button>
                 </div>
 
                 {/* Nome do Personagem */}
-                <div className="text-text-secondary text-sm">{character.name}</div>
+                <div className="text-text-secondary text-sm">
+                  {'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}
+                </div>
 
                 {/* Barras de Recursos */}
                 <div className="space-y-2">
@@ -246,7 +248,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                       setSelectedPlayer({ character, user: player.user })
                       setShowDamageModal(true)
                     }}
-                    aria-label={`Aplicar dano ou cura em ${character.name}`}
+                    aria-label={`Aplicar dano ou cura em ${'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}`}
                   >
                     Dano/Cura
                   </Button>
@@ -258,7 +260,7 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
                       setSelectedPlayer({ character, user: player.user })
                       setShowConditionModal(true)
                     }}
-                    aria-label={`Aplicar condição em ${character.name}`}
+                    aria-label={`Aplicar condição em ${'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}`}
                   >
                     Condição
                   </Button>
@@ -276,8 +278,8 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
             open={showDamageModal}
             onOpenChange={setShowDamageModal}
             target="character"
-            targetId={selectedPlayer.character.id}
-            currentStats={selectedPlayer.character.stats || {}}
+            targetId={'id' in selectedPlayer.character && typeof selectedPlayer.character.id === 'string' ? selectedPlayer.character.id : ''}
+            currentStats={(selectedPlayer.character.stats as Record<string, unknown>) || {}}
             onSuccess={() => {
               loadPlayers()
               setSelectedPlayer(null)
@@ -287,8 +289,8 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
             open={showConditionModal}
             onOpenChange={setShowConditionModal}
             target="character"
-            targetId={selectedPlayer.character.id}
-            currentConditions={selectedPlayer.character.conditions || []}
+            targetId={'id' in selectedPlayer.character && typeof selectedPlayer.character.id === 'string' ? selectedPlayer.character.id : ''}
+            currentConditions={(Array.isArray(selectedPlayer.character.conditions) ? selectedPlayer.character.conditions : []) as string[]}
             onSuccess={() => {
               loadPlayers()
               setSelectedPlayer(null)
