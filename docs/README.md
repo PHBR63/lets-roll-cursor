@@ -34,6 +34,7 @@ Análises técnicas, relatórios de conformidade e documentação do sistema.
 | [PARANORMAL-SYSTEM.md](analysis/PARANORMAL-SYSTEM.md) | Especificação do Sistema Ordem Paranormal |
 | [COMPLIANCE-REPORT.md](analysis/COMPLIANCE-REPORT.md) | Relatório de conformidade com regras |
 | [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md) | Status atual do projeto |
+| [FRONTEND-REVIEW.md](analysis/FRONTEND-REVIEW.md) | **Revisão completa do frontend** |
 
 ### 📅 Planejamento & Roadmap (`planning/`)
 Planos de desenvolvimento, roadmaps e tarefas planejadas.
@@ -87,6 +88,10 @@ Histórico de mudanças, reorganizações e otimizações implementadas.
 1. Leia [PARANORMAL-SYSTEM.md](analysis/PARANORMAL-SYSTEM.md)
 2. Consulte [COMPLIANCE-REPORT.md](analysis/COMPLIANCE-REPORT.md) para conformidade
 
+### Quero revisar a qualidade do frontend
+1. Consulte [FRONTEND-REVIEW.md](analysis/FRONTEND-REVIEW.md) - **Revisão completa**
+2. Veja recomendações de melhorias e prioridades
+
 ### Quero ver o status do projeto
 1. Consulte [STATUS-PLANO-ATUAL.md](planning/STATUS-PLANO-ATUAL.md) - **Status mais recente**
 2. Consulte [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md)
@@ -117,7 +122,8 @@ docs/
 │   ├── SYSTEM-DESIGN.md
 │   ├── PARANORMAL-SYSTEM.md
 │   ├── COMPLIANCE-REPORT.md
-│   └── PROJECT-STATUS.md
+│   ├── PROJECT-STATUS.md
+│   └── FRONTEND-REVIEW.md             # Revisão completa do frontend
 ├── planning/                          # 📅 Planos e roadmap
 │   ├── DEVELOPMENT-ROADMAP.md
 │   ├── STATUS-PLANO-ATUAL.md         # Status do último plano verificado
