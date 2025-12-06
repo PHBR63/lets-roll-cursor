@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { Character } from '@/types/character'
 
 /**
  * Hook para sincronizar personagens em tempo real
  */
 export function useRealtimeCharacters(campaignId?: string) {
-  const [characters, setCharacters] = useState<any[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

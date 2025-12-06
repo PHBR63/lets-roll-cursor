@@ -22,7 +22,7 @@ interface PlayersPanelProps {
 export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
   const navigate = useNavigate()
   const { characters: realtimeCharacters } = useRealtimeCharacters(campaignId)
-  const [players, setPlayers] = useState<any[]>([])
+  const [players, setPlayers] = useState<CampaignParticipant[]>([])
   const [loading, setLoading] = useState(true)
   const [showDamageModal, setShowDamageModal] = useState(false)
   const [showConditionModal, setShowConditionModal] = useState(false)

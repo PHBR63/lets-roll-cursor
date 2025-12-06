@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { Item } from '@/types/item'
+import { Ability } from '@/types/ability'
 
 /**
  * Painel de NPCs com Tabs
@@ -14,8 +16,8 @@ interface NPCsPanelProps {
 }
 
 export function NPCsPanel({ campaignId }: NPCsPanelProps) {
-  const [items, setItems] = useState<any[]>([])
-  const [abilities, setAbilities] = useState<any[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [abilities, setAbilities] = useState<Ability[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

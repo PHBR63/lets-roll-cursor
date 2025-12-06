@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { Creature } from '@/types/creature'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook para sincronizar criaturas em tempo real
  */
 export function useRealtimeCreatures(campaignId?: string) {
-  const [creatures, setCreatures] = useState<any[]>([])
+  const [creatures, setCreatures] = useState<Creature[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -73,7 +75,7 @@ export function useRealtimeCreatures(campaignId?: string) {
         setCreatures(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar criaturas:', error)
+      logger.error('Erro ao carregar criaturas:', error)
     } finally {
       setLoading(false)
     }

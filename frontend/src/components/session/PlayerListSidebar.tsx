@@ -29,7 +29,7 @@ export function PlayerListSidebar({
   const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
   const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
   const { checkUserOnline } = usePresence(campaignId, sessionId)
-  const [players, setPlayers] = useState<any[]>([])
+  const [players, setPlayers] = useState<CampaignParticipant[]>([])
 
   // Combinar participantes com personagens
   useEffect(() => {

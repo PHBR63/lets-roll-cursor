@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { DiceRollResult } from '@/types/dice'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook para sincronizar rolagens de dados em tempo real
  */
 export function useRealtimeRolls(sessionId?: string, campaignId?: string) {
-  const [rolls, setRolls] = useState<any[]>([])
+  const [rolls, setRolls] = useState<DiceRollResult[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -71,7 +73,7 @@ export function useRealtimeRolls(sessionId?: string, campaignId?: string) {
         setRolls(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar rolagens:', error)
+      logger.error('Erro ao carregar rolagens:', error)
     } finally {
       setLoading(false)
     }
@@ -104,7 +106,7 @@ export function useRealtimeRolls(sessionId?: string, campaignId?: string) {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Erro ao carregar detalhes da rolagem:', error)
+      logger.error('Erro ao carregar detalhes da rolagem:', error)
       return null
     }
   }

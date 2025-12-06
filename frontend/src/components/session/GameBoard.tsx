@@ -95,8 +95,8 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
     tokens: true,
     annotations: true,
   })
-  const [characters, setCharacters] = useState<any[]>([])
-  const [creatures, setCreatures] = useState<any[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [creatures, setCreatures] = useState<Creature[]>([])
   const [loading, setLoading] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)

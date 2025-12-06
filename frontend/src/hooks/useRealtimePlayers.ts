@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { CampaignParticipant } from '@/types/campaign'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook para sincronizar status de jogadores em tempo real
  * Atualiza participantes da campanha quando há mudanças
  */
 export function useRealtimePlayers(campaignId?: string) {
-  const [participants, setParticipants] = useState<any[]>([])
+  const [participants, setParticipants] = useState<CampaignParticipant[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -78,7 +80,7 @@ export function useRealtimePlayers(campaignId?: string) {
         setParticipants(campaign.participants || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar participantes:', error)
+      logger.error('Erro ao carregar participantes:', error)
     } finally {
       setLoading(false)
     }
@@ -108,7 +110,7 @@ export function useRealtimePlayers(campaignId?: string) {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Erro ao carregar detalhes do participante:', error)
+      logger.error('Erro ao carregar detalhes do participante:', error)
       return null
     }
   }
