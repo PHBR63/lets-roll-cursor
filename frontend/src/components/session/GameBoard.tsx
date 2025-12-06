@@ -631,6 +631,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
   return (
     <div
       ref={containerRef}
+      data-testid="gameboard"
       className="flex-1 bg-card-secondary border-b border-card-secondary relative overflow-hidden touch-none"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -831,6 +832,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
             tokens.map((token) => (
               <div
                 key={token.id}
+                data-testid="token"
                 className={`absolute cursor-move transition-transform ${
                   selectedToken === token.id ? 'ring-2 ring-accent' : ''
                 }`}

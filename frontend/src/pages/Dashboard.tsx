@@ -135,7 +135,7 @@ export function Dashboard() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {masteringCampaigns.map((campaign) => (
-                  <div key={campaign.id} className="flex-shrink-0 snap-start">
+                  <div key={campaign.id} className="flex-shrink-0 snap-start" data-testid="campaign-card">
                     <CampaignCard campaign={campaign} />
                   </div>
                 ))}
@@ -181,7 +181,7 @@ export function Dashboard() {
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {participatingCampaigns.map((campaign) => (
-                  <div key={campaign.id} className="flex-shrink-0 snap-start">
+                  <div key={campaign.id} className="flex-shrink-0 snap-start" data-testid="campaign-card">
                     <CampaignCard campaign={campaign} />
                   </div>
                 ))}

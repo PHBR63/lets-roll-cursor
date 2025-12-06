@@ -114,7 +114,7 @@ export function CampaignDetail() {
         setCharacters(data)
       }
     } catch (error) {
-      console.error('Erro ao carregar personagens:', error)
+      // Erro silencioso - personagens podem não existir ainda
     }
   }
 

@@ -8,6 +8,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { Toaster } from './components/ui/toaster'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { PageTransition } from './components/common/PageTransition'
+import { PWAInstallPrompt } from './components/common/PWAInstallPrompt'
+import { PageTracker } from './components/common/PageTracker'
 import { Loader2 } from 'lucide-react'
 
 // Lazy loading de componentes pesados
@@ -44,6 +46,7 @@ function App() {
         <div className="min-h-screen">
           <div className="pattern-icosahedrons" />
           <BrowserRouter>
+            <PageTracker />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/" element={<Landing />} />
@@ -127,6 +130,7 @@ function App() {
             </Suspense>
           </BrowserRouter>
           <Toaster />
+          <PWAInstallPrompt />
         </div>
       </AuthProvider>
     </ErrorBoundary>

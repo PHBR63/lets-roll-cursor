@@ -1,0 +1,42 @@
+{
+  "name": "Let's Roll - Plataforma de RPG de Mesa",
+  "short_name": "Let's Roll",
+  "description": "Plataforma completa para jogar RPG de mesa online. Sistema Ordem Paranormal, fichas de personagem, dados virtuais e muito mais.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#8000FF",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Criar Campanha",
+      "short_name": "Nova Campanha",
+      "description": "Criar uma nova campanha de RPG",
+      "url": "/campaigns/new",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Minhas Campanhas",
+      "short_name": "Campanhas",
+      "description": "Ver minhas campanhas",
+      "url": "/campaigns",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
