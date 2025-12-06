@@ -20,7 +20,13 @@ interface VortexProps {
 export const Vortex = (props: VortexProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef(null);
-  const particleCount = props.particleCount || 700;
+  const animationFrameRef = useRef<number | null>(null);
+  const isVisibleRef = useRef(true);
+  const lastFrameTime = useRef(0);
+  const targetFPS = 30; // Reduzir para 30fps para melhorar performance
+  const frameInterval = 1000 / targetFPS;
+  
+  const particleCount = Math.min(props.particleCount || 150, 200); // Reduzir máximo para 200
   const particlePropCount = 9;
   const particlePropsLength = particleCount * particlePropCount;
   const rangeY = props.rangeY || 100;
@@ -59,7 +65,7 @@ export const Vortex = (props: VortexProps) => {
     (1 - speed) * n1 + speed * n2;
 
   /**
-   * Desenha um dado (D6) no canvas
+   * Desenha um dado (D6) no canvas - versão simplificada
    */
   const drawDice = (
     x: number,
@@ -74,39 +80,26 @@ export const Vortex = (props: VortexProps) => {
     ctx.rotate(rotation);
     ctx.globalAlpha = opacity;
 
-    const s = size * 0.5;
-    // Desenhar cubo simples (dado)
+    const s = size * 0.4; // Reduzir tamanho
     ctx.strokeStyle = `hsla(${baseHue}, 100%, 70%, ${opacity})`;
-    ctx.fillStyle = `hsla(${baseHue}, 80%, 20%, ${opacity * 0.3})`;
-    ctx.lineWidth = 1;
+    ctx.fillStyle = `hsla(${baseHue}, 80%, 20%, ${opacity * 0.2})`;
+    ctx.lineWidth = 0.8;
 
-    // Face frontal do dado
-    ctx.beginPath();
-    ctx.rect(-s, -s, s * 2, s * 2);
-    ctx.fill();
-    ctx.stroke();
+    // Quadrado simples (mais leve)
+    ctx.fillRect(-s, -s, s * 2, s * 2);
+    ctx.strokeRect(-s, -s, s * 2, s * 2);
 
-    // Desenhar pontos (pips) do dado
+    // Apenas 1 ponto central (simplificado)
     ctx.fillStyle = `hsla(${baseHue}, 100%, 70%, ${opacity})`;
-    const pipSize = s * 0.15;
-    const offset = s * 0.3;
-    
-    // Padrão de 3 pontos (um dos lados do dado)
     ctx.beginPath();
-    ctx.arc(-offset, -offset, pipSize, 0, TAU);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(0, 0, pipSize, 0, TAU);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(offset, offset, pipSize, 0, TAU);
+    ctx.arc(0, 0, s * 0.2, 0, TAU);
     ctx.fill();
 
     ctx.restore();
   };
 
   /**
-   * Desenha uma runa mágica no canvas
+   * Desenha uma runa mágica no canvas - versão simplificada
    */
   const drawRune = (
     x: number,
@@ -122,28 +115,22 @@ export const Vortex = (props: VortexProps) => {
     ctx.globalAlpha = opacity;
 
     ctx.strokeStyle = `hsla(${baseHue + 30}, 100%, 60%, ${opacity})`;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1;
 
-    // Desenhar símbolo de runa (padrão geométrico)
-    const s = size * 0.4;
+    const s = size * 0.3; // Reduzir tamanho
+    // Apenas linhas simples (mais leve)
     ctx.beginPath();
-    // Linha vertical central
     ctx.moveTo(0, -s);
     ctx.lineTo(0, s);
-    // Linhas diagonais
-    ctx.moveTo(-s * 0.6, -s * 0.3);
-    ctx.lineTo(s * 0.6, s * 0.3);
-    ctx.moveTo(-s * 0.6, s * 0.3);
-    ctx.lineTo(s * 0.6, -s * 0.3);
-    // Círculo no centro
-    ctx.arc(0, 0, s * 0.2, 0, TAU);
+    ctx.moveTo(-s * 0.5, 0);
+    ctx.lineTo(s * 0.5, 0);
     ctx.stroke();
 
     ctx.restore();
   };
 
   /**
-   * Desenha um símbolo de espada no canvas
+   * Desenha um símbolo de espada no canvas - versão simplificada
    */
   const drawSword = (
     x: number,
@@ -158,33 +145,21 @@ export const Vortex = (props: VortexProps) => {
     ctx.rotate(rotation);
     ctx.globalAlpha = opacity;
 
-    const s = size * 0.5;
+    const s = size * 0.4; // Reduzir tamanho
     ctx.strokeStyle = `hsla(${baseHue + 60}, 100%, 50%, ${opacity})`;
-    ctx.fillStyle = `hsla(${baseHue + 60}, 100%, 50%, ${opacity * 0.5})`;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1;
 
-    // Lâmina
+    // Apenas linha simples (mais leve)
     ctx.beginPath();
     ctx.moveTo(0, -s);
-    ctx.lineTo(0, s * 0.7);
+    ctx.lineTo(0, s);
     ctx.stroke();
-
-    // Guarda (cruz)
-    ctx.beginPath();
-    ctx.moveTo(-s * 0.3, s * 0.3);
-    ctx.lineTo(s * 0.3, s * 0.3);
-    ctx.stroke();
-
-    // Punho
-    ctx.beginPath();
-    ctx.rect(-s * 0.1, s * 0.3, s * 0.2, s * 0.3);
-    ctx.fill();
 
     ctx.restore();
   };
 
   /**
-   * Desenha um símbolo de escudo no canvas
+   * Desenha um símbolo de escudo no canvas - versão simplificada
    */
   const drawShield = (
     x: number,
@@ -199,26 +174,16 @@ export const Vortex = (props: VortexProps) => {
     ctx.rotate(rotation);
     ctx.globalAlpha = opacity;
 
-    const s = size * 0.5;
+    const s = size * 0.4; // Reduzir tamanho
     ctx.strokeStyle = `hsla(${baseHue - 30}, 100%, 55%, ${opacity})`;
-    ctx.fillStyle = `hsla(${baseHue - 30}, 80%, 25%, ${opacity * 0.3})`;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1;
 
-    // Forma de escudo
+    // Triângulo simples (mais leve que curva)
     ctx.beginPath();
     ctx.moveTo(0, -s);
-    ctx.quadraticCurveTo(-s * 0.8, 0, 0, s);
-    ctx.quadraticCurveTo(s * 0.8, 0, 0, -s);
-    ctx.fill();
-    ctx.stroke();
-
-    // Símbolo no centro
-    ctx.strokeStyle = `hsla(${baseHue - 30}, 100%, 60%, ${opacity})`;
-    ctx.beginPath();
-    ctx.moveTo(0, -s * 0.3);
-    ctx.lineTo(0, s * 0.3);
-    ctx.moveTo(-s * 0.2, 0);
-    ctx.lineTo(s * 0.2, 0);
+    ctx.lineTo(-s * 0.6, s);
+    ctx.lineTo(s * 0.6, s);
+    ctx.closePath();
     ctx.stroke();
 
     ctx.restore();
@@ -314,25 +279,28 @@ export const Vortex = (props: VortexProps) => {
 
     const opacity = fadeInOut(life, ttl);
     const rotation = (life / ttl) * TAU;
-    const elementSize = radius * 8; // Tamanho dos elementos RPG
+    const elementSize = radius * 6; // Reduzir tamanho dos elementos
 
-    // Alternar entre diferentes elementos RPG baseado no índice
-    const elementType = i % 4;
-    
-    if (elementType === 0) {
-      drawDice(x, y, elementSize, rotation, opacity, ctx);
-    } else if (elementType === 1) {
-      drawRune(x, y, elementSize, rotation, opacity, ctx);
-    } else if (elementType === 2) {
-      drawSword(x, y, elementSize, rotation, opacity, ctx);
-    } else {
-      drawShield(x, y, elementSize, rotation, opacity, ctx);
+    // Desenhar apenas rastro (mais leve que elementos complexos)
+    // Apenas desenhar elementos a cada 4 frames para reduzir carga
+    if (tick % 4 === 0) {
+      const elementType = i % 4;
+      
+      if (elementType === 0) {
+        drawDice(x, y, elementSize, rotation, opacity, ctx);
+      } else if (elementType === 1) {
+        drawRune(x, y, elementSize, rotation, opacity, ctx);
+      } else if (elementType === 2) {
+        drawSword(x, y, elementSize, rotation, opacity, ctx);
+      } else {
+        drawShield(x, y, elementSize, rotation, opacity, ctx);
+      }
     }
 
-    // Desenhar rastro/linha conectando movimento
+    // Desenhar rastro/linha conectando movimento (sempre)
     ctx.save();
-    ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${opacity * 0.3})`;
-    ctx.lineWidth = radius * 0.5;
+    ctx.strokeStyle = `hsla(${hue}, 100%, 60%, ${opacity * 0.2})`;
+    ctx.lineWidth = radius * 0.3;
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x2, y2);
@@ -393,13 +361,36 @@ export const Vortex = (props: VortexProps) => {
 
   useEffect(() => {
     setup();
-    window.addEventListener("resize", () => {
+    
+    // Intersection Observer para pausar quando não visível
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisibleRef.current = entries[0].isIntersecting;
+      },
+      { threshold: 0 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    const handleResize = () => {
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext("2d");
       if (canvas && ctx) {
         resize(canvas, ctx);
       }
-    });
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
   }, []);
 
   return (

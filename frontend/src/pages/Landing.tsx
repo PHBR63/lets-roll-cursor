@@ -40,7 +40,7 @@ export function Landing() {
     <Vortex
       className="fixed inset-0 z-0"
       containerClassName="min-h-screen"
-      particleCount={400}
+      particleCount={150}
       rangeY={800}
       baseHue={270}
       baseSpeed={0.0}

@@ -15,8 +15,10 @@
           
           // Ignorar erros de MediaSession relacionados a extensões
           const originalError = window.onerror;
+          const originalUnhandledRejection = window.onunhandledrejection;
+          
           window.onerror = function(message, source, lineno, colno, error) {
-            if (message && (
+            if (message && typeof message === 'string' && (
               message.includes('MediaSession') || 
               message.includes('enterpictureinpicture') ||
               message.includes('setActionHandler') ||
@@ -28,6 +30,21 @@
               return originalError.call(this, message, source, lineno, colno, error);
             }
             return false;
+          };
+
+          // Também capturar unhandled rejections
+          window.onunhandledrejection = function(event) {
+            if (event.reason && typeof event.reason === 'object' && event.reason.message) {
+              const msg = event.reason.message;
+              if (msg.includes('MediaSession') || msg.includes('enterpictureinpicture') || msg.includes('setActionHandler')) {
+                event.preventDefault();
+                return false;
+              }
+            }
+            if (originalUnhandledRejection) {
+              return originalUnhandledRejection.call(this, event);
+            }
+            return true;
           };
           
           // Função para aplicar wrapper
