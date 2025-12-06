@@ -46,7 +46,7 @@
           };
 
           // Também capturar unhandled rejections
-          window.addEventListener('unhandledrejection', function(event) {
+          window.onunhandledrejection = function(event) {
             const reason = event.reason;
             const isAutoPipError = (
               (reason && typeof reason === 'object' && reason.message && (
@@ -67,6 +67,35 @@
               event.preventDefault();
               event.stopPropagation();
               return false;
+            }
+            
+            if (originalUnhandledRejection) {
+              return originalUnhandledRejection.call(this, event);
+            }
+            return true;
+          };
+          
+          // Também adicionar como listener para garantir
+          window.addEventListener('unhandledrejection', function(event) {
+            const reason = event.reason;
+            const isAutoPipError = (
+              (reason && typeof reason === 'object' && reason.message && (
+                reason.message.includes('MediaSession') ||
+                reason.message.includes('enterpictureinpicture') ||
+                reason.message.includes('setActionHandler') ||
+                reason.message.includes('Failed to execute') ||
+                reason.message.includes('not a valid enum value')
+              )) ||
+              (reason && typeof reason === 'string' && (
+                reason.includes('MediaSession') ||
+                reason.includes('enterpictureinpicture')
+              )) ||
+              (reason && reason.stack && reason.stack.includes('autoPip.js'))
+            );
+            
+            if (isAutoPipError) {
+              event.preventDefault();
+              event.stopPropagation();
             }
           });
           

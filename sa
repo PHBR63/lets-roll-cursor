@@ -1,0 +1,3 @@
+[33ma95ddd0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m fix: remove export duplicado do bento-grid.tsx
+[33mab000f1[m fix: corrige tipos do Button para incluir variante shimmer e exports do BentoGrid
+[33m03db8b4[m feat: implementa melhorias completas na landing page conforme plano

@@ -27,17 +27,22 @@ export function useRealtimeCharacters(campaignId?: string) {
         },
         (payload) => {
           if (payload.eventType === 'UPDATE') {
-            setCharacters((prev) =>
-              prev.map((char) =>
+            setCharacters((prev) => {
+              const safePrev = Array.isArray(prev) ? prev : []
+              return safePrev.map((char) =>
                 char.id === payload.new.id ? payload.new : char
               )
-            )
+            })
           } else if (payload.eventType === 'INSERT') {
-            setCharacters((prev) => [...prev, payload.new])
+            setCharacters((prev) => {
+              const safePrev = Array.isArray(prev) ? prev : []
+              return [...safePrev, payload.new]
+            })
           } else if (payload.eventType === 'DELETE') {
-            setCharacters((prev) =>
-              prev.filter((char) => char.id !== payload.old.id)
-            )
+            setCharacters((prev) => {
+              const safePrev = Array.isArray(prev) ? prev : []
+              return safePrev.filter((char) => char.id !== payload.old.id)
+            })
           }
         }
       )

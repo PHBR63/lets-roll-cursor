@@ -39,12 +39,15 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
 
   // Atualizar quando personagens mudarem via Realtime
   useEffect(() => {
-    if (realtimeCharacters.length > 0 && players.length > 0) {
+    const safeRealtimeChars = Array.isArray(realtimeCharacters) ? realtimeCharacters : []
+    const safePlayersArray = Array.isArray(players) ? players : []
+    
+    if (safeRealtimeChars.length > 0 && safePlayersArray.length > 0) {
       // Atualizar stats dos personagens nos players
       setPlayers((prev) => {
         const safePrev = Array.isArray(prev) ? prev : []
         return safePrev.map((player) => {
-          const updatedChar = realtimeCharacters.find(
+          const updatedChar = safeRealtimeChars.find(
             (char) => char.id === player.character?.id
           )
           if (updatedChar) {
@@ -86,29 +89,40 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
         // Buscar personagens de cada participante
         const playersWithCharacters = await Promise.all(
           participants.map(async (participant: CampaignParticipant) => {
-            const charResponse = await fetch(
-              `${apiUrl}/api/characters?userId=${participant.user?.id}&campaignId=${campaignId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${session.session.access_token}`,
-                },
+            try {
+              const charResponse = await fetch(
+                `${apiUrl}/api/characters?userId=${participant.user?.id}&campaignId=${campaignId}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${session.session.access_token}`,
+                  },
+                }
+              )
+
+              let character = null
+              if (charResponse.ok) {
+                const chars = await charResponse.json()
+                const safeChars = Array.isArray(chars) ? chars : []
+                character = safeChars[0] || null
               }
-            )
 
-            let character = null
-            if (charResponse.ok) {
-              const chars = await charResponse.json()
-              character = chars[0] || null
-            }
-
-            return {
-              ...participant,
-              character,
+              return {
+                ...participant,
+                character,
+              }
+            } catch (error) {
+              console.error('Erro ao buscar personagem:', error)
+              return {
+                ...participant,
+                character: null,
+              }
             }
           })
         )
 
-        setPlayers(playersWithCharacters)
+        // Garantir que o resultado seja sempre um array
+        const safePlayers = Array.isArray(playersWithCharacters) ? playersWithCharacters : []
+        setPlayers(safePlayers)
       }
     } catch (error) {
       console.error('Erro ao carregar jogadores:', error)
@@ -136,11 +150,14 @@ export function PlayersPanel({ campaignId, sessionId }: PlayersPanelProps) {
     )
   }
 
+  // Garantir que safePlayers seja sempre um array válido
+  const finalPlayers = Array.isArray(safePlayers) ? safePlayers : []
+
   return (
     <div className="flex flex-col h-full">
       <h2 className="text-white font-semibold text-lg mb-4">Jogadores</h2>
       <div className="flex-1 overflow-y-auto space-y-3">
-        {safePlayers.map((player) => {
+        {finalPlayers.map((player) => {
           const character = player.character
           if (!character) {
             return (
