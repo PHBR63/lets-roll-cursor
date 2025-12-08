@@ -101,7 +101,7 @@ export function CharacterSheet() {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
       const response = await fetch(`${apiUrl}/api/characters/${id}`, {
         method: 'PUT',
         headers: {
