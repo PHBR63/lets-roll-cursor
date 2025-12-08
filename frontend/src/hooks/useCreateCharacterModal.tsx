@@ -15,7 +15,9 @@ export function useCreateCharacterModal(campaigns: Campaign[] = []) {
 
   // Filtrar campanhas onde o usuário pode criar personagem (participando como player)
   const availableCampaigns = useMemo(() => {
-    return campaigns.filter(c => c.role === 'player')
+    // Garantir que campaigns seja um array
+    const campaignsArray = Array.isArray(campaigns) ? campaigns : []
+    return campaignsArray.filter(c => c.role === 'player')
   }, [campaigns])
 
   const openModal = () => {

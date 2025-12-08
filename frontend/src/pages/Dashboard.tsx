@@ -43,21 +43,23 @@ export function Dashboard() {
   /**
    * Carrega campanhas do usuário da API (com cache e retry)
    */
-  const loadCampaignsFn = async () => {
-    if (!user) return null
+  const loadCampaignsFn = async (): Promise<Campaign[]> => {
+    if (!user) return []
 
     const cacheKey = `campaigns:${user.id}`
     
     // Tentar obter do cache primeiro
     const cached = cache.get(cacheKey)
     if (cached) {
-      const mastering = cached.filter((c: Campaign) => c.role === 'master')
-      const participating = cached.filter(
+      // Garantir que cached seja um array
+      const cachedArray = Array.isArray(cached) ? cached : []
+      const mastering = cachedArray.filter((c: Campaign) => c.role === 'master')
+      const participating = cachedArray.filter(
         (c: Campaign) => c.role === 'player' || c.role === 'observer'
       )
       setMasteringCampaigns(mastering)
       setParticipatingCampaigns(participating)
-      return cached
+      return cachedArray
     }
 
     const { data: session } = await supabase.auth.getSession()
@@ -81,19 +83,22 @@ export function Dashboard() {
 
       const campaigns = await response.json()
 
+      // Garantir que campaigns seja um array
+      const campaignsArray = Array.isArray(campaigns) ? campaigns : []
+
       // Salvar no cache
-      cache.set(cacheKey, campaigns)
+      cache.set(cacheKey, campaignsArray)
 
       // Separar por role
-      const mastering = campaigns.filter((c: Campaign) => c.role === 'master')
-      const participating = campaigns.filter(
+      const mastering = campaignsArray.filter((c: Campaign) => c.role === 'master')
+      const participating = campaignsArray.filter(
         (c: Campaign) => c.role === 'player' || c.role === 'observer'
       )
 
       setMasteringCampaigns(mastering)
       setParticipatingCampaigns(participating)
 
-      return campaigns
+      return campaignsArray
     } catch (error) {
       // Se for erro de conexão, mostrar mensagem mais amigável
       if (error instanceof TypeError && (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION_REFUSED'))) {
@@ -262,7 +267,7 @@ export function Dashboard() {
                 className="flex gap-3 md:gap-4 overflow-x-auto flex-1 scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                {masteringCampaigns.map((campaign) => (
+                {(Array.isArray(masteringCampaigns) ? masteringCampaigns : []).map((campaign) => (
                   <div key={campaign.id} className="flex-shrink-0 snap-start" data-testid="campaign-card">
                     <CampaignCard campaign={campaign} />
                   </div>
@@ -308,7 +313,7 @@ export function Dashboard() {
                 className="flex gap-3 md:gap-4 overflow-x-auto flex-1 scrollbar-hide snap-x snap-mandatory"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                {participatingCampaigns.map((campaign) => (
+                {(Array.isArray(participatingCampaigns) ? participatingCampaigns : []).map((campaign) => (
                   <div key={campaign.id} className="flex-shrink-0 snap-start" data-testid="campaign-card">
                     <CampaignCard campaign={campaign} />
                   </div>
