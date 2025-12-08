@@ -108,6 +108,7 @@ export function Login() {
                       placeholder="seu@email.com"
                       {...register('email')}
                       className={errors.email ? 'border-red-500' : ''}
+                      autoComplete="username"
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm animate-in fade-in-50">

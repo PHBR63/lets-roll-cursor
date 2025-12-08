@@ -14,6 +14,7 @@ import { getApiBaseUrl } from '@/utils/apiUrl'
 import { useApiError } from '@/hooks/useApiError'
 import { useCreateCharacterModal } from '@/hooks/useCreateCharacterModal'
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Página de listagem de todos os personagens do usuário

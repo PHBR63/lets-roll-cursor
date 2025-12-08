@@ -112,6 +112,7 @@ export function Register() {
                     placeholder="seu_usuario"
                     {...register('username')}
                     className={errors.username ? 'border-red-500' : ''}
+                    autoComplete="username"
                   />
                   {errors.username && (
                     <p className="text-red-500 text-sm animate-in fade-in-50">
@@ -128,6 +129,7 @@ export function Register() {
                     placeholder="seu@email.com"
                     {...register('email')}
                     className={errors.email ? 'border-red-500' : ''}
+                    autoComplete="email"
                   />
                   {errors.email && (
                     <p className="text-red-500 text-sm animate-in fade-in-50">
