@@ -26,6 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { SEOHead } from '@/components/common/SEOHead'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 /**
  * Página da ficha de personagem do sistema Ordem Paranormal
@@ -60,7 +61,7 @@ export function CharacterSheet() {
       throw new Error('Sessão não encontrada')
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const apiUrl = getApiBaseUrl()
     const response = await fetch(`${apiUrl}/api/characters/${id}`, {
       headers: {
         Authorization: `Bearer ${session.session.access_token}`,
@@ -138,7 +139,7 @@ export function CharacterSheet() {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
       const response = await fetch(`${apiUrl}/api/characters/${id}/${resource}`, {
         method: 'PUT',
         headers: {

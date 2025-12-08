@@ -48,7 +48,7 @@ export function CampaignDetail() {
       throw new Error('Sessão não encontrada')
     }
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+    const apiUrl = getApiBaseUrl()
     const response = await fetch(`${apiUrl}/api/campaigns/${id}`, {
       headers: {
         Authorization: `Bearer ${session.session.access_token}`,
@@ -104,7 +104,7 @@ export function CampaignDetail() {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
       const response = await fetch(`${apiUrl}/api/characters?campaignId=${id}`, {
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,

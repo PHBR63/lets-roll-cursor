@@ -27,10 +27,21 @@ Este erro ocorre quando a **SERVICE_ROLE_KEY** (chave secreta) está sendo usada
 ### Variáveis Necessárias no Frontend
 
 ```env
-VITE_SUPABASE_URL=https://pzuaszldoomsmtsmbdoy.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6dWFzemxkb29tc210c21iZG95Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3ODE4NjUsImV4cCI6MjA4MDM1Nzg2NX0.Nj1NUqeTiQOvC2ZLQnvm0c7Djp0Zu_-iD86vZPmHUMQ
-VITE_API_URL=https://seu-backend.com (opcional, padrão: http://localhost:3001)
+# Supabase (obrigatório)
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua-anon-key-aqui
+
+# API Backend (opcional, padrão: http://localhost:3001)
+VITE_API_URL=https://seu-backend.com
+
+# App URL para SEO e canonical tags (opcional)
+VITE_APP_URL=https://seu-app.vercel.app
 ```
+
+**⚠️ IMPORTANTE:** 
+- NUNCA commite arquivos `.env` com valores reais
+- Use apenas a **ANON_KEY** (chave pública) no frontend
+- A **SERVICE_ROLE_KEY** deve ser usada APENAS no backend
 
 **⚠️ IMPORTANTE:** Use a chave **anon public** (não a service_role) no frontend!
 
