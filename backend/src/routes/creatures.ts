@@ -6,12 +6,50 @@ import { CreatureFilterSchema, CreateCreatureSchema, UpdateCreatureSchema } from
 import { AppError } from '../types/common'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Creatures
+ *     description: Operações relacionadas a criaturas de RPG
+ */
+
+/**
  * Rotas para CRUD de criaturas
  */
 export const creaturesRouter = Router()
 
 creaturesRouter.use(authenticateToken)
 
+/**
+ * @swagger
+ * /api/creatures:
+ *   get:
+ *     summary: Lista criaturas com filtros opcionais
+ *     tags: [Creatures]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: campaignId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: isGlobal
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Lista de criaturas
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 creatures:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Creature'
+ */
 creaturesRouter.get(
   '/',
   validate({ query: CreatureFilterSchema }),
@@ -26,6 +64,46 @@ creaturesRouter.get(
   }
 )
 
+/**
+ * @swagger
+ * /api/creatures:
+ *   post:
+ *     summary: Cria uma nova criatura
+ *     tags: [Creatures]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *               campaignId:
+ *                 type: string
+ *                 format: uuid
+ *               isGlobal:
+ *                 type: boolean
+ *               stats:
+ *                 type: object
+ *               attributes:
+ *                 type: object
+ *     responses:
+ *       201:
+ *         description: Criatura criada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Creature'
+ */
 creaturesRouter.post(
   '/',
   validate({ body: CreateCreatureSchema }),
@@ -54,6 +132,29 @@ creaturesRouter.get('/campaign/:campaignId', async (req: Request, res: Response)
   }
 })
 
+/**
+ * @swagger
+ * /api/creatures/{id}:
+ *   get:
+ *     summary: Obtém uma criatura por ID
+ *     tags: [Creatures]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Criatura encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Creature'
+ */
 creaturesRouter.get('/:id', async (req: Request, res: Response) => {
   try {
     const creature = await creatureService.getCreatureById(req.params.id)
@@ -63,6 +164,38 @@ creaturesRouter.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/creatures/{id}:
+ *   put:
+ *     summary: Atualiza uma criatura
+ *     tags: [Creatures]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               stats:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Criatura atualizada
+ */
 creaturesRouter.put(
   '/:id',
   validate({ body: UpdateCreatureSchema }),
@@ -77,6 +210,25 @@ creaturesRouter.put(
   }
 )
 
+/**
+ * @swagger
+ * /api/creatures/{id}:
+ *   delete:
+ *     summary: Deleta uma criatura
+ *     tags: [Creatures]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Criatura deletada
+ */
 creaturesRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
     await creatureService.deleteCreature(req.params.id)
