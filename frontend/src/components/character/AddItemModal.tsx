@@ -121,7 +121,6 @@ export function AddItemModal({
       onOpenChange(false)
 
       // Verificar sobrecarga após adicionar item
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       try {
         await fetch(`${apiUrl}/api/characters/${characterId}/inventory/check-overload`, {
           method: 'POST',
