@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, X, Sparkles } from 'lucide-react'
+import { Plus, X, Sparkles, AlertCircle } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { usePETurnLimit } from '@/hooks/usePETurnLimit'
+import { useToast } from '@/hooks/useToast'
 import {
   Dialog,
   DialogContent,
@@ -44,6 +46,11 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
   const [conjuring, setConjuring] = useState<string | null>(null)
   const [filterCircle, setFilterCircle] = useState<string>('all')
   const [filterElement, setFilterElement] = useState<string>('all')
+  
+  const stats = character.stats || {}
+  const nex = stats.nex || 0
+  const { limit: peTurnLimit, canSpend } = usePETurnLimit(nex)
+  const toast = useToast()
 
   useEffect(() => {
     // Carregar rituais do personagem (armazenados em JSONB ou tabela separada)
@@ -161,12 +168,21 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
       )
 
       if (missingIngredients.length > 0) {
-        alert(
-          `Este ritual requer os seguintes ingredientes: ${missingIngredients.join(', ')}\n` +
-            `Você possui: ${characterIngredients.join(', ') || 'Nenhum'}`
+        toast.error(
+          'Ingredientes faltando',
+          `Este ritual requer: ${missingIngredients.join(', ')}`
         )
         return
       }
+    }
+
+    // Validar limite de PE por turno
+    if (!canSpend(ritual.cost.pe)) {
+      toast.error(
+        'Limite de PE por turno excedido',
+        `Você pode gastar no máximo ${peTurnLimit} PE por turno (NEX ${nex}%). Este ritual custa ${ritual.cost.pe} PE.`
+      )
+      return
     }
 
     setConjuring(ritual.id)
@@ -177,36 +193,51 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
       
-      // Atualizar PE e SAN
-      const updatedStats = {
-        ...stats,
-        pe: {
-          ...pe,
-          current: Math.max(0, pe.current - ritual.cost.pe),
-        },
-        san: ritual.cost.san
-          ? {
-              ...san,
-              current: Math.max(0, san.current - ritual.cost.san),
-            }
-          : san,
-      }
-
-      const response = await fetch(`${apiUrl}/api/characters/${character.id}`, {
-        method: 'PUT',
+      // Gastar PE com validação de limite por turno
+      const spendPEResponse = await fetch(`${apiUrl}/api/characters/${character.id}/spend-pe`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.session.access_token}`,
         },
         body: JSON.stringify({
-          stats: updatedStats,
+          peCost: ritual.cost.pe,
         }),
       })
 
-      if (response.ok) {
-        alert(`Ritual "${ritual.name}" conjurado com sucesso!`)
-        onUpdate()
+      if (!spendPEResponse.ok) {
+        const errorData = await spendPEResponse.json().catch(() => ({ error: 'Erro desconhecido' }))
+        throw new Error(errorData.error || 'Erro ao gastar PE')
       }
+
+      // Atualizar SAN se necessário
+      if (ritual.cost.san) {
+        const updatedStats = {
+          ...stats,
+          san: {
+            ...san,
+            current: Math.max(0, san.current - ritual.cost.san),
+          },
+        }
+
+        const response = await fetch(`${apiUrl}/api/characters/${character.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+          body: JSON.stringify({
+            stats: updatedStats,
+          }),
+        })
+
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar SAN')
+        }
+      }
+
+      toast.success('Ritual conjurado!', `"${ritual.name}" foi conjurado com sucesso.`)
+      onUpdate()
     } catch (error) {
       console.error('Erro ao conjurar ritual:', error)
       alert('Erro ao conjurar ritual. Tente novamente.')
@@ -352,6 +383,8 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
             const hasAffinity =
               character.affinity === ritual.element && (character.stats?.nex || 0) >= 50
             const canConjure = pe.current >= ritual.cost.pe
+            const canSpendPE = canSpend(ritual.cost.pe)
+            const isDisabled = !canConjure || !canSpendPE || conjuring === ritual.id
 
             return (
               <Card key={ritual.id} className="p-4 bg-card-secondary">
@@ -373,7 +406,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                       <p className="text-sm text-text-secondary mb-2">{ritual.description}</p>
                     )}
                     <div className="flex flex-wrap gap-4 text-sm mb-2">
-                      <div>
+                      <div className="flex items-center gap-2">
                         <span className="text-text-secondary">Custo: </span>
                         <span className="text-green-400 font-semibold">
                           {ritual.cost.pe} PE
@@ -382,6 +415,12 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                           <span className="text-blue-400 font-semibold ml-2">
                             {ritual.cost.san} SAN
                           </span>
+                        )}
+                        {!canSpendPE && (
+                          <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            Limite/Turno: {peTurnLimit}
+                          </Badge>
                         )}
                       </div>
                       <div>
@@ -450,7 +489,7 @@ export function RitualsPanel({ character, onUpdate }: RitualsPanelProps) {
                       size="sm"
                       variant="default"
                       onClick={() => handleConjureRitual(ritual)}
-                      disabled={!canConjure || conjuring === ritual.id}
+                      disabled={isDisabled}
                       className="bg-purple-600 hover:bg-purple-700"
                     >
                       <Sparkles className="w-4 h-4 mr-1" />

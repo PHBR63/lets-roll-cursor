@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Trash2, Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, Trash2, Plus } from 'lucide-react'
+import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { supabase } from '@/integrations/supabase/client'
 import { AddItemModal } from './AddItemModal'
+import { useCarryCapacity } from '@/hooks/useCarryCapacity'
+import { useToast } from '@/hooks/useToast'
 import { Character, CharacterInventoryItem } from '@/types/character'
+import { Attributes } from '@/types/ordemParanormal'
 
 interface InventoryPanelProps {
   character: Character
@@ -19,6 +24,29 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<CharacterInventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const toast = useToast()
+
+  // Converter attributes para formato Attributes
+  const attributes: Attributes = useMemo(
+    () => ({
+      agi: character.attributes?.agi || 0,
+      for: character.attributes?.for || 0,
+      int: character.attributes?.int || 0,
+      pre: character.attributes?.pre || 0,
+      vig: character.attributes?.vig || 0,
+    }),
+    [character.attributes]
+  )
+
+  // Calcular peso total
+  const totalWeight = useMemo(() => {
+    return inventory.reduce((sum, item) => {
+      return sum + (item.item?.weight || 0) * (item.quantity || 1)
+    }, 0)
+  }, [inventory])
+
+  // Hook para capacidade de carga
+  const { maxCapacity, overloaded, capacityPercentage } = useCarryCapacity(attributes, totalWeight)
 
   useEffect(() => {
     if (character?.id) {
@@ -81,19 +109,25 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
       if (response.ok) {
         loadInventory()
         onUpdate()
+        
+        // Verificar sobrecarga após remover item
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        try {
+          await fetch(`${apiUrl}/api/characters/${character.id}/inventory/check-overload`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.session.access_token}`,
+            },
+          })
+        } catch (err) {
+          // Ignorar erro de verificação de sobrecarga
+        }
       }
     } catch (error) {
       console.error('Erro ao remover item:', error)
-      alert('Erro ao remover item. Tente novamente.')
+      toast.error('Erro ao remover item', 'Tente novamente.')
     }
   }
-
-  /**
-   * Calcula peso total
-   */
-  const totalWeight = inventory.reduce((sum, item) => {
-    return sum + (item.item?.weight || 0) * (item.quantity || 1)
-  }, 0)
 
   if (loading) {
     return <div className="text-muted-foreground">Carregando inventário...</div>
@@ -103,11 +137,30 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
     <div className="space-y-4">
       {/* Peso e Moedas */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label className="text-muted-foreground">Peso Total</Label>
-          <div className="text-lg font-bold text-white">
-            {totalWeight} / {character.carryCapacity || 0} kg
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-muted-foreground">Peso Total</Label>
+            {overloaded && (
+              <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Sobrecarregado
+              </Badge>
+            )}
           </div>
+          <div className="text-lg font-bold text-white">
+            {totalWeight.toFixed(1)} / {maxCapacity} kg
+          </div>
+          <AnimatedProgress
+            value={capacityPercentage}
+            max={100}
+            color={overloaded ? 'red' : capacityPercentage > 80 ? 'yellow' : 'green'}
+            className="h-2"
+          />
+          {overloaded && (
+            <p className="text-xs text-red-400">
+              Penalidades: -5 em testes FOR/AGI/VIG, -3m deslocamento
+            </p>
+          )}
         </div>
         <div>
           <Label className="text-muted-foreground">Moedas</Label>

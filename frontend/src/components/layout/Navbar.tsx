@@ -10,6 +10,7 @@ import {
 import { useAuth } from '@/context/AuthContext'
 import { useState } from 'react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Logo } from '@/components/common/Logo'
 
 /**
  * Navbar principal
@@ -23,11 +24,7 @@ export function Navbar() {
   return (
     <nav className="border-b border-card-secondary bg-card/50 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/dashboard" className="flex items-center">
-          <div className="bg-card p-3 rounded-lg border border-card-secondary">
-            <span className="text-white font-bold">Logo</span>
-          </div>
-        </Link>
+        <Logo size="md" link={true} />
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-4">

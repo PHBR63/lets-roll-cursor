@@ -445,6 +445,15 @@ export const ordemParanormalService = {
           penalties.defenseBase = true // Falha automaticamente em Reflexos
           penalties.cannotReact = true
           break
+
+        case 'SOBRECARREGADO':
+          // Penalidade de -5 em todos os testes de perícias baseadas em FOR, AGI e VIG
+          penalties.attributePenalties.for -= 5 // -5 em testes de FOR
+          penalties.attributePenalties.agi -= 5 // -5 em testes de AGI
+          penalties.attributePenalties.vig -= 5 // -5 em testes de VIG
+          // Redução de -3m no deslocamento (será aplicado no frontend)
+          penalties.speedReduction = Math.max(0.5, penalties.speedReduction - 0.3) // Redução adicional de velocidade
+          break
       }
     }
 
@@ -591,6 +600,66 @@ export const ordemParanormalService = {
     }
 
     return { newConditions, effects }
+  },
+
+  /**
+   * Calcula o limite de PE por turno baseado no NEX
+   * @param nex - Nível de Exposição (0-99)
+   * @returns Limite de PE que pode ser gasto por turno
+   */
+  calculatePETurnLimit(nex: number): number {
+    // Tabela de limite de PE por turno conforme SISTEMA ORDO.md
+    if (nex < 5) return 1
+    if (nex < 10) return 1
+    if (nex < 15) return 2
+    if (nex < 20) return 2
+    if (nex < 25) return 3
+    if (nex < 30) return 3
+    if (nex < 35) return 4
+    if (nex < 40) return 4
+    if (nex < 45) return 5
+    if (nex < 50) return 5
+    if (nex < 55) return 6
+    if (nex < 60) return 6
+    if (nex < 65) return 7
+    if (nex < 70) return 7
+    if (nex < 75) return 8
+    if (nex < 80) return 8
+    if (nex < 85) return 9
+    if (nex < 90) return 9
+    if (nex < 95) return 10
+    // NEX 95-99: Limite de 20 PE (progressão linear até 99%)
+    return Math.min(20, 10 + Math.floor((nex - 95) / 5) * 2)
+  },
+
+  /**
+   * Valida se o custo de PE excede o limite por turno
+   * @param nex - Nível de Exposição
+   * @param peCost - Custo de PE da ação
+   * @returns true se o custo é válido, false caso contrário
+   */
+  validatePETurnLimit(nex: number, peCost: number): boolean {
+    const limit = this.calculatePETurnLimit(nex)
+    return peCost <= limit
+  },
+
+  /**
+   * Calcula capacidade de carga máxima baseado em Força
+   * @param forca - Valor de Força
+   * @returns Capacidade máxima de carga (mínimo 2)
+   */
+  calculateMaxCarryCapacity(forca: number): number {
+    return Math.max(2, 5 * forca)
+  },
+
+  /**
+   * Verifica se o personagem está sobrecarregado
+   * @param currentWeight - Peso atual do inventário
+   * @param maxCapacity - Capacidade máxima de carga
+   * @returns true se sobrecarregado, false caso contrário
+   */
+  isOverloaded(currentWeight: number, maxCapacity: number): boolean {
+    return currentWeight > maxCapacity
   },
 }
 

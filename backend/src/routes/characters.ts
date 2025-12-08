@@ -85,6 +85,17 @@ charactersRouter.delete('/:id/inventory/:itemId', async (req: Request, res: Resp
   }
 })
 
+// Verificar sobrecarga do inventário
+charactersRouter.post('/:id/inventory/check-overload', async (req: Request, res: Response) => {
+  try {
+    const { characterInventoryService } = await import('../services/character/characterInventoryService')
+    const result = await characterInventoryService.checkOverload(req.params.id)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Equipar/Desequipar item
 charactersRouter.patch('/:id/inventory/:itemId/equip', async (req: Request, res: Response) => {
   try {
@@ -301,11 +312,32 @@ charactersRouter.put('/:id/san', async (req: Request, res: Response) => {
 // Atualizar PE
 charactersRouter.put('/:id/pe', async (req: Request, res: Response) => {
   try {
-    const { pe, isDelta } = req.body
+    const { pe, isDelta, validateTurnLimit } = req.body
     if (pe === undefined) {
       return res.status(400).json({ error: 'pe é obrigatório' })
     }
-    const character = await characterService.updatePE(req.params.id, pe, isDelta || false)
+    const { characterResourcesService } = await import('../services/character/characterResourcesService')
+    const character = await characterResourcesService.updatePE(
+      req.params.id,
+      pe,
+      isDelta || false,
+      validateTurnLimit || false
+    )
+    res.json(character)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Gastar PE (com validação de limite por turno)
+charactersRouter.post('/:id/spend-pe', async (req: Request, res: Response) => {
+  try {
+    const { peCost } = req.body
+    if (peCost === undefined || peCost <= 0) {
+      return res.status(400).json({ error: 'peCost deve ser um número positivo' })
+    }
+    const { characterResourcesService } = await import('../services/character/characterResourcesService')
+    const character = await characterResourcesService.spendPE(req.params.id, peCost)
     res.json(character)
   } catch (error: any) {
     res.status(500).json({ error: error.message })

@@ -389,5 +389,105 @@ describe('ordemParanormalService', () => {
       expect(newConditions.filter((c) => c === 'ABALADO').length).toBeLessThanOrEqual(1)
     })
   })
+
+  describe('calculatePETurnLimit', () => {
+    it('deve retornar limite 1 para NEX 5%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(5)
+      expect(result).toBe(1)
+    })
+
+    it('deve retornar limite 2 para NEX 10%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(10)
+      expect(result).toBe(2)
+    })
+
+    it('deve retornar limite 2 para NEX 15%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(15)
+      expect(result).toBe(2)
+    })
+
+    it('deve retornar limite 3 para NEX 20%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(20)
+      expect(result).toBe(3)
+    })
+
+    it('deve retornar limite 3 para NEX 25%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(25)
+      expect(result).toBe(3)
+    })
+
+    it('deve retornar limite 10 para NEX 95%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(95)
+      expect(result).toBe(10)
+    })
+
+    it('deve retornar limite 20 para NEX 99%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(99)
+      expect(result).toBe(20)
+    })
+
+    it('deve retornar limite 1 para NEX 0%', () => {
+      const result = ordemParanormalService.calculatePETurnLimit(0)
+      expect(result).toBe(1)
+    })
+  })
+
+  describe('validatePETurnLimit', () => {
+    it('deve validar corretamente quando custo está dentro do limite', () => {
+      const result = ordemParanormalService.validatePETurnLimit(10, 2)
+      expect(result).toBe(true)
+    })
+
+    it('deve invalidar quando custo excede o limite', () => {
+      const result = ordemParanormalService.validatePETurnLimit(5, 2)
+      expect(result).toBe(false)
+    })
+
+    it('deve validar quando custo é exatamente o limite', () => {
+      const result = ordemParanormalService.validatePETurnLimit(10, 2)
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('calculateMaxCarryCapacity', () => {
+    it('deve calcular capacidade máxima baseada em Força', () => {
+      const result = ordemParanormalService.calculateMaxCarryCapacity(3)
+      // 5 * 3 = 15
+      expect(result).toBe(15)
+    })
+
+    it('deve retornar mínimo de 2 mesmo com Força 0', () => {
+      const result = ordemParanormalService.calculateMaxCarryCapacity(0)
+      expect(result).toBe(2)
+    })
+
+    it('deve retornar mínimo de 2 mesmo com Força negativa', () => {
+      const result = ordemParanormalService.calculateMaxCarryCapacity(-1)
+      expect(result).toBe(2)
+    })
+
+    it('deve calcular corretamente para Força 1', () => {
+      const result = ordemParanormalService.calculateMaxCarryCapacity(1)
+      // 5 * 1 = 5, mas mínimo é 2, então retorna 5
+      expect(result).toBe(5)
+    })
+  })
+
+  describe('isOverloaded', () => {
+    it('deve retornar true quando peso excede capacidade', () => {
+      const result = ordemParanormalService.isOverloaded(15, 10)
+      expect(result).toBe(true)
+    })
+
+    it('deve retornar false quando peso está dentro da capacidade', () => {
+      const result = ordemParanormalService.isOverloaded(8, 10)
+      expect(result).toBe(false)
+    })
+
+    it('deve retornar false quando peso é exatamente a capacidade', () => {
+      const result = ordemParanormalService.isOverloaded(10, 10)
+      expect(result).toBe(false)
+    })
+  })
 })
 

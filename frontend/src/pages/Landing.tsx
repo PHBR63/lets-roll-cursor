@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { User } from 'lucide-react'
+import { Logo } from '@/components/common/Logo'
 
 /**
  * Página inicial (Landing Page)
@@ -31,8 +32,8 @@ export function Landing() {
 
         {/* Conteúdo central */}
         <div className="flex flex-col items-center justify-center text-center space-y-6 md:space-y-8">
-          <div className="bg-card p-8 md:p-12 rounded-lg border border-card-secondary w-full max-w-xs">
-            <h1 className="text-3xl md:text-4xl font-bold text-white">Logo</h1>
+          <div className="bg-card p-8 md:p-12 rounded-lg border border-card-secondary w-full max-w-xs flex items-center justify-center">
+            <Logo size="lg" link={false} />
           </div>
 
           <div className="max-w-2xl space-y-4 text-text-secondary hidden md:block">

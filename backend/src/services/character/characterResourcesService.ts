@@ -257,9 +257,10 @@ export const characterResourcesService = {
    * @param id - ID do personagem
    * @param pe - Novo valor de PE (ou delta)
    * @param isDelta - Se pe é um delta (true) ou valor absoluto (false)
+   * @param validateTurnLimit - Se deve validar limite de PE por turno (padrão: false para ajustes manuais)
    * @returns Personagem atualizado
    */
-  async updatePE(id: string, pe: number, isDelta: boolean = false) {
+  async updatePE(id: string, pe: number, isDelta: boolean = false, validateTurnLimit: boolean = false) {
     try {
       const { data: character, error: fetchError } = await supabase
         .from('characters')
@@ -272,6 +273,19 @@ export const characterResourcesService = {
       const stats = character.stats || {}
       const currentPE = stats.pe?.current || 0
       const maxPE = stats.pe?.max || 0
+      const nex = stats.nex || 0
+
+      // Se for um gasto de PE (delta negativo) e deve validar limite por turno
+      if (validateTurnLimit && isDelta && pe < 0) {
+        const peCost = Math.abs(pe)
+        const isValid = ordemParanormalService.validatePETurnLimit(nex, peCost)
+        if (!isValid) {
+          const limit = ordemParanormalService.calculatePETurnLimit(nex)
+          throw new Error(
+            `Limite de PE por turno excedido. Você pode gastar no máximo ${limit} PE por turno (NEX ${nex}%).`
+          )
+        }
+      }
 
       let newPE = isDelta ? currentPE + pe : pe
       newPE = Math.max(0, Math.min(newPE, maxPE)) // Clamp entre 0 e máximo
@@ -305,6 +319,16 @@ export const characterResourcesService = {
       logger.error({ error }, 'Error updating PE')
       throw new Error('Erro ao atualizar PE: ' + (err.message || 'Erro desconhecido'))
     }
+  },
+
+  /**
+   * Gasta PE do personagem com validação de limite por turno
+   * @param id - ID do personagem
+   * @param peCost - Custo de PE a ser gasto
+   * @returns Personagem atualizado
+   */
+  async spendPE(id: string, peCost: number) {
+    return this.updatePE(id, -peCost, true, true)
   },
 
   /**

@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
+import { Logo } from '@/components/common/Logo'
 
 /**
  * Schema de validação para login
@@ -75,9 +76,7 @@ export function Login() {
 
             <TabsContent value="login">
               <div className="flex justify-center mb-6">
-                <div className="bg-card p-8 rounded-lg border border-card-secondary">
-                  <p className="text-white">Logo</p>
-                </div>
+                <Logo size="md" link={false} />
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
