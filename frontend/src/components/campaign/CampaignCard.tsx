@@ -2,6 +2,8 @@ import { memo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { BentoCard } from '@/components/ui/bento-grid'
+import { SpotlightCard } from '@/components/ui/spotlight-card'
+import { BorderBeam } from '@/components/ui/border-beam'
 import { LazyImage } from '@/components/common/LazyImage'
 import { Gamepad2 } from 'lucide-react'
 
@@ -32,14 +34,16 @@ export const CampaignCard = memo(function CampaignCard({ campaign }: CampaignCar
                      campaign.status === 'paused' ? 'Pausada' : 'Encerrada'
 
   return (
-    <BentoCard
-      className="w-64 h-80 flex-shrink-0"
-      name={campaign.name}
-      description={statusText}
-      icon={<Gamepad2 className="w-6 h-6" />}
-      backgroundImage={campaign.image_url || undefined}
-      onClick={handleClick}
-    >
+    <div className="group relative w-64 h-80 flex-shrink-0">
+      <SpotlightCard className="h-full">
+        <BentoCard
+          className="w-full h-full"
+          name={campaign.name}
+          description={statusText}
+          icon={<Gamepad2 className="w-6 h-6" />}
+          backgroundImage={campaign.image_url || undefined}
+          onClick={handleClick}
+        >
       <div className="mt-4 flex flex-col gap-3">
         {campaign.image_url && (
           <div className="w-full h-32 rounded-md overflow-hidden border border-[#8000FF]/20">
@@ -67,6 +71,9 @@ export const CampaignCard = memo(function CampaignCard({ campaign }: CampaignCar
         </Button>
       </div>
     </BentoCard>
+      </SpotlightCard>
+      <BorderBeam />
+    </div>
   )
 })
 

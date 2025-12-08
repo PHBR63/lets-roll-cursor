@@ -167,6 +167,26 @@ export type Rank = 'RECRUTA' | 'OPERADOR' | 'AGENTE_ESPECIAL' | 'OFICIAL_OPERACO
 export type ItemCategory = 0 | 1 | 2 | 3 | 4
 
 /**
+ * Mapeamento de perícias que requerem kit e qual kit é necessário
+ * Baseado no Ordem Paranormal RPG v1.3
+ */
+export const SKILL_KIT_REQUIREMENTS: Record<string, string[]> = {
+  Enganação: ['Kit de Disfarce', 'Documentos Falsos'], // Exige kit para disfarces
+  Medicina: ['Kit de Medicina', 'Primeiros Socorros'], // Exige kit de medicina
+  Tecnologia: ['Ferramentas', 'Notebook', 'Kit de Hacker'], // Exige kit em alguns usos
+  Crime: ['Ferramentas de Ladrão', 'Kit de Arrombamento'], // Exige kit para certas tarefas
+}
+
+/**
+ * Verifica se uma perícia requer kit
+ * @param skillName - Nome da perícia
+ * @returns true se requer kit, false caso contrário
+ */
+export function skillRequiresKit(skillName: string): boolean {
+  return skillName in SKILL_KIT_REQUIREMENTS
+}
+
+/**
  * Tabela de permissão de categoria por patente
  * [Patente][Categoria] = Quantidade máxima permitida
  */

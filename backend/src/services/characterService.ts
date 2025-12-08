@@ -201,6 +201,7 @@ export const characterService = {
           origin: data.origin || null,
           path: data.path || null,
           affinity: data.affinity || null,
+          narrative_concept: data.narrativeConcept || null,
           attributes: validatedAttributes,
           stats: stats,
           skills: skills,

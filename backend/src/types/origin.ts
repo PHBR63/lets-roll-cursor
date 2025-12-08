@@ -13,25 +13,34 @@ export type Origin =
   | 'ATLETA'
   | 'CHEF'
   | 'CRIMINOSO'
+  | 'CULTISTA_ARREPENDIDO'
   | 'DESEMPREGADO'
   | 'DESENVOLVEDOR'
+  | 'DESGARRADO'
   | 'ENGENHEIRO'
+  | 'EXECUTIVO'
   | 'EX_MILITAR'
   | 'EX_POLICIAL'
   | 'FILHO_DE_CRIADOR'
+  | 'INVESTIGADOR'
   | 'JORNALISTA'
   | 'LUTADOR'
   | 'MAGNATA'
   | 'MEDICO_LEGISTA'
   | 'MENDIGO'
+  | 'MERCENARIO'
   | 'MILITAR'
   | 'OPERARIO'
   | 'POLICIAL'
   | 'RELIGIOSO'
+  | 'SERVIDOR_PUBLICO'
+  | 'TEORICO_DA_CONSPIRACAO'
   | 'TI'
   | 'TRABALHADOR_RURAL'
+  | 'TRAMBIQUEIRO'
   | 'UNIVERSITARIO'
   | 'VETERINARIO'
+  | 'VITIMA'
 
 /**
  * Configuração de uma origem
@@ -46,6 +55,7 @@ export interface OriginConfig {
     description: string
     effect?: string // Efeito mecânico do poder (opcional)
   }
+  isHomebrew?: boolean // Indica se a origem é homebrew (não oficial)
 }
 
 /**
@@ -56,7 +66,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
     id: 'ACADEMICO',
     name: 'Acadêmico',
     description: 'Você passou anos estudando e pesquisando.',
-    trainedSkills: ['Investigação', 'Ocultismo'],
+    trainedSkills: ['Ciências', 'Investigação'],
     power: {
       name: 'Saber em Detalhes',
       description: 'Você pode gastar 2 PE para rolar novamente um teste de perícia baseada em INT.',
@@ -66,10 +76,10 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
     id: 'AGENTE_DE_SAUDE',
     name: 'Agente de Saúde',
     description: 'Você trabalha na área da saúde pública.',
-    trainedSkills: ['Medicina', 'Profissão'],
+    trainedSkills: ['Intuição', 'Medicina'],
     power: {
       name: 'Primeiros Socorros',
-      description: 'Você pode gastar 1 PE para curar 1d8 de PV de um aliado adjacente.',
+      description: 'Sempre que cura alguém, soma INT nos PV curados (cura mais eficiente).',
     },
   },
   AMNESIA: {
@@ -106,10 +116,10 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
     id: 'CHEF',
     name: 'Chef',
     description: 'Você é um cozinheiro profissional.',
-    trainedSkills: ['Profissão', 'Vontade'],
+    trainedSkills: ['Fortitude', 'Profissão'],
     power: {
       name: 'Refeição Reforçada',
-      description: 'Você pode preparar refeições que curam 1d4 de PV e 1d4 de SAN.',
+      description: 'Comida especial fornece pequenos bônus/recuperações ao grupo (buff de refeição).',
     },
   },
   CRIMINOSO: {
@@ -131,6 +141,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Sobrevivência Urbana',
       description: 'Você recebe +2 em testes de Percepção para encontrar recursos.',
     },
+    isHomebrew: true,
   },
   DESENVOLVEDOR: {
     id: 'DESENVOLVEDOR',
@@ -141,6 +152,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Hackear',
       description: 'Você pode gastar 1 PE para hackear sistemas eletrônicos.',
     },
+    isHomebrew: true,
   },
   ENGENHEIRO: {
     id: 'ENGENHEIRO',
@@ -161,6 +173,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Treinamento Militar',
       description: 'Você recebe +2 em testes de Iniciativa e pode usar armas de fogo sem treinamento.',
     },
+    isHomebrew: true,
   },
   EX_POLICIAL: {
     id: 'EX_POLICIAL',
@@ -171,6 +184,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Instinto Policial',
       description: 'Você recebe +2 em testes de Percepção para detectar mentiras.',
     },
+    isHomebrew: true,
   },
   FILHO_DE_CRIADOR: {
     id: 'FILHO_DE_CRIADOR',
@@ -181,6 +195,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Lidar com Animais',
       description: 'Você recebe +2 em testes de Adestramento e pode se comunicar melhor com animais.',
     },
+    isHomebrew: true,
   },
   JORNALISTA: {
     id: 'JORNALISTA',
@@ -191,6 +206,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Fonte Confiável',
       description: 'Você pode gastar 2 PE para obter informações de fontes confiáveis.',
     },
+    isHomebrew: true,
   },
   LUTADOR: {
     id: 'LUTADOR',
@@ -221,6 +237,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Análise Forense',
       description: 'Você recebe +2 em testes de Investigação para analisar corpos ou cenas de crime.',
     },
+    isHomebrew: true,
   },
   MENDIGO: {
     id: 'MENDIGO',
@@ -231,6 +248,7 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
       name: 'Conhecer as Ruas',
       description: 'Você recebe +2 em testes de Percepção e pode encontrar atalhos e esconderijos.',
     },
+    isHomebrew: true,
   },
   MILITAR: {
     id: 'MILITAR',
@@ -310,6 +328,97 @@ export const ORIGINS: Record<Origin, OriginConfig> = {
     power: {
       name: 'Cuidar de Animais',
       description: 'Você pode curar animais e recebe +2 em testes de Adestramento.',
+    },
+    isHomebrew: true,
+  },
+  CULTISTA_ARREPENDIDO: {
+    id: 'CULTISTA_ARREPENDIDO',
+    name: 'Cultista Arrependido',
+    description: 'Você já foi parte de um culto, mas se arrependeu.',
+    trainedSkills: ['Ocultismo', 'Religião'],
+    power: {
+      name: 'Marcas do Outro Lado',
+      description: 'Ganha mais PE e/ou efeitos ligados a ritual e resistência paranormal, ao custo de impacto na SAN.',
+    },
+  },
+  DESGARRADO: {
+    id: 'DESGARRADO',
+    name: 'Desgarrado',
+    description: 'Você viveu à margem da sociedade.',
+    trainedSkills: ['Fortitude', 'Sobrevivência'],
+    power: {
+      name: 'Resiliência',
+      description: 'Mais resistente a condições físicas e ambientes hostis; reduz penalidades de terreno e efeitos de clima/fome.',
+    },
+  },
+  EXECUTIVO: {
+    id: 'EXECUTIVO',
+    name: 'Executivo',
+    description: 'Você trabalha em cargos executivos ou de gestão.',
+    trainedSkills: ['Diplomacia', 'Profissão'],
+    power: {
+      name: 'Otimização',
+      description: 'Ganha bônus em testes de planejamento, logística e pode reduzir tempo/custo de certas ações da equipe.',
+    },
+  },
+  INVESTIGADOR: {
+    id: 'INVESTIGADOR',
+    name: 'Investigador',
+    description: 'Você trabalha como investigador particular ou policial.',
+    trainedSkills: ['Investigação', 'Percepção'],
+    power: {
+      name: 'Faro para Pistas',
+      description: 'Ganha bônus e re-rolagens ao buscar pistas e pode encontrar mais informações que outros agentes.',
+    },
+  },
+  MERCENARIO: {
+    id: 'MERCENARIO',
+    name: 'Mercenário',
+    description: 'Você trabalha como mercenário ou soldado de aluguel.',
+    trainedSkills: ['Iniciativa', 'Intimidação'],
+    power: {
+      name: 'Posição de Combate',
+      description: 'Ganha bônus em iniciativa e em situações em que é pago/contratado, além de algumas vantagens táticas.',
+    },
+  },
+  SERVIDOR_PUBLICO: {
+    id: 'SERVIDOR_PUBLICO',
+    name: 'Servidor Público',
+    description: 'Você trabalha no serviço público.',
+    trainedSkills: ['Intuição', 'Vontade'],
+    power: {
+      name: 'Espírito Cívico',
+      description: 'Bônus em interações com órgãos oficiais, processos burocráticos e resistência em situações de pressão institucional.',
+    },
+  },
+  TEORICO_DA_CONSPIRACAO: {
+    id: 'TEORICO_DA_CONSPIRACAO',
+    name: 'Teórico da Conspiração',
+    description: 'Você acredita em teorias da conspiração e está sempre investigando.',
+    trainedSkills: ['Investigação', 'Ocultismo'],
+    power: {
+      name: 'Eu Já Sabia',
+      description: 'Pode gastar PE para "puxar da cartola" informação prévia sobre algo, recebendo pistas extras ou bônus situacionais.',
+    },
+  },
+  TRAMBIQUEIRO: {
+    id: 'TRAMBIQUEIRO',
+    name: 'Trambiqueiro',
+    description: 'Você é um golpista ou estelionatário.',
+    trainedSkills: ['Crime', 'Enganação'],
+    power: {
+      name: 'Impostor',
+      description: 'Extremamente bom em golpes e identidades falsas, com bônus fortes para enganar e cometer delitos sem ser pego.',
+    },
+  },
+  VITIMA: {
+    id: 'VITIMA',
+    name: 'Vítima',
+    description: 'Você foi vítima de um evento paranormal traumático.',
+    trainedSkills: ['Reflexos', 'Vontade'],
+    power: {
+      name: 'Cicatrizes Psicológicas',
+      description: 'Transforma trauma em dureza: ganha resistências ou bônus contra efeitos de medo, choque e manipulação mental.',
     },
   },
 }

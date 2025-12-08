@@ -1,10 +1,22 @@
-import { useMemo } from 'react'
-import { AlertTriangle, Brain, Zap, CheckCircle } from 'lucide-react'
+/**
+ * Componente de feedback visual para estados de insanidade
+ * Versão melhorada com mais detalhes e integração com useInsanityState
+ */
+import { useInsanityState } from '@/hooks/useInsanityState'
+import { AlertTriangle, Brain, Zap, CheckCircle, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface InsanityIndicatorProps {
   currentSAN: number
   maxSAN: number
+  /**
+   * Se deve mostrar descrição detalhada
+   */
+  showDescription?: boolean
+  /**
+   * Tamanho do indicador
+   */
+  size?: 'sm' | 'md' | 'lg'
   className?: string
 }
 
@@ -12,106 +24,81 @@ interface InsanityIndicatorProps {
  * Componente de feedback visual para estados de insanidade
  * Mostra cor, ícone e animação baseados no nível de SAN
  */
-export function InsanityIndicator({ currentSAN, maxSAN, className }: InsanityIndicatorProps) {
-  const insanityState = useMemo(() => {
-    if (maxSAN === 0) {
-      return {
-        state: 'NORMAL' as const,
-        severity: 0,
-        color: 'green',
-        icon: CheckCircle,
-        pulse: false,
-        message: 'Sanidade normal',
-      }
-    }
+export function InsanityIndicator({ 
+  currentSAN, 
+  maxSAN, 
+  showDescription = false,
+  size = 'md',
+  className 
+}: InsanityIndicatorProps) {
+  const insanityState = useInsanityState(currentSAN, maxSAN)
 
-    const percentage = (currentSAN / maxSAN) * 100
+  const Icon = {
+    NORMAL: CheckCircle,
+    ABALADO_MENTAL: Brain,
+    PERTURBADO: Zap,
+    ENLOUQUECENDO: AlertTriangle,
+    TOTALMENTE_INSANO: Eye,
+  }[insanityState.state]
 
-    // Totalmente Insano (SAN = 0)
-    if (currentSAN <= 0) {
-      return {
-        state: 'TOTALMENTE_INSANO' as const,
-        severity: 4,
-        color: 'red',
-        icon: AlertTriangle,
-        pulse: true,
-        message: 'Totalmente Insano! (SAN = 0)',
-      }
-    }
-
-    // Enlouquecendo (SAN <= 25%)
-    if (percentage <= 25) {
-      return {
-        state: 'ENLOUQUECENDO' as const,
-        severity: 3,
-        color: 'orange',
-        icon: AlertTriangle,
-        pulse: true,
-        message: `Enlouquecendo! (${Math.round(percentage)}% SAN)`,
-      }
-    }
-
-    // Perturbado (SAN <= 50%)
-    if (percentage <= 50) {
-      return {
-        state: 'PERTURBADO' as const,
-        severity: 2,
-        color: 'yellow',
-        icon: Zap,
-        pulse: false,
-        message: `Perturbado mentalmente (${Math.round(percentage)}% SAN)`,
-      }
-    }
-
-    // Abalado Mentalmente (SAN <= 75%)
-    if (percentage <= 75) {
-      return {
-        state: 'ABALADO_MENTAL' as const,
-        severity: 1,
-        color: 'blue',
-        icon: Brain,
-        pulse: false,
-        message: `Mentalmente abalado (${Math.round(percentage)}% SAN)`,
-      }
-    }
-
-    // Normal
-    return {
-      state: 'NORMAL' as const,
-      severity: 0,
-      color: 'green',
-      icon: CheckCircle,
-      pulse: false,
-      message: 'Sanidade normal',
-    }
-  }, [currentSAN, maxSAN])
-
-  const Icon = insanityState.icon
-
-  const colorClasses = {
-    red: 'text-red-500 bg-red-500/10 border-red-500/20',
-    orange: 'text-orange-500 bg-orange-500/10 border-orange-500/20',
-    yellow: 'text-yellow-500 bg-yellow-500/10 border-yellow-500/20',
-    blue: 'text-blue-500 bg-blue-500/10 border-blue-500/20',
-    green: 'text-green-500 bg-green-500/10 border-green-500/20',
+  const sizeClasses = {
+    sm: 'text-xs px-2 py-1',
+    md: 'text-sm px-3 py-2',
+    lg: 'text-base px-4 py-3',
   }
 
-  const pulseClasses = insanityState.pulse
-    ? 'animate-pulse'
-    : ''
+  const iconSizeClasses = {
+    sm: 'w-3 h-3',
+    md: 'w-4 h-4',
+    lg: 'w-5 h-5',
+  }
 
   return (
     <div
       className={cn(
-        'flex items-center gap-2 px-3 py-2 rounded-lg border transition-all',
-        colorClasses[insanityState.color as keyof typeof colorClasses],
-        pulseClasses,
+        'flex flex-col gap-1 px-3 py-2 rounded-lg border transition-all relative overflow-hidden',
+        sizeClasses[size],
+        insanityState.pulse && 'animate-pulse',
         className
       )}
-      title={insanityState.message}
+      style={{
+        backgroundColor: `${insanityState.color}15`,
+        borderColor: `${insanityState.color}40`,
+        color: insanityState.color,
+      }}
+      title={insanityState.description}
     >
-      <Icon className={cn('w-4 h-4', insanityState.pulse && 'animate-pulse')} />
-      <span className="text-xs font-semibold">{insanityState.message}</span>
+      {/* Glow effect de fundo */}
+      {insanityState.intensity > 0 && (
+        <div
+          className="absolute inset-0 opacity-30"
+          style={{
+            background: `radial-gradient(circle at center, ${insanityState.glowColor} 0%, transparent 70%)`,
+            filter: 'blur(8px)',
+          }}
+        />
+      )}
+
+      <div className="flex items-center gap-2 relative z-10">
+        <Icon 
+          className={cn(
+            iconSizeClasses[size],
+            insanityState.pulse && 'animate-pulse'
+          )} 
+        />
+        <span className="font-semibold">{insanityState.message}</span>
+        {insanityState.severity > 0 && (
+          <span className="text-xs opacity-70">
+            ({Math.round(insanityState.percentage)}%)
+          </span>
+        )}
+      </div>
+
+      {showDescription && (
+        <p className="text-xs opacity-80 relative z-10 mt-1">
+          {insanityState.description}
+        </p>
+      )}
     </div>
   )
 }

@@ -108,7 +108,14 @@ export function OriginSelector({ value, onChange, disabled }: OriginSelectorProp
           <SelectContent>
             {origins.map((origin) => (
               <SelectItem key={origin.id} value={origin.id}>
-                {origin.name}
+                <div className="flex items-center gap-2">
+                  <span>{origin.name}</span>
+                  {origin.isHomebrew && (
+                    <Badge variant="outline" className="text-xs bg-yellow-900/20 border-yellow-600 text-yellow-400">
+                      Homebrew
+                    </Badge>
+                  )}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -121,6 +128,11 @@ export function OriginSelector({ value, onChange, disabled }: OriginSelectorProp
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-purple-400" />
             <h4 className="text-white font-semibold">{selectedOrigin.name}</h4>
+            {selectedOrigin.isHomebrew && (
+              <Badge variant="outline" className="text-xs bg-yellow-900/20 border-yellow-600 text-yellow-400">
+                Homebrew
+              </Badge>
+            )}
           </div>
 
           <p className="text-text-secondary text-sm">{selectedOrigin.description}</p>

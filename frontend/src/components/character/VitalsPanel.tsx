@@ -10,6 +10,11 @@ import { useToast } from '@/hooks/useToast'
 import { Character } from '@/types/character'
 import { CharacterClass, Attributes } from '@/types/ordemParanormal'
 import { Badge } from '@/components/ui/badge'
+import { InsanityIndicator } from './InsanityIndicator'
+import { InsanityAura } from './InsanityAura'
+import { InsanityTurnCounter } from './InsanityTurnCounter'
+import { InsanityPermanentEffects } from './InsanityPermanentEffects'
+import { InsanityPermanentEffects } from './InsanityPermanentEffects'
 
 interface VitalsPanelProps {
   character: Character
@@ -111,8 +116,11 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 space-y-6 animate-in fade-in-50 duration-300">
-      <h2 className="text-xl font-bold text-white">Recursos</h2>
+    <div className="bg-card rounded-lg p-6 space-y-6 animate-in fade-in-50 duration-300 relative overflow-hidden">
+      {/* Aura de Insanidade */}
+      <InsanityAura character={character} mode="container" />
+      
+      <h2 className="text-xl font-bold text-white relative z-10">Recursos</h2>
 
       {/* PV - Pontos de Vida */}
       <div className="space-y-2">
@@ -177,7 +185,7 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
       </div>
 
       {/* SAN - Sanidade */}
-      <div className="space-y-2">
+      <div className="space-y-2 relative z-10">
         <div className="flex items-center justify-between">
           <Label className="text-blue-400 font-semibold">Sanidade (SAN)</Label>
           <span className="text-white text-sm">
@@ -190,6 +198,23 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
           color="blue"
           className="h-3"
           duration={0.6}
+        />
+        {/* Indicador de Estado de Insanidade */}
+        <InsanityIndicator 
+          currentSAN={san.current} 
+          maxSAN={san.max}
+          showDescription={false}
+          size="sm"
+        />
+        {/* Contador de Turnos de Insanidade */}
+        <InsanityTurnCounter character={character} />
+        {/* Consequências Permanentes */}
+        <InsanityPermanentEffects 
+          character={character} 
+          onUpdate={(updated) => {
+            // Atualizar personagem quando efeitos permanentes mudarem
+            // Isso será tratado pelo componente pai
+          }}
         />
         <div className="flex gap-2">
           <Button

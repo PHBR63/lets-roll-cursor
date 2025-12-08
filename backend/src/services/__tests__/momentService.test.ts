@@ -390,6 +390,97 @@ describe('momentService', () => {
         'Você não tem permissão para deletar este momento'
       )
     })
+
+    it('deve invalidar cache ao deletar', async () => {
+      const mockFetch = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn()
+          .mockResolvedValueOnce({
+            data: { created_by: 'user-123' },
+            error: null,
+          })
+          .mockResolvedValueOnce({
+            data: { campaign_id: 'camp-123', session_id: 'session-123' },
+            error: null,
+          }),
+      }
+
+      const mockDelete = {
+        delete: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockResolvedValue({
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockFetch)
+        .mockReturnValueOnce(mockFetch)
+        .mockReturnValueOnce(mockDelete)
+
+      await momentService.deleteMoment('moment-123', 'user-123')
+
+      expect(cacheModule.deleteCache).toHaveBeenCalled()
+      expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
+    })
+  })
+
+  describe('getSessionMoments', () => {
+    it('deve usar cache se disponível', async () => {
+      ;(cacheModule.getCache as jest.Mock).mockResolvedValue([mockMoment])
+
+      const result = await momentService.getSessionMoments('session-123')
+
+      expect(result).toEqual([mockMoment])
+      expect(supabase.from).not.toHaveBeenCalled()
+    })
+
+    it('deve lançar erro se busca falhar', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await expect(momentService.getSessionMoments('session-123')).rejects.toThrow()
+    })
+  })
+
+  describe('updateMoment', () => {
+    it('deve invalidar cache ao atualizar', async () => {
+      const mockFetch = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { created_by: 'user-123', campaign_id: 'camp-123', session_id: null },
+          error: null,
+        }),
+      }
+
+      const mockUpdate = {
+        update: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockMoment,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock)
+        .mockReturnValueOnce(mockFetch)
+        .mockReturnValueOnce(mockUpdate)
+
+      await momentService.updateMoment('moment-123', 'user-123', { title: 'Novo Título' })
+
+      expect(cacheModule.deleteCache).toHaveBeenCalled()
+      expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
+    })
   })
 })
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Bell, User, Menu, X, Sparkles } from 'lucide-react'
+import { Bell, User, Menu, X, Sparkles, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -59,6 +59,12 @@ export function Navbar() {
                 <Link to="/profile">Meu perfil</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
+                <Link to="/settings" className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  Configurações
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
                 <Link to="/history">Histórico</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -105,6 +111,14 @@ export function Navbar() {
                   className="block py-2 text-white hover:text-accent"
                 >
                   Meu perfil
+                </Link>
+                <Link
+                  to="/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2 text-white hover:text-accent"
+                >
+                  <Settings className="h-5 w-5" />
+                  Configurações
                 </Link>
                 <Link
                   to="/history"

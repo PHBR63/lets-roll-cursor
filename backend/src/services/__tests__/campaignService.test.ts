@@ -44,7 +44,7 @@ describe('campaignService', () => {
 
       ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await campaignService.getCampaigns({})
+      const result = await campaignService.getUserCampaigns('user-123')
 
       expect(result).toEqual(mockCampaigns)
     })
@@ -58,7 +58,7 @@ describe('campaignService', () => {
 
       ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      await campaignService.getCampaigns({ masterId: 'user-123' })
+      await campaignService.getUserCampaigns('user-123')
 
       expect(mockQuery.eq).toHaveBeenCalledWith('master_id', 'user-123')
     })
@@ -125,7 +125,7 @@ describe('campaignService', () => {
 
       ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await campaignService.updateCampaign('camp-123', updateData)
+      const result = await campaignService.updateCampaign('camp-123', 'user-123', updateData)
 
       expect(result.name).toBe('Updated Campaign')
       expect(mockQuery.update).toHaveBeenCalled()
@@ -141,7 +141,7 @@ describe('campaignService', () => {
 
       ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      await campaignService.deleteCampaign('camp-123')
+      await campaignService.deleteCampaign('camp-123', 'user-123')
 
       expect(mockQuery.delete).toHaveBeenCalled()
       expect(mockQuery.eq).toHaveBeenCalledWith('id', 'camp-123')

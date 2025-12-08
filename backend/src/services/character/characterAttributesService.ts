@@ -4,9 +4,10 @@
 import { supabase } from '../../config/supabase'
 import { logger } from '../../utils/logger'
 import { AppError } from '../../types/common'
-import { Condition } from '../../types/ordemParanormal'
+import { Condition, skillRequiresKit, SKILL_KIT_REQUIREMENTS } from '../../types/ordemParanormal'
 import { ordemParanormalService } from '../ordemParanormalService'
 import { deleteCache, getCharacterCacheKey } from '../cache'
+import { characterInventoryService } from './characterInventoryService'
 
 export const characterAttributesService = {
   /**
@@ -174,13 +175,35 @@ export const characterAttributesService = {
       const attributePenalty =
         (penalties.attributePenalties[attributeKey as keyof typeof penalties.attributePenalties] as number) || 0
 
+      // Verificar se perícia requer kit e se personagem possui
+      let kitPenalty = 0
+      let hasRequiredKit = true
+      if (skillRequiresKit(skillName)) {
+        const requiredKits = SKILL_KIT_REQUIREMENTS[skillName] || []
+        const inventory = await characterInventoryService.getCharacterInventory(id)
+        
+        // Verificar se possui algum dos kits necessários
+        hasRequiredKit = requiredKits.some(kitName => {
+          return inventory.some(
+            (item: any) =>
+              item.item?.name?.toLowerCase().includes(kitName.toLowerCase()) ||
+              item.item?.name?.toLowerCase().includes('kit')
+          )
+        })
+
+        // Aplicar penalidade de -5 se não tiver kit
+        if (!hasRequiredKit) {
+          kitPenalty = -5
+        }
+      }
+
       // Aplicar penalidade em dados (se houver)
       const effectiveAttribute = attributeValue + attributePenalty
 
-      // Rolar teste
+      // Rolar teste (incluindo penalidade de kit)
       const rollResult = ordemParanormalService.rollAttributeTest(
         effectiveAttribute,
-        skill.bonus + skillPenalty
+        skill.bonus + skillPenalty + kitPenalty
       )
 
       const success = rollResult.total >= difficulty
@@ -195,7 +218,9 @@ export const characterAttributesService = {
         penalties: {
           skillPenalty,
           attributePenalty,
+          kitPenalty,
         },
+        hasRequiredKit,
       }
     } catch (error: unknown) {
       const err = error as AppError

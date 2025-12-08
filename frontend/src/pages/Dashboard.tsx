@@ -3,6 +3,8 @@ import { Footer } from '@/components/layout/Footer'
 import { CampaignCard } from '@/components/campaign/CampaignCard'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { AnimatedGradientText } from '@/components/ui/animated-gradient-text'
+import { NumberTicker } from '@/components/ui/number-ticker'
 import { useAuth } from '@/context/AuthContext'
 import { useEffect, useState, useMemo } from 'react'
 import { supabase } from '@/integrations/supabase/client'
@@ -154,9 +156,28 @@ export function Dashboard() {
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-4 md:py-8 space-y-8 md:space-y-12">
+        {/* Header com estatísticas */}
+        <div className="flex flex-wrap items-center gap-6 mb-8">
+          <div className="flex items-center gap-2">
+            <AnimatedGradientText size="2xl">
+              Minhas Campanhas
+            </AnimatedGradientText>
+          </div>
+          <div className="flex items-center gap-4 text-white/70 text-sm">
+            <span>
+              Mestrando: <NumberTicker value={masteringCampaigns.length} />
+            </span>
+            <span>
+              Participando: <NumberTicker value={participatingCampaigns.length} />
+            </span>
+          </div>
+        </div>
+
         {/* Seção Mestrando */}
         <section>
-          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">Mestrando</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6">
+            Mestrando
+          </h2>
           {masteringCampaigns.length > 0 ? (
             <div className="flex items-center gap-2 md:gap-4">
               <Button

@@ -661,5 +661,46 @@ export const ordemParanormalService = {
   isOverloaded(currentWeight: number, maxCapacity: number): boolean {
     return currentWeight > maxCapacity
   },
+
+  /**
+   * Rola teste de custo de ritual (secreto)
+   * @param characterData - Dados do personagem (atributos e perícias)
+   * @param ritualCost - Custo do ritual em PE
+   * @returns Resultado do teste de custo
+   */
+  rollRitualCostTest(
+    characterData: {
+      attributes: { int: number }
+      skills: { Ocultismo: { attribute: string; training: string; bonus: number } }
+    },
+    ritualCost: number
+  ): {
+    success: boolean
+    rollResult: number
+    dt: number
+    criticalFailure: boolean
+  } {
+    // DT = 10 + custo do ritual
+    const dt = 10 + ritualCost
+
+    // Rolar teste de Ocultismo (INT + bônus)
+    const intValue = characterData.attributes.int || 0
+    const ocultismoBonus = characterData.skills.Ocultismo?.bonus || 0
+
+    const rollResult = this.rollAttributeTest(intValue, ocultismoBonus)
+
+    // Sucesso se total >= DT
+    const success = rollResult.total >= dt
+
+    // Falha crítica se resultado natural (sem bônus) = 1
+    const criticalFailure = rollResult.result === 1 && !success
+
+    return {
+      success,
+      rollResult: rollResult.total,
+      dt,
+      criticalFailure,
+    }
+  },
 }
 

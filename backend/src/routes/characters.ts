@@ -4,6 +4,7 @@ import { characterService } from '../services/characterService'
 import { validate } from '../middleware/validation'
 import { CharacterFilterSchema, CreateCharacterSchema, UpdateCharacterSchema } from '../middleware/schemas/characterSchemas'
 import { AppError } from '../types/common'
+import { supabase } from '../config/supabase'
 
 /**
  * Rotas para CRUD de personagens
@@ -326,6 +327,105 @@ charactersRouter.put('/:id/pe', async (req: Request, res: Response) => {
     res.json(character)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
+  }
+})
+
+// Adicionar efeito permanente de insanidade
+charactersRouter.post('/:id/permanent-effects', async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
+
+    const { name, description, severity, turnsTriggered } = req.body
+    if (!name || !description || !severity || !turnsTriggered) {
+      return res.status(400).json({ error: 'Campos obrigatórios: name, description, severity, turnsTriggered' })
+    }
+
+    const { data: character, error: fetchError } = await supabase
+      .from('characters')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('user_id', userId)
+      .single()
+
+    if (fetchError || !character) {
+      return res.status(404).json({ error: 'Personagem não encontrado' })
+    }
+
+    const permanentEffects = (character.permanentEffects as any[]) || []
+    const newEffect = {
+      id: `effect-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      description,
+      severity,
+      turnsTriggered,
+      createdAt: new Date().toISOString(),
+    }
+
+    permanentEffects.push(newEffect)
+
+    const { data: updated, error: updateError } = await supabase
+      .from('characters')
+      .update({
+        permanentEffects,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw updateError
+    }
+
+    res.json(updated)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Erro desconhecido' })
+  }
+})
+
+// Remover efeito permanente de insanidade
+charactersRouter.delete('/:id/permanent-effects/:effectId', async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuário não autenticado' })
+    }
+
+    const { data: character, error: fetchError } = await supabase
+      .from('characters')
+      .select('*')
+      .eq('id', req.params.id)
+      .eq('user_id', userId)
+      .single()
+
+    if (fetchError || !character) {
+      return res.status(404).json({ error: 'Personagem não encontrado' })
+    }
+
+    const permanentEffects = ((character.permanentEffects as any[]) || []).filter(
+      (effect: any) => effect.id !== req.params.effectId
+    )
+
+    const { data: updated, error: updateError } = await supabase
+      .from('characters')
+      .update({
+        permanentEffects,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single()
+
+    if (updateError) {
+      throw updateError
+    }
+
+    res.json(updated)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Erro desconhecido' })
   }
 })
 

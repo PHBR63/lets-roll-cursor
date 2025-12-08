@@ -194,6 +194,37 @@ export const characterConditionsService = {
             }
             break
           }
+
+          case 'PERTURBADO':
+          case 'ENLOUQUECENDO': {
+            // Estados de insanidade: incrementar contador de turnos
+            const san = updatedStats.san || stats.san || { current: 0, max: 0 }
+            const isInsane = san.current <= 0 || (san.current / san.max) <= 0.25
+            
+            if (isInsane) {
+              // Buscar ou criar timer de insanidade
+              const insanityTimer = updatedTimers.find(t => t.condition === 'INSANIDADE')
+              let insanityTurns = insanityTimer?.duration || 0
+              
+              // Incrementar contador
+              insanityTurns++
+              
+              // Atualizar timer
+              updatedTimers = updatedTimers.filter(t => t.condition !== 'INSANIDADE')
+              updatedTimers.push({ condition: 'INSANIDADE', duration: insanityTurns })
+              
+              if (insanityTurns === 1) {
+                changes.push('Insanidade: Contador de turnos iniciado')
+              } else if (insanityTurns >= 10) {
+                changes.push(`Insanidade: ${insanityTurns} turnos! Estado crítico - risco de consequências permanentes`)
+              } else if (insanityTurns >= 5) {
+                changes.push(`Insanidade: ${insanityTurns} turnos - atenção!`)
+              } else {
+                changes.push(`Insanidade: ${insanityTurns} turno(s) em estado de insanidade`)
+              }
+            }
+            break
+          }
         }
       }
 

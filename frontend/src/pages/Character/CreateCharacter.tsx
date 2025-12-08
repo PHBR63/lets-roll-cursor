@@ -28,6 +28,7 @@ const createCharacterSchema = z.object({
   }),
   origin: z.string().optional(),
   path: z.string().max(100).optional(),
+  narrativeConcept: z.string().max(1000).optional(),
   agi: z.number().int().min(0).max(3),
   for: z.number().int().min(0).max(3),
   int: z.number().int().min(0).max(3),
@@ -192,6 +193,7 @@ export function CreateCharacter() {
         name: data.name,
         class: data.class,
         origin: data.origin || undefined,
+        narrativeConcept: data.narrativeConcept || undefined,
         path: data.path || undefined,
         attributes: {
           agi: data.agi,
@@ -308,6 +310,27 @@ export function CreateCharacter() {
                   value={selectedOrigin}
                   onChange={(origin) => setValue('origin', origin)}
                 />
+
+                {/* Conceito Narrativo */}
+                <div className="space-y-2">
+                  <Label htmlFor="narrativeConcept" className="text-white">
+                    Conceito Narrativo (Opcional)
+                  </Label>
+                  <p className="text-text-secondary text-sm">
+                    Quem é essa pessoa? O que fazia antes da Ordem? Como foi o primeiro contato com o paranormal?
+                  </p>
+                  <textarea
+                    id="narrativeConcept"
+                    {...register('narrativeConcept')}
+                    placeholder="Descreva o conceito do seu personagem..."
+                    rows={4}
+                    maxLength={1000}
+                    className="w-full px-3 py-2 bg-background-secondary border border-card-secondary rounded-md text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
+                  />
+                  {errors.narrativeConcept && (
+                    <p className="text-red-500 text-sm">{errors.narrativeConcept.message}</p>
+                  )}
+                </div>
 
                 {/* Caminho (opcional) */}
                 <div className="space-y-2">

@@ -55,7 +55,9 @@ export function BentoCard({
         "group relative col-span-1 flex flex-col justify-between overflow-hidden rounded-lg",
         "border border-[#8000FF]/20 bg-[#2A2A3A] p-4",
         "transition-all duration-300 hover:border-[#8000FF] hover:shadow-[0_0_20px_rgba(128,0,255,0.3)]",
-        "hover:scale-[1.02]",
+        "hover:scale-[1.02] hover:-translate-y-1",
+        "before:absolute before:inset-0 before:bg-gradient-to-br before:from-[#8000FF]/0 before:via-[#8000FF]/0 before:to-[#8000FF]/0",
+        "before:transition-all before:duration-300 hover:before:from-[#8000FF]/5 hover:before:via-[#8000FF]/10 hover:before:to-[#8000FF]/5",
         href && "cursor-pointer",
         onClick && "cursor-pointer",
         className

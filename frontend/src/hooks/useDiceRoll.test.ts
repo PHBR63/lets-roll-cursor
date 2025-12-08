@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { useDiceRoll } from './useDiceRoll'
+import { useDiceRoll } from '@/components/session/DiceRoller/useDiceRoll'
 
 // Mock do useToast
 vi.mock('@/hooks/useToast', () => ({

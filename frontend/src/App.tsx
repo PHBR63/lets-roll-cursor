@@ -22,6 +22,7 @@ const CharacterSheet = lazy(() => import('./pages/Character/CharacterSheet').the
 const CreateCharacter = lazy(() => import('./pages/Character/CreateCharacter').then(m => ({ default: m.CreateCharacter })))
 const MasterDashboard = lazy(() => import('./pages/Master/Dashboard').then(m => ({ default: m.MasterDashboard })))
 const RitualsGuide = lazy(() => import('./pages/Rituals/RitualsGuide').then(m => ({ default: m.RitualsGuide })))
+const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage').then(m => ({ default: m.SettingsPage })))
 
 /**
  * Componente de loading para lazy loading
@@ -133,6 +134,18 @@ function App() {
                       <ErrorBoundary>
                         <PageTransition>
                           <RitualsGuide />
+                        </PageTransition>
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <PageTransition>
+                          <SettingsPage />
                         </PageTransition>
                       </ErrorBoundary>
                     </ProtectedRoute>

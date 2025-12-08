@@ -201,44 +201,45 @@ export const CLASS_CONFIGS: Record<CharacterClass, ClassConfig> = {
 /**
  * Lista completa de perícias do sistema
  */
-export const ALL_SKILLS: Record<string, { attribute: SkillAttribute; requiresTraining: boolean; hasCargoPenalty: boolean }> = {
+export const ALL_SKILLS: Record<string, { attribute: SkillAttribute; requiresTraining: boolean; hasCargoPenalty: boolean; requiresKit: boolean }> = {
   // Agilidade
-  Atletismo: { attribute: 'FOR', requiresTraining: false, hasCargoPenalty: true },
-  Acrobacia: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: true },
-  Furtividade: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: true },
-  Reflexos: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: true },
-  Pilotagem: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: false },
-  Iniciativa: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: false },
-  Crime: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: true },
-  Prestidigitação: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: false },
+  Atletismo: { attribute: 'FOR', requiresTraining: false, hasCargoPenalty: true, requiresKit: false },
+  Acrobacia: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: true, requiresKit: false },
+  Furtividade: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: true, requiresKit: false },
+  Reflexos: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Pilotagem: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Iniciativa: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Crime: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: true, requiresKit: true },
+  Pontaria: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Prestidigitação: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
   
   // Força
-  Luta: { attribute: 'FOR', requiresTraining: false, hasCargoPenalty: false },
+  Luta: { attribute: 'FOR', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
   
   // Vigor
-  Fortitude: { attribute: 'VIG', requiresTraining: false, hasCargoPenalty: false },
+  Fortitude: { attribute: 'VIG', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
   
   // Presença
-  Intuição: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Percepção: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Diplomacia: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Intimidação: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Enganação: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Vontade: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false },
-  Religião: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false },
-  Artes: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false },
-  Adestramento: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false },
+  Intuição: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Percepção: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Diplomacia: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Intimidação: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Enganação: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: true },
+  Vontade: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Religião: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Artes: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Adestramento: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
   
   // Intelecto
-  Ocultismo: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
-  Ciências: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
-  Tecnologia: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
-  Medicina: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
-  Investigação: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false },
-  Atualidades: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false },
-  Tática: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
-  Sobrevivência: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false },
-  Profissão: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false },
+  Ocultismo: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Ciências: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Tecnologia: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: true },
+  Medicina: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: true },
+  Investigação: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Atualidades: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Tática: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
+  Sobrevivência: { attribute: 'INT', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
+  Profissão: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
 }
 
 /**

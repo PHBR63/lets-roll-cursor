@@ -192,6 +192,65 @@ describe('characterService - Sistema Ordem Paranormal', () => {
       expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
     })
 
+    it('deve validar soma de atributos na criação', async () => {
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+          class: 'COMBATENTE',
+          attributes: { agi: 3, for: 3, int: 3, pre: 3, vig: 3 }, // Soma = 15, deveria ser 9
+        })
+      ).rejects.toThrow('Soma de atributos inválida')
+    })
+
+    it('deve validar máximo de atributo na criação', async () => {
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+          class: 'COMBATENTE',
+          attributes: { agi: 4, for: 1, int: 1, pre: 1, vig: 1 }, // AGI > 3
+        })
+      ).rejects.toThrow('Nenhum atributo pode exceder 3')
+    })
+
+    it('deve validar apenas um atributo pode ser 0', async () => {
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+          class: 'COMBATENTE',
+          attributes: { agi: 0, for: 0, int: 3, pre: 3, vig: 3 }, // Dois atributos em 0
+        })
+      ).rejects.toThrow('Apenas um atributo pode ser reduzido para 0')
+    })
+
+    it('deve aceitar atributos válidos com um zero', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+
+      const result = await characterService.createCharacter('user-123', {
+        name: 'New Character',
+        campaignId: 'camp-123',
+        class: 'COMBATENTE',
+        attributes: { agi: 0, for: 2, int: 2, pre: 2, vig: 3 }, // Soma = 9, um zero
+      })
+
+      expect(result).toBeDefined()
+    })
+
     it('deve criar personagem com atributos customizados', async () => {
       const mockQuery = {
         insert: jest.fn().mockReturnThis(),

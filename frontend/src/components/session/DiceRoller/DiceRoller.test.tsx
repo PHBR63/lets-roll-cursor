@@ -22,19 +22,35 @@ vi.mock('@/hooks/useToast', () => ({
 }))
 
 // Mock do supabase
-vi.mock('@/integrations/supabase/client', () => ({
-  supabase: {
-    auth: {
-      getSession: vi.fn().mockResolvedValue({
-        data: {
-          session: {
-            access_token: 'test-token',
+vi.mock('@/integrations/supabase/client', () => {
+  const mockChannel = {
+    on: vi.fn().mockReturnThis(),
+    subscribe: vi.fn().mockReturnValue({ unsubscribe: vi.fn() }),
+    unsubscribe: vi.fn(),
+  }
+  
+  return {
+    supabase: {
+      auth: {
+        getSession: vi.fn().mockResolvedValue({
+          data: {
+            session: {
+              access_token: 'test-token',
+            },
           },
-        },
-      }),
+        }),
+      },
+      channel: vi.fn().mockReturnValue(mockChannel),
+      removeChannel: vi.fn(),
     },
-  },
-}))
+  }
+})
+
+// Mock do fetch
+global.fetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: vi.fn().mockResolvedValue([]),
+})
 
 describe('DiceRoller', () => {
   it('deve renderizar o componente', () => {

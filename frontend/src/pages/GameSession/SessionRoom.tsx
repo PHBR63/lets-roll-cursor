@@ -17,6 +17,8 @@ import { useRetry } from '@/hooks/useRetry'
 import { NotFoundState } from '@/components/common/EmptyState'
 import { Session } from '@/types/session'
 import { CampaignParticipant } from '@/types/campaign'
+import { InsanityAura } from '@/components/character/InsanityAura'
+import { Character } from '@/types/character'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -30,6 +32,7 @@ export function SessionRoom() {
   const [isMaster, setIsMaster] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [characters, setCharacters] = useState<Character[]>([])
   const { handleErrorWithToast, handleResponseError } = useApiError()
 
   useEffect(() => {
@@ -37,11 +40,43 @@ export function SessionRoom() {
       // Verificar role primeiro, depois carregar sessão
       checkMasterRole().then(() => {
         loadSession().then(() => {
-          setLoading(false)
+          loadCharacters().then(() => {
+            setLoading(false)
+          })
         })
       })
     }
-  }, [campaignId, user])
+  }, [campaignId, user, session?.id])
+
+  /**
+   * Carrega personagens da campanha para verificar estados de insanidade
+   */
+  const loadCharacters = async () => {
+    try {
+      if (!campaignId) return
+
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (!sessionData.session) return
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const response = await fetch(
+        `${apiUrl}/api/characters?campaignId=${campaignId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionData.session.access_token}`,
+          },
+        }
+      )
+
+      if (response.ok) {
+        const chars = await response.json()
+        setCharacters(chars)
+      }
+    } catch (error) {
+      // Erro silencioso
+      console.error('Erro ao carregar personagens:', error)
+    }
+  }
 
   /**
    * Carrega ou cria sessão ativa (com retry)
@@ -180,9 +215,45 @@ export function SessionRoom() {
     )
   }
 
+  // Verificar se algum personagem está em estado de insanidade severa
+  const hasSevereInsanity = characters.some(char => {
+    const stats = char.stats || {}
+    const san = stats.san || { current: 0, max: 0 }
+    if (san.max === 0) return false
+    const percentage = (san.current / san.max) * 100
+    return san.current <= 0 || percentage <= 25 // Totalmente insano ou enlouquecendo
+  })
+
+  // Personagem com maior severidade de insanidade (para mostrar aura)
+  const mostInsaneCharacter = characters.reduce<Character | null>((prev, char) => {
+    const stats = char.stats || {}
+    const san = stats.san || { current: 0, max: 0 }
+    if (san.max === 0) return prev
+    
+    const percentage = (san.current / san.max) * 100
+    const severity = san.current <= 0 ? 4 : percentage <= 25 ? 3 : percentage <= 50 ? 2 : percentage <= 75 ? 1 : 0
+    
+    if (!prev) return char
+    const prevStats = prev.stats || {}
+    const prevSan = prevStats.san || { current: 0, max: 0 }
+    const prevPercentage = prevSan.max > 0 ? (prevSan.current / prevSan.max) * 100 : 100
+    const prevSeverity = prevSan.current <= 0 ? 4 : prevPercentage <= 25 ? 3 : prevPercentage <= 50 ? 2 : prevPercentage <= 75 ? 1 : 0
+    
+    return severity > prevSeverity ? char : prev
+  }, null)
+
   return (
     <div className="min-h-screen flex flex-col" data-testid="session-room">
       <Navbar />
+
+      {/* Aura de Insanidade Fullscreen */}
+      {hasSevereInsanity && mostInsaneCharacter && (
+        <InsanityAura 
+          character={mostInsaneCharacter} 
+          mode="fullscreen"
+          show={true}
+        />
+      )}
 
       <main className="flex-1 flex overflow-hidden relative">
         {/* Área Principal - Game Board */}

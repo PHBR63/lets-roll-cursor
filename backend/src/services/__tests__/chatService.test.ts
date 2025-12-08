@@ -210,6 +210,118 @@ describe('chatService', () => {
         })
       ).rejects.toThrow()
     })
+
+    it('deve criar mensagem com characterId', async () => {
+      const mockInsert = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { ...mockMessage, character_id: 'char-123' },
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+
+      await chatService.createMessage({
+        campaignId: 'camp-123',
+        userId: 'user-123',
+        characterId: 'char-123',
+        content: 'Mensagem',
+      })
+
+      expect(mockInsert.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          character_id: 'char-123',
+        })
+      )
+    })
+
+    it('deve criar mensagem OOC (out of character)', async () => {
+      const mockInsert = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { ...mockMessage, type: 'ooc' },
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+
+      await chatService.createMessage({
+        campaignId: 'camp-123',
+        userId: 'user-123',
+        content: 'Mensagem OOC',
+        type: 'ooc',
+      })
+
+      expect(mockInsert.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'ooc',
+        })
+      )
+    })
+
+    it('deve criar mensagem em canal específico', async () => {
+      const mockInsert = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { ...mockMessage, channel: 'combat' },
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+
+      await chatService.createMessage({
+        campaignId: 'camp-123',
+        userId: 'user-123',
+        content: 'Mensagem',
+        channel: 'combat',
+      })
+
+      expect(mockInsert.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          channel: 'combat',
+        })
+      )
+    })
+
+    it('deve ordenar mensagens por data crescente', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue({
+          data: [mockMessage],
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await chatService.getMessages('camp-123')
+
+      expect(mockQuery.order).toHaveBeenCalledWith('created_at', { ascending: true })
+    })
+
+    it('deve lançar erro se busca de mensagens falhar', async () => {
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        limit: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+
+      await expect(chatService.getMessages('camp-123')).rejects.toThrow('Erro ao buscar mensagens')
+    })
   })
 })
 
