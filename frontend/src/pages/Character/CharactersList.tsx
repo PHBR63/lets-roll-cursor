@@ -9,8 +9,11 @@ import { User, Plus, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Character } from '@/types/character'
+import { Campaign } from '@/types/campaign'
 import { getApiBaseUrl } from '@/utils/apiUrl'
 import { useApiError } from '@/hooks/useApiError'
+import { useCreateCharacterModal } from '@/hooks/useCreateCharacterModal'
+import { CreateCharacterModal } from '@/components/character/CreateCharacterModal'
 
 /**
  * Página de listagem de todos os personagens do usuário
@@ -19,16 +22,50 @@ export function CharactersList() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [characters, setCharacters] = useState<Character[]>([])
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
   const { handleErrorWithToast, handleResponseError } = useApiError()
+  
+  // Hook compartilhado para modal de criação de personagem
+  const createCharacterModal = useCreateCharacterModal(campaigns)
 
   useEffect(() => {
     if (user) {
-      loadCharacters()
+      Promise.all([loadCharacters(), loadCampaigns()]).finally(() => {
+        setLoading(false)
+      })
     } else {
       setLoading(false)
     }
   }, [user])
+
+  /**
+   * Carrega campanhas do usuário
+   */
+  const loadCampaigns = async () => {
+    if (!user) return
+
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = getApiBaseUrl()
+      const response = await fetch(`${apiUrl}/api/campaigns`, {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setCampaigns(Array.isArray(data) ? data : [])
+      }
+    } catch (error) {
+      // Silenciosamente falha se não conseguir carregar campanhas
+      console.warn('Erro ao carregar campanhas:', error)
+      setCampaigns([])
+    }
+  }
 
   /**
    * Carrega todos os personagens do usuário
@@ -67,8 +104,6 @@ export function CharactersList() {
         handleErrorWithToast(error, 'Erro ao carregar personagens')
         setCharacters([])
       }
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -96,7 +131,7 @@ export function CharactersList() {
             </p>
           </div>
           <Button
-            onClick={() => navigate('/dashboard')}
+            onClick={createCharacterModal.openModal}
             className="bg-accent hover:bg-accent/90"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -180,14 +215,34 @@ export function CharactersList() {
           <EmptyState
             icon={<User className="w-12 h-12 text-text-secondary" />}
             title="Nenhum personagem encontrado"
-            description="Você ainda não criou nenhum personagem. Para criar um personagem, você precisa estar participando de uma campanha."
-            action={{
-              label: 'Ver Campanhas',
-              onClick: () => navigate('/dashboard'),
-            }}
+            description={
+              createCharacterModal.hasAvailableCampaigns
+                ? "Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
+                : "Você ainda não criou nenhum personagem. Para criar um personagem, você precisa estar participando de uma campanha como jogador."
+            }
+            action={
+              createCharacterModal.hasAvailableCampaigns
+                ? {
+                    label: '+ Criar Personagem',
+                    onClick: createCharacterModal.openModal,
+                  }
+                : {
+                    label: 'Ver Campanhas',
+                    onClick: () => navigate('/dashboard'),
+                  }
+            }
           />
         )}
       </main>
+
+      {/* Modal para selecionar campanha e criar personagem */}
+      <CreateCharacterModal
+        open={createCharacterModal.isOpen}
+        onOpenChange={createCharacterModal.closeModal}
+        availableCampaigns={createCharacterModal.availableCampaigns}
+        onSelectCampaign={createCharacterModal.handleSelectCampaign}
+        onCreateCampaign={createCharacterModal.handleCreateCampaign}
+      />
 
       <Footer />
     </div>

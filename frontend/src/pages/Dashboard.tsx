@@ -17,13 +17,8 @@ import { useRetry } from '@/hooks/useRetry'
 import { Campaign } from '@/types/campaign'
 import { Character } from '@/types/character'
 import { getApiBaseUrl } from '@/utils/apiUrl'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { useCreateCharacterModal } from '@/hooks/useCreateCharacterModal'
+import { CreateCharacterModal } from '@/components/character/CreateCharacterModal'
 
 /**
  * Dashboard principal
@@ -38,14 +33,11 @@ export function Dashboard() {
   const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingCharacters, setLoadingCharacters] = useState(false)
-  const [showCreateCharacterModal, setShowCreateCharacterModal] = useState(false)
   const cache = useCache<Campaign[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
   const { handleErrorWithToast, handleResponseError } = useApiError()
   
-  // Campanhas onde o usuário pode criar personagem (participando como player)
-  const availableCampaignsForCharacter = useMemo(() => {
-    return participatingCampaigns.filter(c => c.role === 'player')
-  }, [participatingCampaigns])
+  // Hook compartilhado para modal de criação de personagem
+  const createCharacterModal = useCreateCharacterModal(participatingCampaigns)
 
   /**
    * Carrega campanhas do usuário da API (com cache e retry)
@@ -337,9 +329,9 @@ export function Dashboard() {
               Meus Personagens
             </h2>
             <div className="flex items-center gap-2">
-              {availableCampaignsForCharacter.length > 0 && (
+              {createCharacterModal.hasAvailableCampaigns && (
                 <Button
-                  onClick={() => setShowCreateCharacterModal(true)}
+                  onClick={createCharacterModal.openModal}
                   className="bg-accent hover:bg-accent/90"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -399,15 +391,15 @@ export function Dashboard() {
               icon={<User className="w-8 h-8 text-text-secondary" />}
               title="Nenhum personagem criado"
               description={
-                availableCampaignsForCharacter.length > 0
+                createCharacterModal.hasAvailableCampaigns
                   ? "Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
                   : "Você ainda não criou nenhum personagem. Para criar um personagem, você precisa estar participando de uma campanha como jogador."
               }
               action={
-                availableCampaignsForCharacter.length > 0
+                createCharacterModal.hasAvailableCampaigns
                   ? {
                       label: '+ Criar Personagem',
-                      onClick: () => setShowCreateCharacterModal(true),
+                      onClick: createCharacterModal.openModal,
                     }
                   : {
                       label: 'Ver Campanhas',
@@ -420,54 +412,13 @@ export function Dashboard() {
       </main>
 
       {/* Modal para selecionar campanha e criar personagem */}
-      <Dialog open={showCreateCharacterModal} onOpenChange={setShowCreateCharacterModal}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Criar Novo Personagem</DialogTitle>
-            <DialogDescription>
-              Selecione a campanha onde deseja criar seu personagem.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {availableCampaignsForCharacter.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-text-secondary mb-4">
-                  Você precisa estar participando de uma campanha como jogador para criar um personagem.
-                </p>
-                <Button
-                  onClick={() => {
-                    setShowCreateCharacterModal(false)
-                    navigate('/campaign/create')
-                  }}
-                  className="bg-accent hover:bg-accent/90"
-                >
-                  Criar Nova Campanha
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {availableCampaignsForCharacter.map((campaign) => (
-                  <div
-                    key={campaign.id}
-                    onClick={() => {
-                      setShowCreateCharacterModal(false)
-                      navigate(`/campaign/${campaign.id}/character/create`)
-                    }}
-                    className="bg-card border border-card-secondary rounded-lg p-4 cursor-pointer hover:border-accent transition-colors"
-                  >
-                    <h3 className="text-white font-semibold mb-1">{campaign.name}</h3>
-                    {campaign.description && (
-                      <p className="text-text-secondary text-sm line-clamp-2">
-                        {campaign.description}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <CreateCharacterModal
+        open={createCharacterModal.isOpen}
+        onOpenChange={createCharacterModal.closeModal}
+        availableCampaigns={createCharacterModal.availableCampaigns}
+        onSelectCampaign={createCharacterModal.handleSelectCampaign}
+        onCreateCampaign={createCharacterModal.handleCreateCampaign}
+      />
 
       <Footer />
     </div>
