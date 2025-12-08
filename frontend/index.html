@@ -33,6 +33,35 @@
           }
         };
       }
+      
+      // Handler global para capturar erros não tratados (incluindo autoPip.js)
+      window.addEventListener('error', function(event) {
+        // Captura erros de MediaSession e require
+        if (event.message && (
+          event.message.includes('setActionHandler') ||
+          event.message.includes('enterpictureinpicture') ||
+          event.message.includes('require is not defined') ||
+          event.message.includes('module is not defined')
+        )) {
+          event.preventDefault();
+          console.warn('Erro capturado e silenciado:', event.message);
+          return true;
+        }
+      }, true);
+      
+      // Handler para Promise rejections não tratadas
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && (
+          event.reason.message && (
+            event.reason.message.includes('setActionHandler') ||
+            event.reason.message.includes('enterpictureinpicture') ||
+            event.reason.message.includes('require is not defined')
+          )
+        )) {
+          event.preventDefault();
+          console.warn('Promise rejection capturada e silenciada:', event.reason);
+        }
+      });
     </script>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
