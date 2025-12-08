@@ -210,7 +210,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
       await fetch(`${apiUrl}/api/sessions/${sessionId}/board-state`, {
         method: 'PUT',
         headers: {
@@ -241,7 +241,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
 
       // Carregar personagens
       const charsResponse = await fetch(
