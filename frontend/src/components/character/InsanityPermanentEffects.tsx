@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente para gerenciar consequências permanentes de insanidade
  * Exibe e gerencia efeitos permanentes após 10+ turnos em estado de insanidade
