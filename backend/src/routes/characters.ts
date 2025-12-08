@@ -119,7 +119,14 @@ charactersRouter.post(
       res.status(201).json(character)
     } catch (error: unknown) {
       const err = error as AppError
-      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+      // Retornar 400 para erros de validação, 500 para erros internos
+      const statusCode = err.message?.includes('inválid') || 
+                        err.message?.includes('não encontrada') || 
+                        err.message?.includes('não participa') ||
+                        err.message?.includes('não pode')
+                        ? 400 
+                        : 500
+      res.status(statusCode).json({ error: err.message || 'Erro desconhecido' })
     }
   }
 )

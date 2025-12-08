@@ -15,10 +15,10 @@ export const CharacterFilterSchema = z.object({
  * campaignId agora é opcional - permite criar personagens para testes ou uso futuro
  */
 export const CreateCharacterSchema = z.object({
-  campaignId: z.string().uuid().optional(),
+  campaignId: z.string().uuid().nullish(), // Aceita string UUID, null, undefined ou não presente
   name: z.string().min(1).max(100),
   class: z.enum(['COMBATENTE', 'ESPECIALISTA', 'OCULTISTA']),
-  path: z.string().max(100).optional(),
+  path: z.string().max(100).optional().nullable(),
   attributes: z.object({
     agi: z.number().int().min(-5).max(20),
     for: z.number().int().min(-5).max(20),

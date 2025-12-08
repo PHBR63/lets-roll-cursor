@@ -155,7 +155,10 @@ export const characterService = {
       }
 
       const characterClass: CharacterClass = (data.class as CharacterClass) || 'COMBATENTE'
-      const nex: number = typeof data.nex === 'number' ? data.nex : 5 // NEX inicial padrão
+      // NEX pode vir de data.nex ou data.stats.nex
+      const nex: number = typeof (data as any).nex === 'number' 
+        ? (data as any).nex 
+        : (typeof (data.stats as any)?.nex === 'number' ? (data.stats as any).nex : 5) // NEX inicial padrão
 
       // Usar atributos validados
       const validatedAttributes = {
