@@ -36,8 +36,9 @@ export default defineConfig({
     minify: 'esbuild',
     sourcemap: false,
     commonjsOptions: {
-      include: [/react-window/, /react/, /react-dom/, /react-router/, /@supabase/, /tailwindcss-animate/],
+      // Transforma require em import para todas as dependências
       transformMixedEsModules: true,
+      include: [/node_modules/], // Garante que olhe para todas dependências
       esmExternals: true,
     },
     rollupOptions: {
@@ -78,6 +79,8 @@ export default defineConfig({
       '@supabase/supabase-js',
       'react-window',
       'tailwindcss-animate',
+      '@emotion/is-prop-valid', // Força a pré-conversão dessa lib
+      'scheduler', // Força a pré-conversão dessa lib
     ],
     esbuildOptions: {
       // Garantir que CommonJS seja convertido para ES modules

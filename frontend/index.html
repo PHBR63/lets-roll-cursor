@@ -3,48 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <script>
-      // Polyfills para compatibilidade com libs antigas/Node.js
+      // Polyfills básicos para compatibilidade (sem require que quebra o app)
       window.global = window;
       window.module = { exports: {} };
       window.exports = window.module.exports;
       window.process = { env: {} };
       
-      // Polyfill para require (bibliotecas que esperam Node.js)
-      window.require = function(name) {
-        console.warn('Require chamado para:', name);
-        return {};
+      // Fix para MediaSession API errors - intercepta ANTES de qualquer código executar
+      // Função segura para registrar ações de mídia
+      const safeSetActionHandler = (action, handler) => {
+        try {
+          if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
+            navigator.mediaSession.setActionHandler(action, handler);
+          }
+        } catch (error) {
+          // Ignora silenciosamente erros de suporte a ações específicas
+          // Isso previne o erro "The provided value... is not a valid enum value"
+          console.warn(`MediaSession action "${action}" not supported:`, error.message || error);
+        }
       };
       
-      // Fix para MediaSession API errors - intercepta ANTES de qualquer código executar
+      // Substituir o setActionHandler original por uma versão segura
       if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
         const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
         navigator.mediaSession.setActionHandler = function(action, handler) {
-          try {
-            // Validação adicional: verifica se a ação é suportada antes de tentar
-            const supportedActions = ['play', 'pause', 'seekbackward', 'seekforward', 'previoustrack', 'nexttrack', 'stop'];
-            if (!supportedActions.includes(action) && action !== 'enterpictureinpicture') {
-              console.warn(`MediaSession action "${action}" não é suportada, ignorando...`);
-              return;
-            }
-            originalSetActionHandler(action, handler);
-          } catch (error) {
-            // Silencia erros de ações não suportadas pelo navegador
-            console.warn(`MediaSession action "${action}" not supported in this browser:`, error.message || error);
-          }
+          safeSetActionHandler(action, handler);
         };
       }
       
-      // Handler global para capturar erros não tratados (incluindo autoPip.js)
+      // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
       window.addEventListener('error', function(event) {
-        // Captura erros de MediaSession e require
+        // Captura erros de MediaSession e autoPip.js (pode vir de extensões do navegador)
         if (event.message && (
           event.message.includes('setActionHandler') ||
           event.message.includes('enterpictureinpicture') ||
-          event.message.includes('require is not defined') ||
-          event.message.includes('module is not defined')
+          (event.filename && event.filename.includes('autoPip.js'))
         )) {
           event.preventDefault();
-          console.warn('Erro capturado e silenciado:', event.message);
+          console.warn('Erro de MediaSession capturado e silenciado:', event.message);
           return true;
         }
       }, true);
@@ -54,12 +50,11 @@
         if (event.reason && (
           event.reason.message && (
             event.reason.message.includes('setActionHandler') ||
-            event.reason.message.includes('enterpictureinpicture') ||
-            event.reason.message.includes('require is not defined')
+            event.reason.message.includes('enterpictureinpicture')
           )
         )) {
           event.preventDefault();
-          console.warn('Promise rejection capturada e silenciada:', event.reason);
+          console.warn('Promise rejection de MediaSession capturada e silenciada:', event.reason);
         }
       });
     </script>
