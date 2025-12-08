@@ -2,6 +2,25 @@
 <html lang="pt-BR" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Fix para bibliotecas que esperam Node.js globals
+      window.global = window;
+      window.module = { exports: {} };
+      window.exports = window.module.exports;
+      
+      // Fix para MediaSession API errors
+      if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
+        const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+        navigator.mediaSession.setActionHandler = function(action, handler) {
+          try {
+            originalSetActionHandler(action, handler);
+          } catch (error) {
+            // Silencia erros de ações não suportadas pelo navegador
+            console.warn(`MediaSession action "${action}" not supported in this browser:`, error);
+          }
+        };
+      }
+    </script>
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
