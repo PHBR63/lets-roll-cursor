@@ -35,9 +35,13 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
             {result.skillName} vs DT {result.difficulty}
           </div>
           <div className="text-xs text-text-secondary mt-2 text-center">
-            Dados: [{result.dice?.join(', ')}] + Bônus: {result.skillBonus} = {result.total}
-            {result.advantage && ' (Vantagem)'}
-            {result.disadvantage && ' (Desvantagem)'}
+            Dados rolados: [{result.dice?.join(', ')}]
+            <br />
+            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
+            <br />
+            + Bônus de Perícia: {result.skillBonus} = <span className="font-bold">{result.total}</span>
+            {result.advantage && ' (Vantagem - escolheu maior)'}
+            {result.disadvantage && ' (Desvantagem - escolheu menor)'}
           </div>
           <div className="text-xs text-center mt-2">
             {result.success ? (
@@ -53,19 +57,27 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
         <>
           <div className="text-white font-bold text-xl text-center">
             {result.total} {result.hit ? '✅' : '❌'}
-            {result.critical && ' 🎯'}
+            {result.critical && ' 🎯 CRÍTICO!'}
           </div>
           <div className="text-text-secondary text-sm text-center mt-1">
             {result.skillName} vs Defesa {result.targetDefense}
+            {(result as any).threatRange && ` (Crítico: ${(result as any).threatRange}+)`}
           </div>
           <div className="text-xs text-text-secondary mt-2 text-center">
-            Ataque: [{result.dice?.join(', ') || (result.details && 'rolls' in result.details && Array.isArray(result.details.rolls) ? ((result.details.rolls as unknown as Array<{ die?: number; value?: number } | number>).map((r) => typeof r === 'number' ? r : (r.value || r.die || 0)).join(', ')) : '')}] + {(result as any).bonus || result.skillBonus || 0} = {result.total}
-            {result.critical && ' (CRÍTICO!)'}
+            Dados rolados: [{result.dice?.join(', ')}]
+            <br />
+            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
+            {(result as any).threatRange && (result as any).selectedDice >= (result as any).threatRange && (
+              <span className="text-yellow-400 font-bold"> (≥ Margem de Ameaça!)</span>
+            )}
+            <br />
+            + Bônus de Perícia: {(result as any).bonus || result.skillBonus || 0} = <span className="font-bold">{result.total}</span>
           </div>
           {result.hit && result.damage && (
             <div className="text-xs text-center mt-2">
               <span className="text-red-400">
                 Dano: {result.damage.total} ({result.damage.dice.join(', ')})
+                {result.critical && ' (dados multiplicados!)'}
               </span>
             </div>
           )}
@@ -74,6 +86,33 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
               <span className="text-green-400">Acertou!</span>
             ) : (
               <span className="text-red-400">Errou</span>
+            )}
+          </div>
+        </>
+      )}
+
+      {result.type === 'resistance' && (
+        <>
+          <div className="text-white font-bold text-xl text-center">
+            {result.total} {result.success ? '✅' : '❌'}
+          </div>
+          <div className="text-text-secondary text-sm text-center mt-1">
+            {(result as any).resistanceType} vs DT {(result as any).difficulty}
+          </div>
+          <div className="text-xs text-text-secondary mt-2 text-center">
+            Dados rolados: [{result.dice?.join(', ')}]
+            <br />
+            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
+            <br />
+            Resultado: <span className="font-bold">{result.total}</span>
+            {result.advantage && ' (Vantagem - escolheu maior)'}
+            {result.disadvantage && ' (Desvantagem - escolheu menor)'}
+          </div>
+          <div className="text-xs text-center mt-2">
+            {result.success ? (
+              <span className="text-green-400">Resistiu!</span>
+            ) : (
+              <span className="text-red-400">Falhou</span>
             )}
           </div>
         </>

@@ -511,4 +511,5 @@ export const characterService = {
   updateSkills: characterAttributesService.updateSkills,
   rollSkillTest: characterAttributesService.rollSkillTest,
   rollAttack: characterAttributesService.rollAttack,
+  rollResistance: characterAttributesService.rollResistance,
 }

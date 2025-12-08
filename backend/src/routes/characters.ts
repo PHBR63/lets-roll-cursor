@@ -237,14 +237,15 @@ charactersRouter.delete('/:id/abilities/:abilityId', async (req: Request, res: R
 // Rolar teste de perícia
 charactersRouter.post('/:id/roll-skill', async (req: Request, res: Response) => {
   try {
-    const { skillName, difficulty } = req.body
+    const { skillName, difficulty, advantageDice } = req.body
     if (!skillName) {
       return res.status(400).json({ error: 'skillName é obrigatório' })
     }
     const result = await characterService.rollSkillTest(
       req.params.id,
       skillName,
-      difficulty || 15
+      difficulty || 15,
+      advantageDice || 0
     )
     res.json(result)
   } catch (error: any) {
@@ -255,7 +256,7 @@ charactersRouter.post('/:id/roll-skill', async (req: Request, res: Response) => 
 // Rolar ataque
 charactersRouter.post('/:id/roll-attack', async (req: Request, res: Response) => {
   try {
-    const { skillName, targetDefense } = req.body
+    const { skillName, targetDefense, threatRange, advantageDice } = req.body
     if (!skillName) {
       return res.status(400).json({ error: 'skillName é obrigatório' })
     }
@@ -265,7 +266,34 @@ charactersRouter.post('/:id/roll-attack', async (req: Request, res: Response) =>
     const result = await characterService.rollAttack(
       req.params.id,
       skillName,
-      targetDefense
+      targetDefense,
+      threatRange || 20,
+      advantageDice || 0
+    )
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Rolar teste de resistência
+charactersRouter.post('/:id/roll-resistance', async (req: Request, res: Response) => {
+  try {
+    const { resistanceType, difficulty, advantageDice } = req.body
+    if (!resistanceType) {
+      return res.status(400).json({ error: 'resistanceType é obrigatório (Fortitude, Reflexos ou Vontade)' })
+    }
+    if (difficulty === undefined) {
+      return res.status(400).json({ error: 'difficulty é obrigatório' })
+    }
+    if (!['Fortitude', 'Reflexos', 'Vontade'].includes(resistanceType)) {
+      return res.status(400).json({ error: 'resistanceType deve ser Fortitude, Reflexos ou Vontade' })
+    }
+    const result = await characterService.rollResistance(
+      req.params.id,
+      resistanceType,
+      difficulty,
+      advantageDice || 0
     )
     res.json(result)
   } catch (error: any) {

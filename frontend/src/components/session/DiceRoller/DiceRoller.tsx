@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { DiceRollerBasic } from './DiceRollerBasic'
 import { DiceRollerSkill } from './DiceRollerSkill'
 import { DiceRollerAttack } from './DiceRollerAttack'
+import { DiceRollerResistance } from './DiceRollerResistance'
 import { ChainRoller } from './ChainRoller'
 import { RollHistory } from './RollHistory'
 import { DiceRollResult } from './DiceRollResult'
@@ -102,13 +103,16 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
       <h3 className="text-white font-semibold">Rolagem de Dados</h3>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="basic">Básica</TabsTrigger>
           <TabsTrigger value="skill" disabled={!character}>
             Perícia
           </TabsTrigger>
           <TabsTrigger value="attack" disabled={!character}>
             Ataque
+          </TabsTrigger>
+          <TabsTrigger value="resistance" disabled={!character}>
+            Resistência
           </TabsTrigger>
           <TabsTrigger value="tools">Ferramentas</TabsTrigger>
         </TabsList>
@@ -134,6 +138,15 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
 
         <TabsContent value="attack" className="space-y-4 mt-4">
           <DiceRollerAttack
+            character={character}
+            sessionId={sessionId}
+            campaignId={campaignId}
+            onRoll={handleRoll}
+          />
+        </TabsContent>
+
+        <TabsContent value="resistance" className="space-y-4 mt-4">
+          <DiceRollerResistance
             character={character}
             sessionId={sessionId}
             campaignId={campaignId}

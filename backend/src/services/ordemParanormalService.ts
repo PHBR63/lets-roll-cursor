@@ -76,74 +76,103 @@ export const ordemParanormalService = {
   },
 
   /**
-   * Rola teste de atributo conforme regras do sistema
+   * Rola teste de atributo conforme regras do sistema Ordem Paranormal
+   * Regra de Ouro: Rola uma quantidade de d20 igual ao valor do atributo base
+   * Escolhe o maior valor (exceto quando atributo = 0, que escolhe o menor)
+   * 
    * @param attributeValue - Valor do atributo base
-   * @param skillBonus - Bônus de perícia
+   * @param skillBonus - Bônus de perícia (Destreinado +0, Treinado +5, Veterano +10, Expert +15)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
    * @returns Resultado da rolagem
    */
-  rollAttributeTest(attributeValue: number, skillBonus: number = 0): {
+  rollAttributeTest(
+    attributeValue: number, 
+    skillBonus: number = 0,
+    advantageDice: number = 0
+  ): {
     dice: number[]
     result: number
     bonus: number
     total: number
     advantage: boolean
     disadvantage: boolean
+    selectedDice: number // Dado escolhido (maior ou menor)
   } {
     let diceCount: number
     let advantage = false
     let disadvantage = false
 
     if (attributeValue > 0) {
-      // Atributo positivo: vantagem
-      diceCount = 1 + attributeValue
+      // Atributo positivo: rola N dados (N = atributo), escolhe o MAIOR
+      diceCount = attributeValue
       advantage = true
     } else if (attributeValue === 0) {
-      // Atributo zero: desvantagem mínima (2d20, usa menor)
+      // Atributo zero: rola 2d20, escolhe o MENOR (regra especial)
       diceCount = 2
       disadvantage = true
     } else {
-      // Atributo negativo: desvantagem
-      diceCount = 1 + Math.abs(attributeValue)
+      // Atributo negativo: rola |N| dados, escolhe o MENOR
+      diceCount = Math.abs(attributeValue)
       disadvantage = true
     }
 
-    // Rolar os dados
+    // Aplicar vantagem/desvantagem de dados
+    diceCount = Math.max(0, diceCount + advantageDice)
+    
+    // Se penalidade reduzir dados a zero ou menos, aplicar regra do atributo 0
+    if (diceCount <= 0) {
+      diceCount = 2
+      disadvantage = true
+      advantage = false
+    }
+
+    // Rolar os dados (sempre d20)
     const dice: number[] = []
     for (let i = 0; i < diceCount; i++) {
       dice.push(Math.floor(Math.random() * 20) + 1)
     }
 
-    // Determinar resultado
-    let result: number
-    if (advantage) {
-      result = Math.max(...dice)
+    // Determinar resultado conforme regras
+    let selectedDice: number
+    if (advantage && !disadvantage) {
+      // Atributo > 0: escolhe o MAIOR
+      selectedDice = Math.max(...dice)
     } else {
-      result = Math.min(...dice)
+      // Atributo = 0 ou < 0: escolhe o MENOR
+      selectedDice = Math.min(...dice)
     }
 
-    const total = result + skillBonus
+    // Resultado final = maior/menor dado + bônus de perícia
+    const total = selectedDice + skillBonus
 
     return {
       dice,
-      result,
+      result: selectedDice, // Valor do dado escolhido (sem bônus)
       bonus: skillBonus,
-      total,
+      total, // Resultado final (dado + bônus)
       advantage,
       disadvantage,
+      selectedDice, // Dado escolhido para referência
     }
   },
 
   /**
-   * Rola teste de ataque
+   * Rola teste de ataque conforme regras do sistema Ordem Paranormal
+   * Acerto Crítico: Quando o resultado do dado (sem somar bônus) >= Margem de Ameaça
+   * 
    * @param attributeValue - Valor do atributo base (FOR para Luta, AGI para Pontaria)
    * @param skillBonus - Bônus de perícia de ataque
-   * @param targetDefense - Defesa do alvo
+   * @param targetDefense - Defesa do alvo (DT do ataque)
+   * @param threatRange - Margem de Ameaça (padrão: 20, mas pode ser 18, 19, etc.)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
    * @returns Resultado do ataque
    */
   rollAttack(
     attributeValue: number,
     skillBonus: number,
-    targetDefense: number
+    targetDefense: number,
+    threatRange: number = 20,
+    advantageDice: number = 0
   ): {
     dice: number[]
     result: number
@@ -152,9 +181,15 @@ export const ordemParanormalService = {
     hit: boolean
     critical: boolean
     targetDefense: number
+    threatRange: number
+    selectedDice: number
   } {
-    const rollResult = this.rollAttributeTest(attributeValue, skillBonus)
-    const critical = rollResult.dice.some((d) => d === 20)
+    const rollResult = this.rollAttributeTest(attributeValue, skillBonus, advantageDice)
+    
+    // Acerto Crítico: quando o dado escolhido (sem bônus) >= Margem de Ameaça
+    const critical = rollResult.selectedDice >= threatRange
+    
+    // Ataque acerta se: resultado total >= defesa OU foi crítico
     const hit = rollResult.total >= targetDefense || critical
 
     return {
@@ -162,16 +197,20 @@ export const ordemParanormalService = {
       hit,
       critical,
       targetDefense,
+      threatRange,
     }
   },
 
   /**
-   * Calcula dano de uma arma
+   * Calcula dano de uma arma conforme regras do sistema Ordem Paranormal
+   * Em acerto crítico: multiplica os DADOS de dano (não os bônus numéricos)
+   * 
    * @param weaponDice - Fórmula de dados da arma (ex: "1d8", "2d6")
    * @param attributeValue - Valor do atributo (FOR para corpo-a-corpo)
    * @param isMelee - Se é ataque corpo-a-corpo
    * @param isCritical - Se foi acerto crítico
    * @param multiplier - Multiplicador de crítico (ex: 2, 3)
+   * @param skillBonus - Bônus de perícia (ex: +5 por Tiro Certeiro) - NÃO é multiplicado no crítico
    * @returns Resultado do dano
    */
   calculateDamage(
@@ -179,10 +218,12 @@ export const ordemParanormalService = {
     attributeValue: number,
     isMelee: boolean,
     isCritical: boolean,
-    multiplier: number = 2
+    multiplier: number = 2,
+    skillBonus: number = 0
   ): {
     dice: number[]
     attributeBonus: number
+    skillBonus: number
     total: number
     isCritical: boolean
     multiplier: number
@@ -196,7 +237,7 @@ export const ordemParanormalService = {
     const count = parseInt(match[1], 10)
     const sides = parseInt(match[2], 10)
 
-    // Se crítico, multiplica a quantidade de dados
+    // Se crítico, multiplica a quantidade de DADOS (não os bônus)
     const finalCount = isCritical ? count * multiplier : count
 
     // Rolar os dados
@@ -205,19 +246,62 @@ export const ordemParanormalService = {
       dice.push(Math.floor(Math.random() * sides) + 1)
     }
 
-    // Calcular total
+    // Calcular total dos dados
     const diceTotal = dice.reduce((sum, d) => sum + d, 0)
     
-    // Adicionar atributo apenas em corpo-a-corpo
+    // Adicionar atributo apenas em corpo-a-corpo (não multiplicado no crítico)
     const attributeBonus = isMelee ? attributeValue : 0
-    const total = diceTotal + attributeBonus
+    
+    // Bônus de perícia (ex: Tiro Certeiro +5) - NÃO é multiplicado no crítico
+    // Total = (dados rolados) + (bônus numéricos)
+    const total = diceTotal + attributeBonus + skillBonus
 
     return {
       dice,
       attributeBonus,
+      skillBonus,
       total,
       isCritical,
       multiplier,
+    }
+  },
+
+  /**
+   * Rola teste de resistência conforme regras do sistema Ordem Paranormal
+   * Fortitude (VIG): Resistir a dor física, doenças, venenos
+   * Reflexos (AGI): Esquivar de explosões, armadilhas, projéteis
+   * Vontade (PRE): Resistir a medo, manipulação mental, insanidade
+   * 
+   * @param attributeValue - Valor do atributo base (VIG, AGI ou PRE)
+   * @param difficulty - Dificuldade do teste (DT)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
+   * @returns Resultado do teste de resistência
+   */
+  rollResistance(
+    attributeValue: number,
+    difficulty: number,
+    advantageDice: number = 0
+  ): {
+    dice: number[]
+    result: number
+    total: number
+    success: boolean
+    difficulty: number
+    selectedDice: number
+  } {
+    // Teste de resistência usa apenas o atributo (sem bônus de perícia)
+    const rollResult = this.rollAttributeTest(attributeValue, 0, advantageDice)
+    
+    // Sucesso se resultado >= dificuldade
+    const success = rollResult.total >= difficulty
+
+    return {
+      dice: rollResult.dice,
+      result: rollResult.selectedDice,
+      total: rollResult.total,
+      success,
+      difficulty,
+      selectedDice: rollResult.selectedDice,
     }
   },
 
@@ -709,4 +793,5 @@ export const ordemParanormalService = {
     }
   },
 }
+
 

@@ -32,6 +32,8 @@ export function DiceRollerAttack({ character, sessionId, campaignId, onRoll }: D
   const [targetDefense, setTargetDefense] = useState(10)
   const [weaponDice, setWeaponDice] = useState('1d6')
   const [isMelee, setIsMelee] = useState(true)
+  const [threatRange, setThreatRange] = useState(20) // Margem de Ameaça
+  const [advantageDice, setAdvantageDice] = useState(0) // +1d20 ou -1d20
   const [rolling, setRolling] = useState(false)
   const toast = useToast()
 
@@ -70,6 +72,8 @@ export function DiceRollerAttack({ character, sessionId, campaignId, onRoll }: D
             targetDefense: parseInt(String(targetDefense)),
             weaponDice,
             isMelee,
+            threatRange, // Margem de Ameaça para crítico
+            advantageDice, // Vantagem/desvantagem de dados
             criticalMultiplier: 2,
           }),
         }
@@ -137,6 +141,44 @@ export function DiceRollerAttack({ character, sessionId, campaignId, onRoll }: D
           onChange={(e) => setWeaponDice(e.target.value)}
           className="bg-input border-white/20"
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-white">Margem de Ameaça (Crítico)</Label>
+        <Select
+          value={String(threatRange)}
+          onValueChange={(value) => setThreatRange(parseInt(value))}
+        >
+          <SelectTrigger className="bg-input border-white/20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="18">18-20 (x2)</SelectItem>
+            <SelectItem value="19">19-20 (x2)</SelectItem>
+            <SelectItem value="20">20 (x2)</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-text-secondary">
+          Quando o dado (sem bônus) {'>='} Margem de Ameaça, o ataque é crítico e multiplica os dados de dano.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-white">Vantagem/Desvantagem de Dados</Label>
+        <Select
+          value={String(advantageDice)}
+          onValueChange={(value) => setAdvantageDice(parseInt(value))}
+        >
+          <SelectTrigger className="bg-input border-white/20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="-1">-1d20 (Desvantagem)</SelectItem>
+            <SelectItem value="0">Nenhuma (0)</SelectItem>
+            <SelectItem value="1">+1d20 (Vantagem)</SelectItem>
+            <SelectItem value="2">+2d20</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex items-center space-x-2">

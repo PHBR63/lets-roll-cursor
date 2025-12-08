@@ -14,32 +14,34 @@ import { Loader2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/useToast'
 import { logger } from '@/utils/logger'
-import { ALL_SKILLS } from '@/types/ordemParanormal'
 import { Character } from './types'
 import { DiceRollResult } from '@/types/dice'
 import { AppError } from '@/types/common'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
-interface DiceRollerSkillProps {
+interface DiceRollerResistanceProps {
   character: Character | null
   sessionId?: string
   campaignId?: string
   onRoll: (result: DiceRollResult) => void
 }
 
-export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: DiceRollerSkillProps) {
-  const [selectedSkill, setSelectedSkill] = useState('')
+/**
+ * Componente para rolar testes de resistência
+ * Fortitude (VIG): Resistir a dor física, doenças, venenos
+ * Reflexos (AGI): Esquivar de explosões, armadilhas, projéteis
+ * Vontade (PRE): Resistir a medo, manipulação mental, insanidade
+ */
+export function DiceRollerResistance({ character, sessionId, campaignId, onRoll }: DiceRollerResistanceProps) {
+  const [resistanceType, setResistanceType] = useState<'Fortitude' | 'Reflexos' | 'Vontade'>('Fortitude')
   const [difficulty, setDifficulty] = useState(15)
-  const [advantageDice, setAdvantageDice] = useState(0) // +1d20 ou -1d20
+  const [advantageDice, setAdvantageDice] = useState(0)
   const [rolling, setRolling] = useState(false)
   const toast = useToast()
 
-  const availableSkills = character?.skills
-    ? Object.keys(character.skills).filter((skill) => ALL_SKILLS[skill])
-    : []
-
   const handleRoll = async () => {
-    if (!character || !selectedSkill) {
-      toast.warning('Aviso', 'Selecione uma perícia')
+    if (!character) {
+      toast.warning('Aviso', 'Selecione um personagem')
       return
     }
 
@@ -49,10 +51,10 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
 
       const response = await fetch(
-        `${apiUrl}/api/characters/${character.id}/roll-skill`,
+        `${apiUrl}/api/characters/${character.id}/roll-resistance`,
         {
           method: 'POST',
           headers: {
@@ -60,7 +62,7 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
             Authorization: `Bearer ${session.session.access_token}`,
           },
           body: JSON.stringify({
-            skillName: selectedSkill,
+            resistanceType,
             difficulty,
             advantageDice,
           }),
@@ -69,15 +71,15 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Erro ao rolar teste de perícia')
+        throw new Error(error.error || 'Erro ao rolar teste de resistência')
       }
 
       const result = await response.json()
-      onRoll({ type: 'skill', ...result })
+      onRoll({ type: 'resistance', ...result })
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error }, 'Erro ao rolar teste de perícia')
-      toast.error('Erro ao rolar teste de perícia', err.message || 'Tente novamente.')
+      logger.error({ error }, 'Erro ao rolar teste de resistência')
+      toast.error('Erro ao rolar teste de resistência', err.message || 'Tente novamente.')
     } finally {
       setRolling(false)
     }
@@ -94,17 +96,21 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label className="text-white">Perícia</Label>
-        <Select value={selectedSkill} onValueChange={setSelectedSkill}>
+        <Label className="text-white">Tipo de Resistência</Label>
+        <Select value={resistanceType} onValueChange={(value: any) => setResistanceType(value)}>
           <SelectTrigger className="bg-input border-white/20">
-            <SelectValue placeholder="Selecione uma perícia" />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {availableSkills.map((skill) => (
-              <SelectItem key={skill} value={skill}>
-                {skill}
-              </SelectItem>
-            ))}
+            <SelectItem value="Fortitude">
+              Fortitude (VIG) - Dor física, doenças, venenos
+            </SelectItem>
+            <SelectItem value="Reflexos">
+              Reflexos (AGI) - Explosões, armadilhas, projéteis
+            </SelectItem>
+            <SelectItem value="Vontade">
+              Vontade (PRE) - Medo, manipulação mental, insanidade
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -154,14 +160,11 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
             <SelectItem value="2">+2d20</SelectItem>
           </SelectContent>
         </Select>
-        <p className="text-xs text-text-secondary">
-          Adiciona ou remove dados da reserva. Se reduzir a zero ou menos, aplica regra do atributo 0 (2d20, escolhe menor).
-        </p>
       </div>
 
       <Button
         onClick={handleRoll}
-        disabled={rolling || !selectedSkill}
+        disabled={rolling}
         className="w-full bg-accent hover:bg-accent/90"
       >
         {rolling ? (
@@ -170,7 +173,7 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
             Rolando...
           </>
         ) : (
-          'Rolar Teste de Perícia'
+          'Rolar Teste de Resistência'
         )}
       </Button>
     </div>

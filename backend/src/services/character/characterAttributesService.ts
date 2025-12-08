@@ -132,9 +132,10 @@ export const characterAttributesService = {
    * @param id - ID do personagem
    * @param skillName - Nome da perícia
    * @param difficulty - Dificuldade do teste (DT)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
    * @returns Resultado da rolagem
    */
-  async rollSkillTest(id: string, skillName: string, difficulty: number = 15) {
+  async rollSkillTest(id: string, skillName: string, difficulty: number = 15, advantageDice: number = 0) {
     try {
       const { data: character, error: fetchError } = await supabase
         .from('characters')
@@ -200,10 +201,11 @@ export const characterAttributesService = {
       // Aplicar penalidade em dados (se houver)
       const effectiveAttribute = attributeValue + attributePenalty
 
-      // Rolar teste (incluindo penalidade de kit)
+      // Rolar teste (incluindo penalidade de kit e vantagem/desvantagem)
       const rollResult = ordemParanormalService.rollAttributeTest(
         effectiveAttribute,
-        skill.bonus + skillPenalty + kitPenalty
+        skill.bonus + skillPenalty + kitPenalty,
+        advantageDice
       )
 
       const success = rollResult.total >= difficulty
@@ -234,9 +236,17 @@ export const characterAttributesService = {
    * @param id - ID do personagem
    * @param skillName - Nome da perícia de ataque (Luta ou Pontaria)
    * @param targetDefense - Defesa do alvo
+   * @param threatRange - Margem de Ameaça para crítico (padrão: 20)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
    * @returns Resultado do ataque
    */
-  async rollAttack(id: string, skillName: string, targetDefense: number) {
+  async rollAttack(
+    id: string, 
+    skillName: string, 
+    targetDefense: number,
+    threatRange: number = 20,
+    advantageDice: number = 0
+  ) {
     try {
       const { data: character, error: fetchError } = await supabase
         .from('characters')
@@ -283,7 +293,9 @@ export const characterAttributesService = {
       const attackResult = ordemParanormalService.rollAttack(
         effectiveAttribute,
         skill.bonus + skillPenalty,
-        targetDefense
+        targetDefense,
+        threatRange,
+        advantageDice
       )
 
       return {
@@ -300,6 +312,75 @@ export const characterAttributesService = {
       const err = error as AppError
       logger.error({ error }, 'Error rolling attack')
       throw new Error('Erro ao rolar ataque: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Rola teste de resistência do personagem
+   * @param id - ID do personagem
+   * @param resistanceType - Tipo de resistência: 'Fortitude' (VIG), 'Reflexos' (AGI) ou 'Vontade' (PRE)
+   * @param difficulty - Dificuldade do teste (DT)
+   * @param advantageDice - Bônus/penalidade de dados (+1d20 ou -1d20)
+   * @returns Resultado do teste de resistência
+   */
+  async rollResistance(
+    id: string,
+    resistanceType: 'Fortitude' | 'Reflexos' | 'Vontade',
+    difficulty: number,
+    advantageDice: number = 0
+  ) {
+    try {
+      const { data: character, error: fetchError } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const attributes = character.attributes || {}
+
+      // Mapear tipo de resistência para atributo
+      const resistanceMap: { [key: string]: keyof typeof attributes } = {
+        Fortitude: 'vig', // VIG
+        Reflexos: 'agi', // AGI
+        Vontade: 'pre', // PRE
+      }
+
+      const attributeKey = resistanceMap[resistanceType]
+      if (!attributeKey) {
+        throw new Error(`Tipo de resistência ${resistanceType} inválido`)
+      }
+
+      const attributeValue = (attributes[attributeKey] as number) || 0
+
+      // Calcular penalidades de condições
+      const conditions: Condition[] = character.conditions || []
+      const penalties = ordemParanormalService.calculateConditionPenalties(conditions)
+      const attributePenalty =
+        (penalties.attributePenalties[attributeKey as keyof typeof penalties.attributePenalties] as number) || 0
+
+      const effectiveAttribute = attributeValue + attributePenalty
+
+      // Rolar teste de resistência (sem bônus de perícia)
+      const resistanceResult = ordemParanormalService.rollResistance(
+        effectiveAttribute,
+        difficulty,
+        advantageDice
+      )
+
+      return {
+        ...resistanceResult,
+        resistanceType,
+        attributeValue,
+        penalties: {
+          attributePenalty,
+        },
+      }
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error rolling resistance')
+      throw new Error('Erro ao rolar teste de resistência: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

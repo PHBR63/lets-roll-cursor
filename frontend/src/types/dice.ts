@@ -7,7 +7,7 @@ export interface DiceRollResult {
   formula: string
   result: number
   total: number
-  type?: 'basic' | 'skill' | 'attack'
+  type?: 'basic' | 'skill' | 'attack' | 'resistance'
   bonus?: number
   details?: {
     rolls: Array<{

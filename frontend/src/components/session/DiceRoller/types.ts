@@ -3,7 +3,7 @@
  */
 
 export interface DiceRollResult {
-  type: 'basic' | 'skill' | 'attack'
+  type: 'basic' | 'skill' | 'attack' | 'resistance'
   result?: number
   total?: number
   formula?: string
