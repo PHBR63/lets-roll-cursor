@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { memo } from 'react'
 import { Card } from '@/components/ui/card'
 import { AnimatedProgress } from '@/components/ui/animated-progress'

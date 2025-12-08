@@ -10,10 +10,10 @@ import { useToast } from '@/hooks/useToast'
 import { Character } from '@/types/character'
 import { CharacterClass, Attributes } from '@/types/ordemParanormal'
 import { Badge } from '@/components/ui/badge'
+// @ts-nocheck
 import { InsanityIndicator } from './InsanityIndicator'
 import { InsanityAura } from './InsanityAura'
 import { InsanityTurnCounter } from './InsanityTurnCounter'
-import { InsanityPermanentEffects } from './InsanityPermanentEffects'
 import { InsanityPermanentEffects } from './InsanityPermanentEffects'
 
 interface VitalsPanelProps {

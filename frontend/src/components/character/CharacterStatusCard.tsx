@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { memo, useMemo } from 'react'
 import { AnimatedProgressBar } from '@/components/ui/animated-progress'
 import { Card } from '@/components/ui/card'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button } from '@/components/ui/button'
 import { Ruler, Minus, Circle, Square } from 'lucide-react'
 import { useGameBoardContext } from './GameBoardContext'

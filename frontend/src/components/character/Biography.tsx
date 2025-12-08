@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect, useCallback } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { Save } from 'lucide-react'

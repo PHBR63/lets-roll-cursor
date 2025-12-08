@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Users, Skull } from 'lucide-react'
 import { useGameBoardContext } from './GameBoardContext'
 

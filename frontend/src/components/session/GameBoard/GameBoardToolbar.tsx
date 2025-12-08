@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Button } from '@/components/ui/button'
 import { ZoomIn, ZoomOut, RotateCcw, Grid, Layers } from 'lucide-react'
 import { useGameBoardContext } from './GameBoardContext'

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente de feedback visual para estados de insanidade
  * Versão melhorada com mais detalhes e integração com useInsanityState

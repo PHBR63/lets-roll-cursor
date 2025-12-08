@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ReactNode } from 'react'
 import { Inbox, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'

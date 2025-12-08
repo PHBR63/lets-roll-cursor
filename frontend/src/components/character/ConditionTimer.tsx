@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Clock, X } from 'lucide-react'

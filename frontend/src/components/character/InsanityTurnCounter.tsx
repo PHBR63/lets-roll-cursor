@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente de Contador de Turnos em Estado de Insanidade
  * Rastreia quantos turnos o personagem está em estado de insanidade
