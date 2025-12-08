@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/accordion'
 import { SEOHead } from '@/components/common/SEOHead'
 import { getApiBaseUrl } from '@/utils/apiUrl'
+import { DiceRoller } from '@/components/session/DiceRoller/DiceRoller'
 
 /**
  * Página da ficha de personagem do sistema Ordem Paranormal
@@ -291,6 +292,15 @@ export function CharacterSheet() {
               character={character}
               onUpdate={loadCharacter}
             />
+
+            {/* Rolagem de Dados */}
+            <div className="bg-card rounded-lg p-6 border border-card-secondary">
+              <h2 className="text-xl font-bold text-white mb-4">Rolagem de Dados</h2>
+              <DiceRoller
+                sessionId={undefined}
+                campaignId={character.campaign_id || undefined}
+              />
+            </div>
 
             {/* Seções adicionais podem ser adicionadas aqui */}
           </div>

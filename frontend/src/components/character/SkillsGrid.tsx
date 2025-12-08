@@ -154,6 +154,7 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
                     skillName={skillName}
                     currentSkill={currentSkill}
                     onSkillChange={handleSkillChange}
+                    character={character}
                   />
                 )
               })}

@@ -20,6 +20,7 @@ import { Campaign, CampaignParticipant } from '@/types/campaign'
 import { Character } from '@/types/character'
 import { SEOHead } from '@/components/common/SEOHead'
 import { getApiBaseUrl } from '@/utils/apiUrl'
+import { DiceRoller } from '@/components/session/DiceRoller/DiceRoller'
 
 /**
  * Página de detalhes da campanha
@@ -253,6 +254,15 @@ export function CampaignDetail() {
                 </div>
               </div>
             )}
+
+            {/* Seção Rolagem de Dados */}
+            <section className="bg-card border border-card-secondary rounded-lg p-6">
+              <h2 className="text-xl font-bold text-white mb-4">Rolagem de Dados</h2>
+              <DiceRoller
+                sessionId={undefined}
+                campaignId={id}
+              />
+            </section>
 
             {/* Seção Status - Grid de Personagens */}
             <section className="bg-card border border-card-secondary rounded-lg p-6">
