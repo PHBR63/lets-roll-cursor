@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 import {
   Select,
   SelectContent,
