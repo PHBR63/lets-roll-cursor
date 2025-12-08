@@ -38,7 +38,55 @@ const GameBoardContext = createContext<GameBoardContextValue | undefined>(undefi
 export function useGameBoardContext() {
   const context = useContext(GameBoardContext)
   if (!context) {
-    throw new Error('useGameBoardContext must be used within GameBoardProvider')
+    // Em vez de lançar erro, retornar um objeto vazio para evitar quebra da aplicação
+    // Isso pode acontecer durante hot reload ou em casos de renderização condicional
+    console.warn('useGameBoardContext must be used within GameBoardProvider. Returning empty context.')
+    return {
+      state: {
+        imageUrl: null,
+        zoom: 1,
+        position: { x: 0, y: 0 },
+        isDragging: false,
+        dragStart: { x: 0, y: 0 },
+        showGrid: false,
+        tokens: [],
+        selectedToken: null,
+        drawingMode: 'none' as const,
+        drawings: [],
+        currentDrawing: null,
+        drawingStart: null,
+        measurementMode: false,
+        measurement: null,
+        layers: {
+          background: true,
+          tokens: true,
+          annotations: true,
+        },
+      },
+      setState: () => {},
+      characters: [],
+      creatures: [],
+      loading: false,
+      uploading: false,
+      setUploading: () => {},
+      sessionId: undefined,
+      campaignId: undefined,
+      fileInputRef: { current: null },
+      setImageUrl: () => {},
+      setZoom: () => {},
+      setPosition: () => {},
+      setTokens: () => {},
+      setDrawings: () => {},
+      setMeasurement: () => {},
+      toggleLayer: () => {},
+      handleZoomIn: () => {},
+      handleZoomOut: () => {},
+      handleReset: () => {},
+      handleAddToken: () => {},
+      handleAddCharacterToken: () => {},
+      handleAddCreatureToken: () => {},
+      handleRemoveToken: () => {},
+    } as GameBoardContextValue
   }
   return context
 }

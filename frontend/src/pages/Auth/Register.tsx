@@ -141,6 +141,7 @@ export function Register() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     {...register('password')}
                     className={errors.password ? 'border-red-500' : ''}
                   />
@@ -157,6 +158,7 @@ export function Register() {
                     id="confirmPassword"
                     type="password"
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     {...register('confirmPassword')}
                     className={errors.confirmPassword ? 'border-red-500' : ''}
                   />

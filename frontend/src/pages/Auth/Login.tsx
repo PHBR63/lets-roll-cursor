@@ -109,6 +109,7 @@ export function Login() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
+                    autoComplete="current-password"
                     {...register('password')}
                     className={errors.password ? 'border-red-500' : ''}
                   />

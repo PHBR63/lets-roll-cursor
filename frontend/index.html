@@ -10,16 +10,28 @@
       window.process = { env: {} };
       
       // Fix para MediaSession API errors - intercepta ANTES de qualquer código executar
+      // Lista de ações suportadas oficialmente pelo MediaSession API
+      const SUPPORTED_MEDIA_SESSION_ACTIONS = [
+        'play', 'pause', 'seekbackward', 'seekforward', 
+        'previoustrack', 'nexttrack', 'seekto', 'stop'
+      ];
+      
       // Função segura para registrar ações de mídia
       const safeSetActionHandler = (action, handler) => {
         try {
+          // Verificar se a ação é suportada antes de tentar registrar
+          if (!SUPPORTED_MEDIA_SESSION_ACTIONS.includes(action) && action !== 'enterpictureinpicture') {
+            // Silenciosamente ignora ações não suportadas (como enterpictureinpicture)
+            return;
+          }
+          
           if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
             navigator.mediaSession.setActionHandler(action, handler);
           }
         } catch (error) {
           // Ignora silenciosamente erros de suporte a ações específicas
           // Isso previne o erro "The provided value... is not a valid enum value"
-          console.warn(`MediaSession action "${action}" not supported:`, error.message || error);
+          // Não logar para evitar poluição do console
         }
       };
       

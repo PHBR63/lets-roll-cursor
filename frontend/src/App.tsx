@@ -21,6 +21,7 @@ const CampaignDetail = lazy(() => import('./pages/Campaign/CampaignDetail').then
 const SessionRoom = lazy(() => import('./pages/GameSession/SessionRoom').then(m => ({ default: m.SessionRoom })))
 const CharacterSheet = lazy(() => import('./pages/Character/CharacterSheet').then(m => ({ default: m.CharacterSheet })))
 const CreateCharacter = lazy(() => import('./pages/Character/CreateCharacter').then(m => ({ default: m.CreateCharacter })))
+const CharactersList = lazy(() => import('./pages/Character/CharactersList').then(m => ({ default: m.CharactersList })))
 const MasterDashboard = lazy(() => import('./pages/Master/Dashboard').then(m => ({ default: m.MasterDashboard })))
 const RitualsGuide = lazy(() => import('./pages/Rituals/RitualsGuide').then(m => ({ default: m.RitualsGuide })))
 const SettingsPage = lazy(() => import('./pages/Settings/SettingsPage').then(m => ({ default: m.SettingsPage })))
@@ -114,6 +115,18 @@ function App() {
                     <ProtectedRoute>
                       <ErrorBoundary>
                         <CreateCharacter />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/characters"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <PageTransition>
+                          <CharactersList />
+                        </PageTransition>
                       </ErrorBoundary>
                     </ProtectedRoute>
                   }

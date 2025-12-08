@@ -42,6 +42,13 @@ export function Navbar() {
             </Button>
           </Link>
 
+          <Link to="/characters">
+            <Button variant="ghost" className="flex items-center gap-2">
+              <User className="h-5 w-5 text-white" />
+              <span className="text-white">Meus Personagens</span>
+            </Button>
+          </Link>
+
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5 text-white" />
           </Button>
@@ -105,6 +112,14 @@ export function Navbar() {
                 >
                   <Sparkles className="h-5 w-5" />
                   Rituais
+                </Link>
+                <Link
+                  to="/characters"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-2 py-2 text-white hover:text-accent"
+                >
+                  <User className="h-5 w-5" />
+                  Meus Personagens
                 </Link>
                 <Link
                   to="/profile"
