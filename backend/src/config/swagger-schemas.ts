@@ -239,6 +239,191 @@
  *             description:
  *               type: string
  *
+ *     Item:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *           nullable: true
+ *         type:
+ *           type: string
+ *           nullable: true
+ *         weight:
+ *           type: number
+ *           nullable: true
+ *         price:
+ *           type: number
+ *           nullable: true
+ *         category:
+ *           type: string
+ *           enum: [I, II, III, IV]
+ *           nullable: true
+ *         modificationLevel:
+ *           type: number
+ *           nullable: true
+ *         campaign_id:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         is_global:
+ *           type: boolean
+ *         created_by:
+ *           type: string
+ *           format: uuid
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     Ability:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *           nullable: true
+ *         type:
+ *           type: string
+ *           nullable: true
+ *         campaign_id:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         is_global:
+ *           type: boolean
+ *         created_by:
+ *           type: string
+ *           format: uuid
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     Creature:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *           nullable: true
+ *         type:
+ *           type: string
+ *           nullable: true
+ *         campaign_id:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         is_global:
+ *           type: boolean
+ *         stats:
+ *           type: object
+ *           nullable: true
+ *         attributes:
+ *           type: object
+ *           nullable: true
+ *         skills:
+ *           type: object
+ *           nullable: true
+ *         conditions:
+ *           type: array
+ *           items:
+ *             type: string
+ *         created_by:
+ *           type: string
+ *           format: uuid
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     ThreatTemplate:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *           nullable: true
+ *         campaign_id:
+ *           type: string
+ *           format: uuid
+ *           nullable: true
+ *         is_global:
+ *           type: boolean
+ *         template_data:
+ *           type: object
+ *         created_by:
+ *           type: string
+ *           format: uuid
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     CampaignParticipant:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         campaign_id:
+ *           type: string
+ *           format: uuid
+ *         user_id:
+ *           type: string
+ *           format: uuid
+ *         role:
+ *           type: string
+ *           enum: [master, player, observer]
+ *         joined_at:
+ *           type: string
+ *           format: date-time
+ *
+ *     InventoryItem:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         character_id:
+ *           type: string
+ *           format: uuid
+ *         item_id:
+ *           type: string
+ *           format: uuid
+ *         quantity:
+ *           type: number
+ *         equipped:
+ *           type: boolean
+ *         item:
+ *           $ref: '#/components/schemas/Item'
+ *
+ *     AmmunitionState:
+ *       type: object
+ *       properties:
+ *         characterId:
+ *           type: string
+ *           format: uuid
+ *         sessionId:
+ *           type: string
+ *           format: uuid
+ *         current:
+ *           type: number
+ *         max:
+ *           type: number
+ *
  *   securitySchemes:
  *     bearerAuth:
  *       type: http

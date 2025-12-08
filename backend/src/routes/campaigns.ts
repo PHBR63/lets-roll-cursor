@@ -7,6 +7,13 @@ import { CreateCampaignSchema, UpdateCampaignSchema } from '../middleware/schema
 import { AppError } from '../types/common'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Campaigns
+ *     description: Operações relacionadas a campanhas de RPG
+ */
+
+/**
  * Rotas para CRUD de campanhas
  */
 export const campaignsRouter = Router()
@@ -29,6 +36,30 @@ const upload = multer({
   },
 })
 
+/**
+ * @swagger
+ * /api/campaigns:
+ *   get:
+ *     summary: Lista todas as campanhas do usuário
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de campanhas do usuário
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Campaign'
+ *       401:
+ *         description: Usuário não autenticado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Listar campanhas do usuário
 campaignsRouter.get('/', async (req: Request, res: Response) => {
   try {
@@ -44,6 +75,55 @@ campaignsRouter.get('/', async (req: Request, res: Response) => {
     }
 })
 
+/**
+ * @swagger
+ * /api/campaigns:
+ *   post:
+ *     summary: Cria uma nova campanha
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nome da campanha
+ *               description:
+ *                 type: string
+ *                 description: Descrição da campanha
+ *               systemRpg:
+ *                 type: string
+ *                 description: Sistema de RPG
+ *               tags:
+ *                 type: string
+ *                 description: Tags em formato JSON array
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Imagem da campanha (máx 5MB)
+ *     responses:
+ *       201:
+ *         description: Campanha criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Campaign'
+ *       400:
+ *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Usuário não autenticado
+ */
 // Criar nova campanha (com upload de imagem)
 campaignsRouter.post('/', (req, res, next) => {
   upload.single('image')(req, res, (err) => {
@@ -136,6 +216,36 @@ campaignsRouter.post('/', (req, res, next) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/campaigns/{id}:
+ *   get:
+ *     summary: Obtém uma campanha por ID
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID da campanha
+ *     responses:
+ *       200:
+ *         description: Campanha encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Campaign'
+ *       404:
+ *         description: Campanha não encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 // Obter campanha por ID
 campaignsRouter.get('/:id', async (req: Request, res: Response) => {
   try {
@@ -147,6 +257,52 @@ campaignsRouter.get('/:id', async (req: Request, res: Response) => {
     }
 })
 
+/**
+ * @swagger
+ * /api/campaigns/{id}:
+ *   put:
+ *     summary: Atualiza uma campanha
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               systemRpg:
+ *                 type: string
+ *               tags:
+ *                 type: string
+ *                 description: Tags em formato JSON array
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Campanha atualizada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Campaign'
+ *       401:
+ *         description: Usuário não autenticado ou sem permissão
+ *       404:
+ *         description: Campanha não encontrada
+ */
 // Atualizar campanha (com upload de imagem opcional)
 campaignsRouter.put('/:id', upload.single('image'), async (req: Request, res: Response) => {
   try {
@@ -178,6 +334,29 @@ campaignsRouter.put('/:id', upload.single('image'), async (req: Request, res: Re
     }
 })
 
+/**
+ * @swagger
+ * /api/campaigns/{id}:
+ *   delete:
+ *     summary: Deleta uma campanha
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Campanha deletada com sucesso
+ *       401:
+ *         description: Usuário não autenticado ou sem permissão
+ *       404:
+ *         description: Campanha não encontrada
+ */
 // Deletar campanha
 campaignsRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
@@ -193,7 +372,39 @@ campaignsRouter.delete('/:id', async (req: Request, res: Response) => {
     }
 })
 
-// Convidar jogador
+/**
+ * @swagger
+ * /api/campaigns/{id}/rank:
+ *   put:
+ *     summary: Atualiza a patente da campanha
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rank
+ *             properties:
+ *               rank:
+ *                 type: string
+ *                 enum: [RECRUTA, OPERADOR, AGENTE_ESPECIAL, OFICIAL_OPERACOES, ELITE]
+ *     responses:
+ *       200:
+ *         description: Patente atualizada
+ *       400:
+ *         description: Patente inválida
+ */
 // Atualizar patente da campanha
 campaignsRouter.put('/:id/rank', async (req: Request, res: Response) => {
   try {
@@ -216,6 +427,42 @@ campaignsRouter.put('/:id/rank', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/campaigns/{id}/invite:
+ *   post:
+ *     summary: Convida um jogador para a campanha
+ *     tags: [Campaigns]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email do jogador a ser convidado
+ *     responses:
+ *       200:
+ *         description: Convite enviado
+ *       400:
+ *         description: Email inválido ou obrigatório
+ *       401:
+ *         description: Usuário não autenticado ou sem permissão
+ */
 campaignsRouter.post('/:id/invite', async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id

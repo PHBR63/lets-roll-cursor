@@ -46,6 +46,10 @@ const options: swaggerJsdoc.Options = {
       { name: 'Sessions', description: 'Sessões de jogo' },
       { name: 'Dice', description: 'Rolagem de dados' },
       { name: 'Chat', description: 'Chat em tempo real' },
+      { name: 'Moments', description: 'Momentos da campanha (stories)' },
+      { name: 'Origins', description: 'Origens de personagens' },
+      { name: 'ThreatTemplates', description: 'Templates de ameaças' },
+      { name: 'Inventory', description: 'Inventário de personagens' },
     ],
   },
   apis: ['./src/routes/*.ts', './src/index.ts', './src/config/swagger-schemas.ts'], // Caminhos para arquivos com anotações JSDoc

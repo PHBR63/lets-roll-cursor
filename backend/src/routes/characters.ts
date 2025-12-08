@@ -7,12 +7,50 @@ import { AppError } from '../types/common'
 import { supabase } from '../config/supabase'
 
 /**
+ * @swagger
+ * tags:
+ *   - name: Characters
+ *     description: Operações relacionadas a personagens de RPG
+ */
+
+/**
  * Rotas para CRUD de personagens
  */
 export const charactersRouter = Router()
 
 charactersRouter.use(authenticateToken)
 
+/**
+ * @swagger
+ * /api/characters:
+ *   get:
+ *     summary: Lista personagens com filtros opcionais
+ *     tags: [Characters]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filtrar por ID do usuário
+ *       - in: query
+ *         name: campaignId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filtrar por ID da campanha
+ *     responses:
+ *       200:
+ *         description: Lista de personagens
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Character'
+ */
 // Listar personagens
 charactersRouter.get(
   '/',
@@ -28,6 +66,45 @@ charactersRouter.get(
   }
 )
 
+/**
+ * @swagger
+ * /api/characters:
+ *   post:
+ *     summary: Cria um novo personagem
+ *     tags: [Characters]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - campaignId
+ *               - class
+ *             properties:
+ *               name:
+ *                 type: string
+ *               campaignId:
+ *                 type: string
+ *                 format: uuid
+ *               class:
+ *                 type: string
+ *                 enum: [COMBATENTE, ESPECIALISTA, OCULTISTA]
+ *               origin:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Personagem criado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Character'
+ *       400:
+ *         description: Dados inválidos
+ */
 // Criar personagem
 charactersRouter.post(
   '/',
@@ -454,6 +531,31 @@ charactersRouter.post('/:id/recover-pe', async (req: Request, res: Response) => 
   }
 })
 
+/**
+ * @swagger
+ * /api/characters/{id}:
+ *   get:
+ *     summary: Obtém um personagem por ID
+ *     tags: [Characters]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Personagem encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Character'
+ *       404:
+ *         description: Personagem não encontrado
+ */
 // Rotas genéricas devem vir DEPOIS das rotas aninhadas específicas
 // Obter personagem por ID
 charactersRouter.get('/:id', async (req: Request, res: Response) => {
@@ -465,6 +567,40 @@ charactersRouter.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/characters/{id}:
+ *   put:
+ *     summary: Atualiza um personagem
+ *     tags: [Characters]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               biography:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Personagem atualizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Character'
+ */
 // Atualizar personagem
 charactersRouter.put(
   '/:id',
@@ -480,6 +616,27 @@ charactersRouter.put(
   }
 )
 
+/**
+ * @swagger
+ * /api/characters/{id}:
+ *   delete:
+ *     summary: Deleta um personagem
+ *     tags: [Characters]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Personagem deletado
+ *       404:
+ *         description: Personagem não encontrado
+ */
 // Deletar personagem
 charactersRouter.delete('/:id', async (req: Request, res: Response) => {
   try {
