@@ -159,20 +159,52 @@ export function DiceRollerSkill({ character, sessionId, campaignId, onRoll }: Di
         </p>
       </div>
 
-      <Button
-        onClick={handleRoll}
-        disabled={rolling || !selectedSkill}
-        className="w-full bg-accent hover:bg-accent/90"
-      >
-        {rolling ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Rolando...
-          </>
-        ) : (
-          'Rolar Teste de Perícia'
-        )}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          onClick={handleRoll}
+          disabled={rolling || !selectedSkill}
+          className="flex-1 bg-accent hover:bg-accent/90"
+        >
+          {rolling ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Rolando...
+            </>
+          ) : (
+            'Rolar Teste de Perícia'
+          )}
+        </Button>
+        {/* Botões rápidos de DT */}
+        <div className="flex gap-1">
+          <Button
+            onClick={() => setDifficulty(10)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="DT 10 - Média"
+          >
+            10
+          </Button>
+          <Button
+            onClick={() => setDifficulty(15)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="DT 15 - Difícil"
+          >
+            15
+          </Button>
+          <Button
+            onClick={() => setDifficulty(20)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="DT 20 - Muito Difícil"
+          >
+            20
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

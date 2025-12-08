@@ -192,20 +192,52 @@ export function DiceRollerAttack({ character, sessionId, campaignId, onRoll }: D
         </Label>
       </div>
 
-      <Button
-        onClick={handleRoll}
-        disabled={rolling || !selectedSkill}
-        className="w-full bg-accent hover:bg-accent/90"
-      >
-        {rolling ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Rolando...
-          </>
-        ) : (
-          'Rolar Ataque'
-        )}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          onClick={handleRoll}
+          disabled={rolling || !selectedSkill}
+          className="flex-1 bg-accent hover:bg-accent/90"
+        >
+          {rolling ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Rolando...
+            </>
+          ) : (
+            'Rolar Ataque'
+          )}
+        </Button>
+        {/* Botões rápidos de defesa */}
+        <div className="flex gap-1">
+          <Button
+            onClick={() => setTargetDefense(10)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="Defesa 10"
+          >
+            10
+          </Button>
+          <Button
+            onClick={() => setTargetDefense(15)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="Defesa 15"
+          >
+            15
+          </Button>
+          <Button
+            onClick={() => setTargetDefense(20)}
+            variant="outline"
+            size="sm"
+            className="text-xs"
+            title="Defesa 20"
+          >
+            20
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }

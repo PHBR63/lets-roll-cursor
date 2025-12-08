@@ -10,16 +10,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { logger } from '@/utils/logger'
 import { DiceRollResult } from '@/types/dice'
 import { AppError } from '@/types/common'
-
-const DICE_TYPES = [
-  { label: 'd4', value: 4 },
-  { label: 'd6', value: 6 },
-  { label: 'd8', value: 8 },
-  { label: 'd10', value: 10 },
-  { label: 'd12', value: 12 },
-  { label: 'd20', value: 20 },
-  { label: 'd100', value: 100 },
-]
+import { DiceButtons } from './DiceButtons'
 
 interface DiceRollerBasicProps {
   sessionId?: string
@@ -141,20 +132,8 @@ export function DiceRollerBasic({ sessionId, campaignId, characterId, isPrivate,
 
   return (
     <div className="space-y-4">
-      {/* Botões Rápidos */}
-      <div className="grid grid-cols-7 gap-2">
-        {DICE_TYPES.map((dice) => (
-          <Button
-            key={dice.value}
-            onClick={() => handleRollDice(dice.value)}
-            disabled={rolling}
-            className="bg-card-secondary hover:bg-accent hover:text-white text-white border border-card-secondary"
-            size="sm"
-          >
-            {dice.label}
-          </Button>
-        ))}
-      </div>
+      {/* Botões Rápidos com Ícones */}
+      <DiceButtons onRoll={rollFormula} rolling={rolling} />
 
       {/* Campo de Fórmula */}
       <div className="space-y-2">
