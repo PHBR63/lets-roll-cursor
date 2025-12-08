@@ -115,8 +115,19 @@ export function CharactersList() {
     )
   }
 
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Meus Personagens - Gerenciar Fichas | Let's Roll"
+        description="Gerencie todos os seus personagens de RPG em um só lugar. Visualize fichas completas, atributos, perícias e estatísticas do sistema Ordem Paranormal."
+        keywords="meus personagens, gerenciar personagens RPG, fichas de personagem, personagens Ordem Paranormal, lista de personagens"
+        canonical={`${baseUrl}/characters`}
+        ogTitle="Meus Personagens - Gerenciar Fichas"
+        ogDescription="Gerencie todos os seus personagens de RPG em um só lugar."
+        noindex={true}
+      />
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-4 md:py-8">

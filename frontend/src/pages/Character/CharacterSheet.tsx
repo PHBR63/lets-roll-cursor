@@ -25,6 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Página da ficha de personagem do sistema Ordem Paranormal
@@ -182,8 +183,22 @@ export function CharacterSheet() {
     )
   }
 
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+  const characterName = character.name || 'Personagem'
+  const characterClass = character.class || ''
+  const campaignName = character.campaign?.name || ''
+
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={`${characterName} - Ficha de Personagem ${characterClass ? `(${characterClass})` : ''} | Let's Roll`}
+        description={`Ficha completa do personagem ${characterName}${characterClass ? ` - ${characterClass}` : ''}${campaignName ? ` na campanha ${campaignName}` : ''}. Atributos, perícias, inventário, condições e biografia do sistema Ordem Paranormal.`}
+        keywords={`ficha de personagem, ${characterName}, ${characterClass}, Ordem Paranormal, personagem RPG, ficha RPG online${campaignName ? `, ${campaignName}` : ''}`}
+        canonical={`${baseUrl}/character/${id}`}
+        ogTitle={`${characterName} - Ficha de Personagem`}
+        ogDescription={`Ficha completa do personagem ${characterName} no sistema Ordem Paranormal.`}
+        noindex={true}
+      />
       <Navbar />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
@@ -197,7 +212,9 @@ export function CharacterSheet() {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
-            <h1 className="text-3xl font-bold text-white">Ficha de Personagem</h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-white">
+              {characterName}
+            </h1>
           </div>
           {saving && (
             <div className="text-sm text-muted-foreground">Salvando...</div>

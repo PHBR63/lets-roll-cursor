@@ -12,6 +12,7 @@ import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
 import { Logo } from '@/components/common/Logo'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Schema de validação para login
@@ -64,6 +65,16 @@ export function Login() {
   }
 
   return (
+    <>
+      <SEOHead
+        title="Login - Acesse sua Conta | Let's Roll"
+        description="Faça login na plataforma Let's Roll e acesse suas campanhas e personagens de RPG. Sistema Ordem Paranormal completo e gratuito."
+        keywords="login RPG, entrar Let's Roll, acessar conta RPG, login Ordem Paranormal"
+        canonical={`${baseUrl}/login`}
+        ogTitle="Login - Acesse sua Conta"
+        ogDescription="Faça login na plataforma Let's Roll e acesse suas campanhas e personagens."
+        noindex={true}
+      />
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-background border-card-secondary">
         <CardHeader>

@@ -26,9 +26,23 @@ import {
   ArrowRight,
   Quote
 } from 'lucide-react'
+import { SEOHead } from '@/components/common/SEOHead'
 
 export function Landing() {
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+  
   return (
+    <>
+      <SEOHead
+        title="Let's Roll - Plataforma de RPG de Mesa Online | Ordem Paranormal"
+        description="Jogue RPG de mesa online com Let's Roll. Sistema Ordem Paranormal completo, fichas dinâmicas, dados virtuais, chat em tempo real e muito mais. Gratuito e ilimitado."
+        keywords="RPG de mesa online, Ordem Paranormal, plataforma RPG, ficha de personagem online, dados virtuais RPG, campanha RPG online, sistema Ordem Paranormal, mestre RPG online, jogar RPG online"
+        canonical={`${baseUrl}/`}
+        ogTitle="Let's Roll - Plataforma de RPG de Mesa Online"
+        ogDescription="Jogue RPG de mesa online com Let's Roll. Sistema Ordem Paranormal completo, fichas dinâmicas, dados virtuais e muito mais."
+        ogImage={`${baseUrl}/og-image.jpg`}
+        ogType="website"
+      />
     <div className="min-h-screen bg-gradient-to-b from-[#1A0033] via-[#2A0033] to-[#1A0033]">
       {/* SEÇÃO 1: HERO SECTION */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
@@ -176,9 +190,9 @@ export function Landing() {
           {/* Screenshot Principal */}
           <div className="max-w-5xl mx-auto mb-12">
             <div className="relative rounded-lg overflow-hidden border-2 border-[#8000FF]/50 shadow-[0_20px_60px_rgba(128,0,255,0.3)]">
-              <div className="aspect-video bg-gradient-to-br from-[#2A2A3A] to-[#1A0033] flex items-center justify-center">
+              <div className="aspect-video bg-gradient-to-br from-[#2A2A3A] to-[#1A0033] flex items-center justify-center" role="img" aria-label="Dashboard da plataforma Let's Roll mostrando campanhas e personagens de RPG">
                 <div className="text-center">
-                  <Gamepad2 className="w-24 h-24 text-[#8000FF] mx-auto mb-4" />
+                  <Gamepad2 className="w-24 h-24 text-[#8000FF] mx-auto mb-4" aria-hidden="true" />
                   <p className="text-white text-xl">Dashboard da Plataforma</p>
                   <p className="text-[#A0A0A0] text-sm mt-2">Screenshot em breve</p>
                 </div>
@@ -189,18 +203,19 @@ export function Landing() {
           {/* Screenshots Secundários */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { icon: FileText, title: 'Ficha de Personagem', desc: 'Sistema completo' },
-              { icon: Dices, title: 'Rolagem de Dados', desc: 'Integrado e rápido' },
-              { icon: MessageSquare, title: 'Chat em Tempo Real', desc: 'Comunicação fluida' },
+              { icon: FileText, title: 'Ficha de Personagem', desc: 'Sistema completo', alt: 'Ficha de personagem do sistema Ordem Paranormal com atributos e perícias' },
+              { icon: Dices, title: 'Rolagem de Dados', desc: 'Integrado e rápido', alt: 'Sistema de rolagem de dados virtuais integrado para RPG' },
+              { icon: MessageSquare, title: 'Chat em Tempo Real', desc: 'Comunicação fluida', alt: 'Chat em tempo real para sessões de RPG online' },
             ].map((item, i) => (
-              <div
+              <article
                 key={i}
                 className="bg-[#2A2A3A] rounded-lg p-6 border border-[#8000FF]/20 hover:border-[#8000FF] transition-all hover:scale-105"
+                aria-label={item.alt}
               >
-                <item.icon className="w-12 h-12 text-[#8000FF] mb-4" />
+                <item.icon className="w-12 h-12 text-[#8000FF] mb-4" aria-hidden="true" />
                 <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
                 <p className="text-[#A0A0A0] text-sm">{item.desc}</p>
-              </div>
+              </article>
             ))}
           </div>
         </div>
@@ -371,5 +386,6 @@ export function Landing() {
         </div>
       </footer>
     </div>
+    </>
   )
 }

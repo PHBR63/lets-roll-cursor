@@ -669,7 +669,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
             >
               <img
                 src={imageUrl}
-                alt="Mapa do jogo"
+                alt={`Mapa de batalha da sessão de RPG${campaignId ? ` - Campanha ${campaignId}` : ''}`}
                 className="w-full h-full object-contain select-none"
                 draggable={false}
                 loading="lazy"
@@ -850,7 +850,7 @@ export function GameBoard({ sessionId, campaignId }: GameBoardProps) {
                 {token.imageUrl ? (
                   <img
                     src={token.imageUrl}
-                    alt={token.name}
+                    alt={`Token ${token.name}${token.type ? ` (${token.type})` : ''} no mapa de batalha`}
                     className="rounded-full border-2 border-white shadow-lg"
                     style={{
                       width: `${token.size}px`,

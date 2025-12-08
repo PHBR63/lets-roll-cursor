@@ -18,6 +18,7 @@ import { LazyImage } from '@/components/common/LazyImage'
 import { useRetry } from '@/hooks/useRetry'
 import { Campaign, CampaignParticipant } from '@/types/campaign'
 import { Character } from '@/types/character'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Página de detalhes da campanha
@@ -157,26 +158,39 @@ export function CampaignDetail() {
     )
   }
 
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+  const campaignName = campaign.name || 'Campanha'
+  const campaignDescription = campaign.description || ''
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title={`${campaignName} - Detalhes da Campanha | Let's Roll`}
+        description={campaignDescription || `Detalhes da campanha ${campaignName}. Gerencie jogadores, personagens e sessões de RPG online no sistema Ordem Paranormal.`}
+        keywords={`${campaignName}, campanha RPG, campanha Ordem Paranormal, gerenciar campanha RPG, sessão RPG online`}
+        canonical={`${baseUrl}/campaign/${id}`}
+        ogTitle={`${campaignName} - Detalhes da Campanha`}
+        ogDescription={campaignDescription || `Detalhes da campanha ${campaignName} no Let's Roll.`}
+        noindex={true}
+      />
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-8">
         {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-text-secondary mb-4">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-text-secondary mb-4">
           <Link to="/dashboard" className="hover:text-white transition-colors">
-            Hem
+            Dashboard
           </Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-white">{campaign.name}</span>
-        </div>
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
+          <span className="text-white">{campaignName}</span>
+        </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Conteúdo Principal */}
           <div className="lg:col-span-2 space-y-6">
             {/* Título Central */}
             <h1 className="text-4xl font-bold text-white text-center">
-              {campaign.name}
+              {campaignName}
             </h1>
 
             {/* Imagem e Descrição */}
@@ -185,7 +199,7 @@ export function CampaignDetail() {
                 {campaign.image_url ? (
                   <LazyImage
                     src={campaign.image_url}
-                    alt={campaign.name}
+                    alt={`Imagem da campanha ${campaignName} - RPG de mesa online`}
                     className="w-full h-full rounded-lg"
                     fallback={<span className="text-text-secondary">Imagem</span>}
                   />
@@ -240,9 +254,9 @@ export function CampaignDetail() {
             )}
 
             {/* Seção Status - Grid de Personagens */}
-            <div className="bg-card border border-card-secondary rounded-lg p-6">
+            <section className="bg-card border border-card-secondary rounded-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-white">Status</h2>
+                <h2 className="text-xl font-bold text-white">Status dos Personagens</h2>
                 {/* Botão Criar Personagem - apenas para jogadores que não têm personagem */}
                 {!isMaster && characters.filter(c => c.user_id === user?.id).length === 0 && (
                   <Button

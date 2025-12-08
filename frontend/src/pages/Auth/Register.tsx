@@ -12,6 +12,7 @@ import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
 import { Logo } from '@/components/common/Logo'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Schema de validação para registro

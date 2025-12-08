@@ -108,7 +108,7 @@ export function PlayerListSidebar({
                       {player.user?.avatar_url ? (
                         <img
                           src={player.user.avatar_url}
-                          alt={player.user.username}
+                          alt={`Avatar do jogador ${player.user.username || 'Jogador'}`}
                           className="w-full h-full object-cover rounded-full"
                           loading="lazy"
                           decoding="async"
@@ -126,7 +126,7 @@ export function PlayerListSidebar({
                         {character && 'avatar_url' in character && typeof character.avatar_url === 'string' ? (
                           <img
                             src={character.avatar_url}
-                            alt={('name' in character && typeof character.name === 'string') ? character.name : 'Personagem'}
+                            alt={('name' in character && typeof character.name === 'string') ? `Avatar do personagem ${character.name}` : 'Avatar de personagem RPG'}
                             className="w-full h-full object-cover rounded-full"
                             loading="lazy"
                             decoding="async"

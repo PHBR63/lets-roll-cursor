@@ -13,6 +13,7 @@ import { Search, Filter, X, Sparkles, Zap, Heart, Skull, BookOpen, Eye, Info } f
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Informações sobre os elementos do Outro Lado

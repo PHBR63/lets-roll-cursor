@@ -19,6 +19,7 @@ import { Character } from '@/types/character'
 import { getApiBaseUrl } from '@/utils/apiUrl'
 import { useCreateCharacterModal } from '@/hooks/useCreateCharacterModal'
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Dashboard principal
@@ -206,17 +207,30 @@ export function Dashboard() {
     )
   }
 
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Dashboard - Minhas Campanhas e Personagens | Let's Roll"
+        description="Gerencie suas campanhas e personagens no Let's Roll. Crie e participe de aventuras épicas de RPG online com o sistema Ordem Paranormal."
+        keywords="dashboard RPG, gerenciar campanhas RPG, meus personagens, campanhas Ordem Paranormal, plataforma RPG online"
+        canonical={`${baseUrl}/dashboard`}
+        ogTitle="Dashboard - Minhas Campanhas e Personagens"
+        ogDescription="Gerencie suas campanhas e personagens no Let's Roll."
+        noindex={true}
+      />
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-4 md:py-8 space-y-8 md:space-y-12">
         {/* Header com estatísticas */}
         <div className="flex flex-wrap items-center gap-6 mb-8">
           <div className="flex items-center gap-2">
-            <AnimatedGradientText size="2xl">
-              Minhas Campanhas
-            </AnimatedGradientText>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
+              <AnimatedGradientText size="2xl">
+                Minhas Campanhas
+              </AnimatedGradientText>
+            </h1>
           </div>
           <div className="flex items-center gap-4 text-white/70 text-sm">
             <span>

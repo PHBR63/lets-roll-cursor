@@ -121,7 +121,7 @@ export const CharacterStatusCard = memo(function CharacterStatusCard({ character
                     {character.avatar_url ? (
                       <LazyImage
                         src={character.avatar_url}
-                        alt={character.name}
+                        alt={`Avatar do personagem ${character.name} - ${character.class || 'RPG'}`}
                         className="w-full h-full"
                         fallback={<span className="text-text-secondary text-xs md:text-sm font-semibold">Char</span>}
                       />
