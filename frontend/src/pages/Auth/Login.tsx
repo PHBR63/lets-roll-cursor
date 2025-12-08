@@ -31,6 +31,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function Login() {
   const navigate = useNavigate()
   const toast = useToast()
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
   const {
     register,
     handleSubmit,
@@ -75,82 +76,83 @@ export function Login() {
         ogDescription="Faça login na plataforma Let's Roll e acesse suas campanhas e personagens."
         noindex={true}
       />
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-background border-card-secondary">
-        <CardHeader>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger 
-                value="register"
-                onClick={(e) => {
-                  e.preventDefault()
-                  navigate('/register')
-                }}
-              >
-                Registrar-se
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <div className="flex justify-center mb-6">
-                <Logo size="md" link={false} />
-              </div>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    {...register('email')}
-                    className={errors.email ? 'border-red-500' : ''}
-                  />
-                  {errors.email && (
-                    <p className="text-red-500 text-sm animate-in fade-in-50">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    {...register('password')}
-                    className={errors.password ? 'border-red-500' : ''}
-                  />
-                  {errors.password && (
-                    <p className="text-red-500 text-sm animate-in fade-in-50">
-                      {errors.password.message}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-accent hover:bg-accent/90"
-                  disabled={isSubmitting}
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md bg-background border-card-secondary">
+          <CardHeader>
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="login">Entrar</TabsTrigger>
+                <TabsTrigger 
+                  value="register"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate('/register')
+                  }}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Entrando...
-                    </>
-                  ) : (
-                    'Entrar'
-                  )}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardHeader>
-      </Card>
-    </div>
+                  Registrar-se
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="login">
+                <div className="flex justify-center mb-6">
+                  <Logo size="md" link={false} />
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">E-mail</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="seu@email.com"
+                      {...register('email')}
+                      className={errors.email ? 'border-red-500' : ''}
+                    />
+                    {errors.email && (
+                      <p className="text-red-500 text-sm animate-in fade-in-50">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Senha</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      autoComplete="current-password"
+                      {...register('password')}
+                      className={errors.password ? 'border-red-500' : ''}
+                    />
+                    {errors.password && (
+                      <p className="text-red-500 text-sm animate-in fade-in-50">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full bg-accent hover:bg-accent/90"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Entrando...
+                      </>
+                    ) : (
+                      'Entrar'
+                    )}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </CardHeader>
+        </Card>
+      </div>
+    </>
   )
 }
 

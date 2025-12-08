@@ -19,6 +19,7 @@ import { useRetry } from '@/hooks/useRetry'
 import { Campaign, CampaignParticipant } from '@/types/campaign'
 import { Character } from '@/types/character'
 import { SEOHead } from '@/components/common/SEOHead'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 /**
  * Página de detalhes da campanha
@@ -295,7 +296,7 @@ export function CampaignDetail() {
                   }
                 />
               )}
-            </div>
+            </section>
           </div>
 
           {/* Sidebar - Jogadores (oculta em mobile, mostra em lg+) */}
