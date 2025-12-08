@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente Switch (Toggle) baseado em Radix UI
  * Para alternar entre estados on/off

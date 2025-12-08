@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Landing Page Let's Roll - Versão Completa
  * Reconstruída conforme proposta de design

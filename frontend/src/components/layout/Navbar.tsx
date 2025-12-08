@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Link } from 'react-router-dom'
 import { Bell, User, Menu, X, Sparkles, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'

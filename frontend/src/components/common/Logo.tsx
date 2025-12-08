@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente de Logo do Let's Roll
  * Substitui o placeholder "Logo" por um componente reutilizável

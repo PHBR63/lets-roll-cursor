@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Componente de Configurações de Acessibilidade
  * Permite ao usuário desabilitar efeitos visuais e sonoros

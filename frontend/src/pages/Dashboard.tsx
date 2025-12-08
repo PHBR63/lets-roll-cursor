@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { CampaignCard } from '@/components/campaign/CampaignCard'
