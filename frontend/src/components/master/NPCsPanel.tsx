@@ -4,10 +4,9 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
-import { CreateItemModal } from './CreateItemModal'
-import { EditItemModal } from './EditItemModal'
-import { CreateAbilityModal } from './CreateAbilityModal'
-import { EditAbilityModal } from './EditAbilityModal'
+import { Item } from '@/types/item'
+import { Ability } from '@/types/ability'
+import { logger } from '@/utils/logger'
 
 /**
  * Painel de NPCs com Tabs
@@ -18,20 +17,20 @@ interface NPCsPanelProps {
 }
 
 export function NPCsPanel({ campaignId }: NPCsPanelProps) {
-  const [items, setItems] = useState<any[]>([])
-  const [abilities, setAbilities] = useState<any[]>([])
+  const [items, setItems] = useState<Item[]>([])
+  const [abilities, setAbilities] = useState<Ability[]>([])
   const [loading, setLoading] = useState(true)
   
   // Estados para modais de itens
   const [createItemModalOpen, setCreateItemModalOpen] = useState(false)
   const [editItemModalOpen, setEditItemModalOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [itemModalType, setItemModalType] = useState<'equipment' | 'item'>('item')
   
   // Estados para modais de habilidades
   const [createAbilityModalOpen, setCreateAbilityModalOpen] = useState(false)
   const [editAbilityModalOpen, setEditAbilityModalOpen] = useState(false)
-  const [selectedAbility, setSelectedAbility] = useState<any>(null)
+  const [selectedAbility, setSelectedAbility] = useState<Ability | null>(null)
 
   useEffect(() => {
     if (campaignId) {
@@ -58,12 +57,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
       })
 
       if (response.ok) {
-        const result = await response.json()
-        // A API retorna { data: [], total, limit, offset, hasMore }
-        setItems(result.data || result || [])
+        const data = await response.json()
+        setItems(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar itens:', error)
+      logger.error('Erro ao carregar itens:', error)
     } finally {
       setLoading(false)
     }
@@ -87,12 +85,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
       })
 
       if (response.ok) {
-        const result = await response.json()
-        // A API retorna { data: [], total, limit, offset, hasMore }
-        setAbilities(result.data || result || [])
+        const data = await response.json()
+        setAbilities(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar habilidades:', error)
+      logger.error('Erro ao carregar habilidades:', error)
     }
   }
 
@@ -118,7 +115,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         loadItems()
       }
     } catch (error) {
-      console.error('Erro ao remover item:', error)
+      logger.error('Erro ao remover item:', error)
       alert('Erro ao remover item. Tente novamente.')
     }
   }
@@ -145,7 +142,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         loadAbilities()
       }
     } catch (error) {
-      console.error('Erro ao remover habilidade:', error)
+      logger.error('Erro ao remover habilidade:', error)
       alert('Erro ao remover habilidade. Tente novamente.')
     }
   }
@@ -197,9 +194,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
+                          logger.debug('Editar item:', item)
                           setSelectedItem(item)
                           setEditItemModalOpen(true)
                         }}
+                        aria-label={`Editar item ${item.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -221,6 +220,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
+                logger.debug('Criar novo equipamento')
                 setItemModalType('equipment')
                 setCreateItemModalOpen(true)
               }}
@@ -259,9 +259,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
+                          logger.debug('Editar item:', item)
                           setSelectedItem(item)
                           setEditItemModalOpen(true)
                         }}
+                        aria-label={`Editar item ${item.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -283,6 +285,8 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
+                // TODO: Criar novo item
+                logger.debug('Criar item')
                 setItemModalType('item')
                 setCreateItemModalOpen(true)
               }}
@@ -321,9 +325,11 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
                         size="sm"
                         variant="ghost"
                         onClick={() => {
+                          logger.debug('Editar habilidade:', ability)
                           setSelectedAbility(ability)
                           setEditAbilityModalOpen(true)
                         }}
+                        aria-label={`Editar habilidade ${ability.name}`}
                         className="h-6 w-6 p-0 text-white hover:bg-accent"
                       >
                         <Edit className="w-3 h-3" />
@@ -345,6 +351,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
               size="sm"
               variant="outline"
               onClick={() => {
+                logger.debug('Criar nova habilidade')
                 setCreateAbilityModalOpen(true)
               }}
               className="w-full mt-2"
@@ -362,51 +369,6 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Modais de Itens */}
-      <CreateItemModal
-        open={createItemModalOpen}
-        onOpenChange={setCreateItemModalOpen}
-        campaignId={campaignId}
-        itemType={itemModalType}
-        onSuccess={() => {
-          loadItems()
-          setCreateItemModalOpen(false)
-        }}
-      />
-
-      <EditItemModal
-        open={editItemModalOpen}
-        onOpenChange={setEditItemModalOpen}
-        item={selectedItem}
-        onSuccess={() => {
-          loadItems()
-          setEditItemModalOpen(false)
-          setSelectedItem(null)
-        }}
-      />
-
-      {/* Modais de Habilidades */}
-      <CreateAbilityModal
-        open={createAbilityModalOpen}
-        onOpenChange={setCreateAbilityModalOpen}
-        campaignId={campaignId}
-        onSuccess={() => {
-          loadAbilities()
-          setCreateAbilityModalOpen(false)
-        }}
-      />
-
-      <EditAbilityModal
-        open={editAbilityModalOpen}
-        onOpenChange={setEditAbilityModalOpen}
-        ability={selectedAbility}
-        onSuccess={() => {
-          loadAbilities()
-          setEditAbilityModalOpen(false)
-          setSelectedAbility(null)
-        }}
-      />
     </div>
   )
 }

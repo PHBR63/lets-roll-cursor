@@ -5,10 +5,6 @@ import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  define: {
-    // Evitar referências a 'module' e 'exports' do CommonJS
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-  },
   plugins: [
     react(),
     // Visualizador de bundle (apenas em build)
@@ -39,76 +35,29 @@ export default defineConfig({
     target: 'esnext',
     minify: 'esbuild',
     sourcemap: false,
-    // Garantir que minificação não quebre inicializações
-    minifyOptions: {
-      keepNames: true, // Manter nomes de funções para evitar problemas de inicialização
-      keepClassNames: true, // Manter nomes de classes
-    },
     commonjsOptions: {
-      // Incluir TODAS as dependências do node_modules que podem ter CommonJS
-      // Usar regex mais abrangente para capturar todas as dependências
-      include: [/node_modules/],
-      // Excluir apenas arquivos que sabemos que são ESM puro
-      exclude: [
-        /node_modules\/@vitejs/,
-        /node_modules\/vite/,
-      ],
+      include: [/react-window/, /react/, /react-dom/, /react-router/, /@supabase/, /tailwindcss-animate/],
       transformMixedEsModules: true,
-      // Forçar transformação de CommonJS para ESM
-      strictRequires: true,
-      // Converter require para import
-      requireReturnsDefault: 'auto',
-      // Garantir que module.exports seja transformado
-      defaultIsModuleExports: 'auto',
-      // Garantir que exports seja transformado corretamente
       esmExternals: true,
-      // Forçar transformação de todas as dependências CommonJS
-      ignoreDynamicRequires: false,
-      // Garantir que require() seja transformado mesmo em contextos dinâmicos
-      ignore: [],
     },
     rollupOptions: {
       external: [],
-      // Garantir que plugins CommonJS sejam aplicados antes do code splitting
-      plugins: [],
       output: {
-        // Garantir formato ESM puro
-        format: 'es',
-        // Evitar uso de 'module' e 'exports' no código gerado
-        generatedCode: {
-          constBindings: true,
-          objectShorthand: true,
-        },
-        // Garantir que não use CommonJS
-        interop: 'auto',
-        // Garantir que exports seja tratado corretamente
-        exports: 'named',
-        // Garantir formato ESM puro (sem CommonJS)
-        preserveModules: false,
         // Code splitting manual para melhor cache
         // NOTA: React e React-DOM não devem ser separados em chunks para evitar problemas de resolução
-        // NOTA: Radix UI mantido junto para evitar problemas de transformação CommonJS
-        manualChunks: (id) => {
-          // Separar apenas bibliotecas grandes e bem testadas que são ESM puro
-          if (id.includes('node_modules')) {
-            // Separar apenas bibliotecas que sabemos que são ESM puro
-            if (id.includes('framer-motion')) {
-              return 'animation-vendor'
-            }
-            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
-              return 'form-vendor'
-            }
-            // Manter Supabase no bundle principal ou vendor para evitar problemas de inicialização
-            // O erro "Cannot access 'oe' before initialization" pode ser causado por code splitting
-            if (id.includes('@supabase')) {
-              // Manter Supabase junto com outras dependências para garantir ordem de inicialização
-              return 'vendor'
-            }
-            // Manter todas as outras dependências (incluindo Radix UI) em um único chunk vendor
-            // Isso garante que o CommonJS seja transformado corretamente antes da separação
-            // e evita o erro "module is not defined"
-            return 'vendor'
-          }
+        manualChunks: {
+          // Vendor chunks (sem React para evitar problemas de resolução)
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+          ],
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'animation-vendor': ['framer-motion'],
+          'supabase-vendor': ['@supabase/supabase-js'],
         },
         // Nomes de arquivos mais legíveis
         chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -128,18 +77,11 @@ export default defineConfig({
       'react-router-dom',
       '@supabase/supabase-js',
       'react-window',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-toast',
-      '@radix-ui/react-tooltip',
+      'tailwindcss-animate',
     ],
-    // Forçar ESM para dependências
     esbuildOptions: {
-      format: 'esm',
-      // Garantir que variáveis sejam tratadas corretamente
-      keepNames: true,
+      // Garantir que CommonJS seja convertido para ES modules
+      target: 'esnext',
     },
   },
 })

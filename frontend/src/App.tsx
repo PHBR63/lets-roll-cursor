@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './context/AuthContext'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Auth/Login'
@@ -8,6 +9,8 @@ import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { Toaster } from './components/ui/sonner'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { PageTransition } from './components/common/PageTransition'
+import { PWAInstallPrompt } from './components/common/PWAInstallPrompt'
+import { PageTracker } from './components/common/PageTracker'
 import { Loader2 } from 'lucide-react'
 
 // Lazy loading de componentes pesados
@@ -45,6 +48,7 @@ function App() {
         <div className="min-h-screen">
           <div className="pattern-icosahedrons" />
           <BrowserRouter>
+            <PageTracker />
             <Suspense fallback={<LoadingFallback />}>
               <Routes>
                 <Route path="/" element={<Landing />} />
@@ -138,6 +142,8 @@ function App() {
             </Suspense>
           </BrowserRouter>
           <Toaster />
+          <PWAInstallPrompt />
+          <Analytics />
         </div>
       </AuthProvider>
     </ErrorBoundary>

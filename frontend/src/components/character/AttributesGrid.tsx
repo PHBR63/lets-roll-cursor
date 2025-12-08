@@ -141,9 +141,15 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
               }`}
               min={-5}
               max={20}
+              aria-label={`${info.label} (${info.short})`}
+              aria-valuemin={-5}
+              aria-valuemax={20}
+              aria-valuenow={localAttributes[key] || 0}
+              aria-invalid={!!attributeErrors[key]}
+              aria-describedby={attributeErrors[key] ? `${key}-error` : undefined}
             />
             {attributeErrors[key] && (
-              <p className="text-red-500 text-xs animate-in fade-in-50">
+              <p id={`${key}-error`} className="text-red-500 text-xs animate-in fade-in-50" role="alert">
                 {attributeErrors[key]}
               </p>
             )}

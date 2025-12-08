@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { Creature } from '@/types/creature'
+import { logger } from '@/utils/logger'
 
 /**
  * Hook para sincronizar criaturas em tempo real
  */
 export function useRealtimeCreatures(campaignId?: string) {
-  const [creatures, setCreatures] = useState<any[]>([])
+  const [creatures, setCreatures] = useState<Creature[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,18 +28,27 @@ export function useRealtimeCreatures(campaignId?: string) {
           filter: `campaign_id=eq.${campaignId}`,
         },
         (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setCreatures((prev) =>
-              prev.map((creature) =>
-                creature.id === payload.new.id ? payload.new : creature
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedCreature = payload.new as Creature
+            if (updatedCreature.id) {
+              setCreatures((prev) =>
+                prev.map((creature) =>
+                  creature.id === updatedCreature.id ? updatedCreature : creature
+                )
               )
-            )
-          } else if (payload.eventType === 'INSERT') {
-            setCreatures((prev) => [...prev, payload.new])
-          } else if (payload.eventType === 'DELETE') {
-            setCreatures((prev) =>
-              prev.filter((creature) => creature.id !== payload.old.id)
-            )
+            }
+          } else if (payload.eventType === 'INSERT' && payload.new) {
+            const newCreature = payload.new as Creature
+            if (newCreature.id) {
+              setCreatures((prev) => [...prev, newCreature])
+            }
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const deletedCreature = payload.old as { id: string }
+            if (deletedCreature.id) {
+              setCreatures((prev) =>
+                prev.filter((creature) => creature.id !== deletedCreature.id)
+              )
+            }
           }
         }
       )
@@ -73,7 +84,7 @@ export function useRealtimeCreatures(campaignId?: string) {
         setCreatures(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar criaturas:', error)
+      logger.error('Erro ao carregar criaturas:', error)
     } finally {
       setLoading(false)
     }

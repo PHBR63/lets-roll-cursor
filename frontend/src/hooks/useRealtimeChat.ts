@@ -1,11 +1,35 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { logger } from '@/utils/logger'
+
+/**
+ * Tipo para mensagens de chat
+ */
+export interface ChatMessage {
+  id: string
+  content: string
+  user_id: string
+  user?: {
+    id: string
+    username?: string
+    avatar_url?: string
+  }
+  character_id?: string
+  character?: {
+    id: string
+    name?: string
+  }
+  type: 'message' | 'narration' | 'ooc'
+  created_at: string
+  session_id?: string
+  campaign_id?: string
+}
 
 /**
  * Hook para sincronizar chat em tempo real
  */
 export function useRealtimeChat(sessionId?: string, campaignId?: string) {
-  const [messages, setMessages] = useState<any[]>([])
+  const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -69,7 +93,7 @@ export function useRealtimeChat(sessionId?: string, campaignId?: string) {
         setMessages(data || [])
       }
     } catch (error) {
-      console.error('Erro ao carregar mensagens:', error)
+      logger.error('Erro ao carregar mensagens:', error)
     } finally {
       setLoading(false)
     }
@@ -102,7 +126,7 @@ export function useRealtimeChat(sessionId?: string, campaignId?: string) {
       if (error) throw error
       return data
     } catch (error) {
-      console.error('Erro ao carregar detalhes da mensagem:', error)
+      logger.error('Erro ao carregar detalhes da mensagem:', error)
       return null
     }
   }

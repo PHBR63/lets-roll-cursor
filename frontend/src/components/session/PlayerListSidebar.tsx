@@ -4,8 +4,6 @@ import { Card } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { AudioControls } from './AudioControls'
-import { TurnActions } from './TurnActions'
-import { AmmunitionPanel } from './AmmunitionPanel'
 import { useRealtimePlayers } from '@/hooks/useRealtimePlayers'
 import { useRealtimeCharacters } from '@/hooks/useRealtimeCharacters'
 import { usePresence } from '@/hooks/usePresence'
@@ -28,12 +26,10 @@ export function PlayerListSidebar({
   sessionId,
   isMaster,
 }: PlayerListSidebarProps) {
-  const { user } = useAuth()
   const { participants, loading: participantsLoading } = useRealtimePlayers(campaignId)
   const { characters, loading: charactersLoading } = useRealtimeCharacters(campaignId)
   const { checkUserOnline } = usePresence(campaignId, sessionId)
-  const [players, setPlayers] = useState<any[]>([])
-  const [userCharacter, setUserCharacter] = useState<Character | null>(null)
+  const [players, setPlayers] = useState<CampaignParticipant[]>([])
 
   // Combinar participantes com personagens
   useEffect(() => {
@@ -46,18 +42,18 @@ export function PlayerListSidebar({
 
       return {
         ...participant,
-        character,
+        character: character
+          ? ({
+              id: character.id,
+              name: character.name,
+              ...character,
+            } as CampaignParticipant['character'])
+          : undefined,
       }
     })
 
-    setPlayers(playersWithCharacters)
-
-    // Encontrar personagem do usuário atual
-    if (user) {
-      const userChar = characters.find((char: Character) => char.user_id === user.id)
-      setUserCharacter(userChar || null)
-    }
-  }, [participants, characters, user])
+    setPlayers(playersWithCharacters as CampaignParticipant[])
+  }, [participants, characters])
 
   const loading = participantsLoading || charactersLoading
 
@@ -94,10 +90,10 @@ export function PlayerListSidebar({
           {players.slice(0, 6).map((player, index) => {
             const character = player.character
             // Usar dados do sistema Ordem Paranormal
-            const stats = character?.stats || {}
-            const pv = stats.pv || { current: 0, max: 0 }
-            const san = stats.san || { current: 0, max: 0 }
-            const pe = stats.pe || { current: 0, max: 0 }
+            const stats = (character && 'stats' in character ? (character.stats as Record<string, unknown>) : {}) || {}
+            const pv = (stats.pv as { current: number; max: number }) || { current: 0, max: 0 }
+            const san = (stats.san as { current: number; max: number }) || { current: 0, max: 0 }
+            const pe = (stats.pe as { current: number; max: number }) || { current: 0, max: 0 }
 
             return (
               <Card
@@ -113,6 +109,8 @@ export function PlayerListSidebar({
                           src={player.user.avatar_url}
                           alt={player.user.username}
                           className="w-full h-full object-cover rounded-full"
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div className="w-12 h-12 bg-accent rounded-full" />
@@ -124,11 +122,13 @@ export function PlayerListSidebar({
                   {character && (
                     <div className="absolute bottom-0 left-0 right-0 h-2/3 flex items-end justify-center pb-2">
                       <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center border-2 border-white/20">
-                        {character.avatar_url ? (
+                        {character && 'avatar_url' in character && typeof character.avatar_url === 'string' ? (
                           <img
                             src={character.avatar_url}
-                            alt={character.name}
+                            alt={('name' in character && typeof character.name === 'string') ? character.name : 'Personagem'}
                             className="w-full h-full object-cover rounded-full"
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <span className="text-text-secondary text-xs">Char</span>
@@ -141,7 +141,7 @@ export function PlayerListSidebar({
                   {character && (
                     <div className="absolute bottom-0 left-0 right-0 pb-1">
                       <p className="text-white text-xs font-semibold text-center">
-                        {character.name}
+                        {'name' in character && typeof character.name === 'string' ? character.name : 'Personagem'}
                       </p>
                     </div>
                   )}
@@ -176,30 +176,6 @@ export function PlayerListSidebar({
           })}
         </div>
       </div>
-
-      {/* Ações de Turno (apenas para personagem do usuário) */}
-      {userCharacter && (
-        <>
-          <TurnActions
-            character={userCharacter}
-            onCharacterUpdate={(updatedChar) => {
-              setUserCharacter(updatedChar)
-              // Atualizar também na lista de personagens se necessário
-              // Isso será atualizado automaticamente pelo realtime
-            }}
-          />
-          {/* Painel de Munição (apenas para personagem do usuário) */}
-          {sessionId && (
-            <div className="p-4 border-t border-card-secondary">
-              <AmmunitionPanel
-                characterId={userCharacter.id}
-                sessionId={sessionId}
-                isMaster={isMaster}
-              />
-            </div>
-          )}
-        </>
-      )}
     </div>
   )
 }

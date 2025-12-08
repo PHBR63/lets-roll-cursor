@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { Character } from '@/types/character'
 
 /**
  * Hook para sincronizar personagens em tempo real
  */
 export function useRealtimeCharacters(campaignId?: string) {
-  const [characters, setCharacters] = useState<any[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -26,23 +27,27 @@ export function useRealtimeCharacters(campaignId?: string) {
           filter: `campaign_id=eq.${campaignId}`,
         },
         (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            setCharacters((prev) => {
-              const safePrev = Array.isArray(prev) ? prev : []
-              return safePrev.map((char) =>
-                char.id === payload.new.id ? payload.new : char
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const updatedChar = payload.new as Character
+            if (updatedChar.id) {
+              setCharacters((prev) =>
+                prev.map((char) =>
+                  char.id === updatedChar.id ? updatedChar : char
+                )
               )
-            })
-          } else if (payload.eventType === 'INSERT') {
-            setCharacters((prev) => {
-              const safePrev = Array.isArray(prev) ? prev : []
-              return [...safePrev, payload.new]
-            })
-          } else if (payload.eventType === 'DELETE') {
-            setCharacters((prev) => {
-              const safePrev = Array.isArray(prev) ? prev : []
-              return safePrev.filter((char) => char.id !== payload.old.id)
-            })
+            }
+          } else if (payload.eventType === 'INSERT' && payload.new) {
+            const newChar = payload.new as Character
+            if (newChar.id) {
+              setCharacters((prev) => [...prev, newChar])
+            }
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            const deletedChar = payload.old as { id: string }
+            if (deletedChar.id) {
+              setCharacters((prev) =>
+                prev.filter((char) => char.id !== deletedChar.id)
+              )
+            }
           }
         }
       )
@@ -75,8 +80,7 @@ export function useRealtimeCharacters(campaignId?: string) {
 
       if (response.ok) {
         const data = await response.json()
-        // Garantir que data seja sempre um array
-        setCharacters(Array.isArray(data) ? data : [])
+        setCharacters(data || [])
       }
     } catch (error) {
       console.error('Erro ao carregar personagens:', error)

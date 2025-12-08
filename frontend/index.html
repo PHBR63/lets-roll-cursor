@@ -4,171 +4,38 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Let's Roll - Plataforma de RPG de Mesa</title>
-    <!-- Interceptar autoPip.js ANTES de qualquer coisa -->
-    <script>
-      (function() {
-        'use strict';
-        // Interceptar o mais cedo possível, antes de qualquer extensão
-        if (typeof navigator !== 'undefined') {
-          const supportedActions = ['play', 'pause', 'seekbackward', 'seekforward', 'previoustrack', 'nexttrack', 'seekto', 'stop'];
-          
-          // Ignorar erros de MediaSession relacionados a extensões
-          const originalError = window.onerror;
-          const originalUnhandledRejection = window.onunhandledrejection;
-          
-          window.onerror = function(message, source, lineno, colno, error) {
-            // Verificar se é erro relacionado ao autoPip.js ou MediaSession
-            const isAutoPipError = (
-              (message && typeof message === 'string' && (
-                message.includes('MediaSession') || 
-                message.includes('enterpictureinpicture') ||
-                message.includes('setActionHandler') ||
-                message.includes('Failed to execute') ||
-                message.includes('not a valid enum value')
-              )) ||
-              (source && typeof source === 'string' && source.includes('autoPip.js')) ||
-              (error && error.message && typeof error.message === 'string' && (
-                error.message.includes('MediaSession') ||
-                error.message.includes('enterpictureinpicture')
-              ))
-            );
-            
-            if (isAutoPipError) {
-              // Suprimir completamente o erro
-              return true;
-            }
-            
-            if (originalError) {
-              return originalError.call(this, message, source, lineno, colno, error);
-            }
-            return false;
-          };
-
-          // Também capturar unhandled rejections
-          window.onunhandledrejection = function(event) {
-            const reason = event.reason;
-            const isAutoPipError = (
-              (reason && typeof reason === 'object' && reason.message && (
-                reason.message.includes('MediaSession') ||
-                reason.message.includes('enterpictureinpicture') ||
-                reason.message.includes('setActionHandler') ||
-                reason.message.includes('Failed to execute') ||
-                reason.message.includes('not a valid enum value')
-              )) ||
-              (reason && typeof reason === 'string' && (
-                reason.includes('MediaSession') ||
-                reason.includes('enterpictureinpicture')
-              )) ||
-              (reason && reason.stack && reason.stack.includes('autoPip.js'))
-            );
-            
-            if (isAutoPipError) {
-              event.preventDefault();
-              event.stopPropagation();
-              return false;
-            }
-            
-            if (originalUnhandledRejection) {
-              return originalUnhandledRejection.call(this, event);
-            }
-            return true;
-          };
-          
-          // Também adicionar como listener para garantir
-          window.addEventListener('unhandledrejection', function(event) {
-            const reason = event.reason;
-            const isAutoPipError = (
-              (reason && typeof reason === 'object' && reason.message && (
-                reason.message.includes('MediaSession') ||
-                reason.message.includes('enterpictureinpicture') ||
-                reason.message.includes('setActionHandler') ||
-                reason.message.includes('Failed to execute') ||
-                reason.message.includes('not a valid enum value')
-              )) ||
-              (reason && typeof reason === 'string' && (
-                reason.includes('MediaSession') ||
-                reason.includes('enterpictureinpicture')
-              )) ||
-              (reason && reason.stack && reason.stack.includes('autoPip.js'))
-            );
-            
-            if (isAutoPipError) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-          });
-          
-          // Função para aplicar wrapper
-          const wrapMediaSession = () => {
-            if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
-              const original = navigator.mediaSession.setActionHandler;
-              try {
-                Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
-                  value: function(action, handler) {
-                    if (!supportedActions.includes(action)) {
-                      return undefined;
-                    }
-                    try {
-                      return original.call(navigator.mediaSession, action, handler);
-                    } catch (e) {
-                      return undefined;
-                    }
-                  },
-                  writable: true,
-                  configurable: true
-                });
-              } catch (e) {
-                // Fallback
-                navigator.mediaSession.setActionHandler = function(action, handler) {
-                  if (!supportedActions.includes(action)) return undefined;
-                  try {
-                    return original.call(navigator.mediaSession, action, handler);
-                  } catch (e) {
-                    return undefined;
-                  }
-                };
-              }
-            }
-          };
-          
-          // Tentar imediatamente
-          wrapMediaSession();
-          
-          // Tentar após DOMContentLoaded
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', wrapMediaSession);
-          }
-          
-          // Tentar após load
-          window.addEventListener('load', wrapMediaSession);
-          
-          // Interceptar quando mediaSession for criado
-          if (!navigator.mediaSession) {
-            let mediaSessionProxy = null;
-            try {
-              Object.defineProperty(navigator, 'mediaSession', {
-                get: function() {
-                  if (!mediaSessionProxy && this._mediaSession) {
-                    mediaSessionProxy = this._mediaSession;
-                    wrapMediaSession();
-                  }
-                  return mediaSessionProxy || this._mediaSession;
-                },
-                set: function(value) {
-                  this._mediaSession = value;
-                  wrapMediaSession();
-                },
-                configurable: true
-              });
-            } catch (e) {
-              // Se não conseguir, pelo menos tentar quando for acessado
-            }
-          }
-        }
-      })();
-    </script>
-    <script src="/error-handler.js"></script>
+    
+    <!-- SEO Meta Tags -->
+    <title>Let's Roll - Plataforma de RPG de Mesa Online</title>
+    <meta name="description" content="Plataforma completa para jogar RPG de mesa online. Sistema Ordem Paranormal, fichas de personagem, dados virtuais e muito mais." />
+    <meta name="keywords" content="RPG, RPG de mesa, Ordem Paranormal, D&D, dados virtuais, campanha RPG" />
+    <meta name="author" content="Let's Roll Team" />
+    <meta name="theme-color" content="#8000FF" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Let's Roll - Plataforma de RPG de Mesa Online" />
+    <meta property="og:description" content="Plataforma completa para jogar RPG de mesa online. Sistema Ordem Paranormal, fichas de personagem, dados virtuais e muito mais." />
+    <meta property="og:site_name" content="Let's Roll" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Let's Roll - Plataforma de RPG de Mesa Online" />
+    <meta name="twitter:description" content="Plataforma completa para jogar RPG de mesa online. Sistema Ordem Paranormal, fichas de personagem, dados virtuais e muito mais." />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Let's Roll" />
   </head>
   <body>
     <div id="root"></div>

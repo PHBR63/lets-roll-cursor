@@ -99,3 +99,29 @@ export class AuthHelper {
   }
 }
 
+/**
+ * Função helper simplificada para autenticação rápida
+ */
+export async function authenticateUser(page: Page) {
+  const helper = new AuthHelper(page)
+  
+  // Tentar usar credenciais de teste ou variáveis de ambiente
+  const testEmail = process.env.E2E_TEST_EMAIL || 'test@example.com'
+  const testPassword = process.env.E2E_TEST_PASSWORD || 'test123456'
+  
+  // Verificar se já está autenticado
+  const isAuth = await helper.isAuthenticated()
+  if (!isAuth) {
+    try {
+      await helper.login(testEmail, testPassword)
+    } catch {
+      // Se login falhar, tentar registrar
+      await helper.register({
+        username: 'testuser',
+        email: testEmail,
+        password: testPassword,
+        confirmPassword: testPassword,
+      })
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, RefreshCw } from 'lucide-react'
+import { logger } from '@/utils/logger'
 
 /**
  * Props do Error Boundary
@@ -48,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
    * Registra informações do erro
    */
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary capturou um erro:', error, errorInfo)
+    logger.error('ErrorBoundary capturou um erro:', error, errorInfo)
     this.setState({
       error,
       errorInfo,

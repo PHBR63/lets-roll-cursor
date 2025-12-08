@@ -167,7 +167,7 @@ export function SessionRoom() {
       }
       return false
     } catch (error) {
-      console.error('Erro ao verificar role:', error)
+      // Erro silencioso - role pode não estar disponível
       return false
     }
   }
@@ -181,7 +181,7 @@ export function SessionRoom() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" data-testid="session-room">
       <Navbar />
 
       <main className="flex-1 flex overflow-hidden relative">

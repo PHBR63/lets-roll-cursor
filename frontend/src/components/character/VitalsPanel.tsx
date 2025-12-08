@@ -37,11 +37,27 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
     character.class as CharacterClass | undefined,
     attributesForHook,
     nex,
-    stats as any
+    stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
+      ? {
+          pv: stats.pv,
+          san: stats.san,
+          pe: stats.pe,
+          nex: stats.nex,
+        }
+      : undefined
   )
 
   // Validar e ajustar stats com os valores calculados
-  const validatedStats = validateStats(stats as any)
+  const validatedStats = validateStats(
+    stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
+      ? {
+          pv: stats.pv,
+          san: stats.san,
+          pe: stats.pe,
+          nex: stats.nex,
+        }
+      : undefined
+  )
   
   const pv = validatedStats.pv
   const san = validatedStats.san
@@ -101,6 +117,8 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             variant="outline"
             onClick={() => handleResourceChange('pv', -1)}
             className="flex-1"
+            aria-label="Diminuir Pontos de Vida"
+            disabled={pv.current <= 0}
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -122,12 +140,18 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
               className="w-20 text-center"
               min={0}
               max={pv.max}
+              aria-label="Pontos de Vida atuais"
+              aria-valuemin={0}
+              aria-valuemax={pv.max}
+              aria-valuenow={pv.current}
           />
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleResourceChange('pv', 1)}
             className="flex-1"
+            aria-label="Aumentar Pontos de Vida"
+            disabled={pv.current >= pv.max}
           >
             <Plus className="w-4 h-4" />
           </Button>
@@ -157,6 +181,8 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             variant="outline"
             onClick={() => handleResourceChange('san', -1)}
             className="flex-1"
+            aria-label="Diminuir Sanidade"
+            disabled={san.current <= 0}
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -178,12 +204,18 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
               className="w-20 text-center"
               min={0}
               max={san.max}
+              aria-label="Sanidade atual"
+              aria-valuemin={0}
+              aria-valuemax={san.max}
+              aria-valuenow={san.current}
           />
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleResourceChange('san', 1)}
             className="flex-1"
+            aria-label="Aumentar Sanidade"
+            disabled={san.current >= san.max}
           >
             <Plus className="w-4 h-4" />
           </Button>
@@ -211,6 +243,8 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             variant="outline"
             onClick={() => handleResourceChange('pe', -1)}
             className="flex-1"
+            aria-label="Diminuir Pontos de Esforço"
+            disabled={pe.current <= 0}
           >
             <Minus className="w-4 h-4" />
           </Button>
@@ -232,12 +266,18 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
               className="w-20 text-center"
               min={0}
               max={pe.max}
+              aria-label="Pontos de Esforço atuais"
+              aria-valuemin={0}
+              aria-valuemax={pe.max}
+              aria-valuenow={pe.current}
           />
           <Button
             size="sm"
             variant="outline"
             onClick={() => handleResourceChange('pe', 1)}
             className="flex-1"
+            aria-label="Aumentar Pontos de Esforço"
+            disabled={pe.current >= pe.max}
           >
             <Plus className="w-4 h-4" />
           </Button>
