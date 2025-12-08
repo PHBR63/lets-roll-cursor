@@ -4,7 +4,7 @@
 
 export interface CreateCharacterData {
   name: string
-  campaignId: string
+  campaignId?: string // Opcional - permite criar personagens sem campanha
   class?: string
   origin?: string // Origem do personagem
   narrativeConcept?: string // Conceito narrativo do personagem

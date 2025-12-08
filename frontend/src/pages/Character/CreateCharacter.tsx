@@ -18,6 +18,7 @@ import * as z from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { OriginSelector } from '@/components/character/OriginSelector'
+import { SEOHead } from '@/components/common/SEOHead'
 
 /**
  * Schema de validação para criação de personagem
@@ -46,7 +47,7 @@ type CreateCharacterFormData = z.infer<typeof createCharacterSchema>
  * Implementa sistema de distribuição de pontos: base 1, pool 4, max 3, soma 9
  */
 export function CreateCharacter() {
-  const { campaignId } = useParams<{ campaignId: string }>()
+  const { campaignId } = useParams<{ campaignId?: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
   const toast = useToast()
@@ -166,18 +167,14 @@ export function CreateCharacter() {
     setValue(attrName, newValue)
   }
 
-  useEffect(() => {
-    if (!campaignId) {
-      toast.error('Campanha não encontrada')
-      navigate('/dashboard')
-    }
-  }, [campaignId, navigate, toast])
+  // campaignId agora é opcional - permite criar personagem sem campanha
+  const isStandalone = !campaignId
 
   /**
    * Submete o formulário e cria o personagem
    */
   const onSubmit = async (data: CreateCharacterFormData) => {
-    if (!user || !campaignId) return
+    if (!user) return
 
     setLoading(true)
     try {
@@ -189,8 +186,9 @@ export function CreateCharacter() {
       const apiUrl = getApiBaseUrl()
 
       // Preparar dados para envio conforme schema do backend
+      // campaignId é opcional - se não fornecido, cria personagem standalone
       const characterData = {
-        campaignId,
+        ...(campaignId && { campaignId }), // Inclui campaignId apenas se fornecido
         name: data.name,
         class: data.class,
         origin: data.origin || undefined,
@@ -244,8 +242,20 @@ export function CreateCharacter() {
     }
   }
 
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
+
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title={isStandalone ? "Criar Personagem - Let's Roll" : `Criar Personagem - Campanha | Let's Roll`}
+        description={isStandalone 
+          ? "Crie um novo personagem para testes ou uso futuro. Sistema Ordem Paranormal completo."
+          : "Crie um novo personagem para sua campanha de RPG. Sistema Ordem Paranormal completo."
+        }
+        keywords="criar personagem RPG, ficha personagem Ordem Paranormal, criar personagem teste"
+        canonical={`${baseUrl}${isStandalone ? '/character/create' : `/campaign/${campaignId}/character/create`}`}
+        noindex={true}
+      />
       <Navbar />
 
       <main className="flex-1 container mx-auto px-4 py-8">
@@ -255,11 +265,18 @@ export function CreateCharacter() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate(`/campaign/${campaignId}`)}
+              onClick={() => navigate(isStandalone ? '/dashboard' : `/campaign/${campaignId}`)}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-3xl font-bold text-white">Criar Personagem</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Criar Personagem</h1>
+              {isStandalone && (
+                <p className="text-text-secondary text-sm mt-1">
+                  Criando personagem para testes ou uso futuro (sem campanha)
+                </p>
+              )}
+            </div>
           </div>
 
           <Card className="bg-card border-card-secondary">

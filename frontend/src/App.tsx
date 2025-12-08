@@ -120,6 +120,16 @@ function App() {
                   }
                 />
                 <Route
+                  path="/character/create"
+                  element={
+                    <ProtectedRoute>
+                      <ErrorBoundary>
+                        <CreateCharacter />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/characters"
                   element={
                     <ProtectedRoute>

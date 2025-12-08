@@ -124,6 +124,36 @@ export const characterService = {
         throw new Error('Apenas um atributo pode ser reduzido para 0 na criação.')
       }
 
+      // Se campaignId for fornecido, validar que a campanha existe e o usuário participa
+      if (data.campaignId) {
+        const { data: campaign, error: campaignError } = await supabase
+          .from('campaigns')
+          .select('id')
+          .eq('id', data.campaignId)
+          .single()
+
+        if (campaignError || !campaign) {
+          throw new Error('Campanha não encontrada')
+        }
+
+        // Verificar se usuário participa da campanha
+        const { data: participant, error: participantError } = await supabase
+          .from('campaign_participants')
+          .select('role')
+          .eq('campaign_id', data.campaignId)
+          .eq('user_id', userId)
+          .single()
+
+        if (participantError || !participant) {
+          throw new Error('Você não participa desta campanha')
+        }
+
+        // Se for mestre, não pode criar personagem
+        if (participant.role === 'master') {
+          throw new Error('Mestres não podem criar personagens')
+        }
+      }
+
       const characterClass: CharacterClass = (data.class as CharacterClass) || 'COMBATENTE'
       const nex: number = typeof data.nex === 'number' ? data.nex : 5 // NEX inicial padrão
 
@@ -193,7 +223,7 @@ export const characterService = {
       const { data: character, error } = await supabase
         .from('characters')
         .insert({
-          campaign_id: data.campaignId,
+          campaign_id: data.campaignId || null, // Permite null para personagens standalone
           user_id: userId,
           name: data.name,
           avatar_url: data.avatarUrl || null,

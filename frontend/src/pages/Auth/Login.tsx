@@ -31,7 +31,6 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function Login() {
   const navigate = useNavigate()
   const toast = useToast()
-  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
   const {
     register,
     handleSubmit,
@@ -64,6 +63,8 @@ export function Login() {
       toast.error('Erro ao fazer login', errorMessage)
     }
   }
+
+  const baseUrl = import.meta.env.VITE_APP_URL || 'https://lets-roll.vercel.app'
 
   return (
     <>

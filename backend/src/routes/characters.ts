@@ -82,7 +82,6 @@ charactersRouter.get(
  *             type: object
  *             required:
  *               - name
- *               - campaignId
  *               - class
  *             properties:
  *               name:
@@ -90,6 +89,7 @@ charactersRouter.get(
  *               campaignId:
  *                 type: string
  *                 format: uuid
+ *                 description: Opcional - permite criar personagem sem campanha para testes
  *               class:
  *                 type: string
  *                 enum: [COMBATENTE, ESPECIALISTA, OCULTISTA]
