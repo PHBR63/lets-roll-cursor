@@ -35,6 +35,8 @@ Análises técnicas, relatórios de conformidade e documentação do sistema.
 | [COMPLIANCE-REPORT.md](analysis/COMPLIANCE-REPORT.md) | Relatório de conformidade com regras |
 | [PROJECT-STATUS.md](analysis/PROJECT-STATUS.md) | Status atual do projeto |
 | [FRONTEND-REVIEW.md](analysis/FRONTEND-REVIEW.md) | **Revisão completa do frontend** |
+| [REVISAO-COMPLETA-PROJETO.md](analysis/REVISAO-COMPLETA-PROJETO.md) | **🔍 Revisão completa do projeto** |
+| [COMPARATIVO-REFERENCIAS.md](analysis/COMPARATIVO-REFERENCIAS.md) | **📊 Comparativo com referências externas** |
 
 ### 📅 Planejamento & Roadmap (`planning/`)
 Planos de desenvolvimento, roadmaps e tarefas planejadas.
@@ -88,9 +90,10 @@ Histórico de mudanças, reorganizações e otimizações implementadas.
 1. Leia [PARANORMAL-SYSTEM.md](analysis/PARANORMAL-SYSTEM.md)
 2. Consulte [COMPLIANCE-REPORT.md](analysis/COMPLIANCE-REPORT.md) para conformidade
 
-### Quero revisar a qualidade do frontend
-1. Consulte [FRONTEND-REVIEW.md](analysis/FRONTEND-REVIEW.md) - **Revisão completa**
-2. Veja recomendações de melhorias e prioridades
+### Quero revisar a qualidade do projeto
+1. Consulte [REVISAO-COMPLETA-PROJETO.md](analysis/REVISAO-COMPLETA-PROJETO.md) - **Revisão completa do projeto**
+2. Consulte [FRONTEND-REVIEW.md](analysis/FRONTEND-REVIEW.md) - **Revisão completa do frontend**
+3. Veja recomendações de melhorias e prioridades
 
 ### Quero ver o status do projeto
 1. Consulte [STATUS-PLANO-ATUAL.md](planning/STATUS-PLANO-ATUAL.md) - **Status mais recente**
@@ -123,7 +126,9 @@ docs/
 │   ├── PARANORMAL-SYSTEM.md
 │   ├── COMPLIANCE-REPORT.md
 │   ├── PROJECT-STATUS.md
-│   └── FRONTEND-REVIEW.md             # Revisão completa do frontend
+│   ├── FRONTEND-REVIEW.md             # Revisão completa do frontend
+│   ├── REVISAO-COMPLETA-PROJETO.md    # Revisão completa do projeto
+│   └── COMPARATIVO-REFERENCIAS.md     # Comparativo com referências
 ├── planning/                          # 📅 Planos e roadmap
 │   ├── DEVELOPMENT-ROADMAP.md
 │   ├── STATUS-PLANO-ATUAL.md         # Status do último plano verificado

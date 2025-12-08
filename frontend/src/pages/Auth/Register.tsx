@@ -1,17 +1,16 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Card, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { Logo } from '@/components/common/Logo'
 
 /**
  * Schema de validação para registro
@@ -41,9 +40,6 @@ type RegisterFormData = z.infer<typeof registerSchema>
 export function Register() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { user, loading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('register')
-  
   const {
     register,
     handleSubmit,
@@ -52,32 +48,6 @@ export function Register() {
     // @ts-expect-error - zodResolver type incompatibility with @hookform/resolvers v3.10.0
     resolver: zodResolver(registerSchema),
   })
-
-  // Redirecionar usuários já autenticados
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, loading, navigate])
-
-  // Sincronizar tab ativa com a rota
-  useEffect(() => {
-    setActiveTab('register')
-  }, [])
-
-  // Mostrar loading enquanto verifica autenticação
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
-      </div>
-    )
-  }
-
-  // Se usuário estiver autenticado, não renderizar nada (será redirecionado)
-  if (user) {
-    return null
-  }
 
   /**
    * Função para criar conta
@@ -111,26 +81,18 @@ export function Register() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-background border-card-secondary">
-        <Tabs value={activeTab} onValueChange={(value) => {
-          if (value === 'login') {
-            navigate('/login')
-          } else {
-            setActiveTab(value as 'login' | 'register')
-          }
-        }} className="w-full">
-          <CardHeader>
+        <CardHeader>
+          <Tabs defaultValue="register" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
+              <TabsTrigger value="login">
+                <Link to="/login">Entrar</Link>
+              </TabsTrigger>
               <TabsTrigger value="register">Registrar-se</TabsTrigger>
             </TabsList>
-          </CardHeader>
 
-          <CardContent>
-            <TabsContent value="register" className="mt-0">
+            <TabsContent value="register">
               <div className="flex justify-center mb-6">
-                <div className="bg-card p-8 rounded-lg border border-card-secondary">
-                  <p className="text-white">Logo</p>
-                </div>
+                <Logo size="md" link={false} />
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -156,7 +118,6 @@ export function Register() {
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
-                    autoComplete="email"
                     {...register('email')}
                     className={errors.email ? 'border-red-500' : ''}
                   />
@@ -173,7 +134,6 @@ export function Register() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    autoComplete="new-password"
                     {...register('password')}
                     className={errors.password ? 'border-red-500' : ''}
                   />
@@ -190,7 +150,6 @@ export function Register() {
                     id="confirmPassword"
                     type="password"
                     placeholder="••••••••"
-                    autoComplete="new-password"
                     {...register('confirmPassword')}
                     className={errors.confirmPassword ? 'border-red-500' : ''}
                   />
@@ -217,8 +176,8 @@ export function Register() {
                 </Button>
               </form>
             </TabsContent>
-          </CardContent>
-        </Tabs>
+          </Tabs>
+        </CardHeader>
       </Card>
     </div>
   )

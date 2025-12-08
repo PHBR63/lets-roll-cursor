@@ -1,17 +1,16 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
+import { Card, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { useToast } from '@/hooks/useToast'
 import { Loader2 } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { useAuth } from '@/context/AuthContext'
+import { Logo } from '@/components/common/Logo'
 
 /**
  * Schema de validação para login
@@ -30,9 +29,6 @@ type LoginFormData = z.infer<typeof loginSchema>
 export function Login() {
   const navigate = useNavigate()
   const toast = useToast()
-  const { user, loading } = useAuth()
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
-  
   const {
     register,
     handleSubmit,
@@ -41,32 +37,6 @@ export function Login() {
     // @ts-expect-error - zodResolver type incompatibility with @hookform/resolvers v3.10.0
     resolver: zodResolver(loginSchema),
   })
-
-  // Redirecionar usuários já autenticados
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard', { replace: true })
-    }
-  }, [user, loading, navigate])
-
-  // Sincronizar tab ativa com a rota
-  useEffect(() => {
-    setActiveTab('login')
-  }, [])
-
-  // Mostrar loading enquanto verifica autenticação
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
-      </div>
-    )
-  }
-
-  // Se usuário estiver autenticado, não renderizar nada (será redirecionado)
-  if (user) {
-    return null
-  }
 
   /**
    * Função para fazer login
@@ -81,10 +51,6 @@ export function Login() {
       if (error) throw error
 
       toast.success('Login realizado com sucesso!')
-      
-      // Aguardar um pouco para o AuthContext atualizar antes de navegar
-      await new Promise(resolve => setTimeout(resolve, 100))
-      
       navigate('/dashboard')
     } catch (error: unknown) {
       const err = error as Error
@@ -99,26 +65,18 @@ export function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-background border-card-secondary">
-        <Tabs value={activeTab} onValueChange={(value) => {
-          if (value === 'register') {
-            navigate('/register')
-          } else {
-            setActiveTab(value as 'login' | 'register')
-          }
-        }} className="w-full">
-          <CardHeader>
+        <CardHeader>
+          <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">Registrar-se</TabsTrigger>
+              <TabsTrigger value="register">
+                <Link to="/register">Registrar-se</Link>
+              </TabsTrigger>
             </TabsList>
-          </CardHeader>
 
-          <CardContent>
-            <TabsContent value="login" className="mt-0">
+            <TabsContent value="login">
               <div className="flex justify-center mb-6">
-                <div className="bg-card p-8 rounded-lg border border-card-secondary">
-                  <p className="text-white">Logo</p>
-                </div>
+                <Logo size="md" link={false} />
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -128,7 +86,6 @@ export function Login() {
                     id="email"
                     type="email"
                     placeholder="seu@email.com"
-                    autoComplete="email"
                     {...register('email')}
                     className={errors.email ? 'border-red-500' : ''}
                   />
@@ -145,7 +102,6 @@ export function Login() {
                     id="password"
                     type="password"
                     placeholder="••••••••"
-                    autoComplete="current-password"
                     {...register('password')}
                     className={errors.password ? 'border-red-500' : ''}
                   />
@@ -172,8 +128,8 @@ export function Login() {
                 </Button>
               </form>
             </TabsContent>
-          </CardContent>
-        </Tabs>
+          </Tabs>
+        </CardHeader>
       </Card>
     </div>
   )

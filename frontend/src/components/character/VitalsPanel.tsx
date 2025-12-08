@@ -3,11 +3,13 @@ import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Minus } from 'lucide-react'
+import { Plus, Minus, AlertCircle } from 'lucide-react'
 import { useCharacterResources } from '@/hooks/useCharacterResources'
+import { usePETurnLimit } from '@/hooks/usePETurnLimit'
+import { useToast } from '@/hooks/useToast'
 import { Character } from '@/types/character'
 import { CharacterClass, Attributes } from '@/types/ordemParanormal'
-import { InsanityIndicator } from './InsanityIndicator'
+import { Badge } from '@/components/ui/badge'
 
 interface VitalsPanelProps {
   character: Character
@@ -47,6 +49,10 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
       : undefined
   )
 
+  // Hook para limite de PE por turno
+  const { limit: peTurnLimit, canSpend } = usePETurnLimit(nex)
+  const toast = useToast()
+
   // Validar e ajustar stats com os valores calculados
   const validatedStats = validateStats(
     stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
@@ -79,13 +85,25 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
     const max = resource === 'pv' ? pv.max : resource === 'san' ? san.max : pe.max
     const newValue = current + delta
     
+    // Validação especial para PE: verificar limite por turno ao gastar
+    if (resource === 'pe' && delta < 0) {
+      const peCost = Math.abs(delta)
+      if (!canSpend(peCost)) {
+        toast.error(
+          'Limite de PE por turno excedido',
+          `Você pode gastar no máximo ${peTurnLimit} PE por turno (NEX ${nex}%).`
+        )
+        return
+      }
+    }
+    
     // Valida limites
     if (newValue < 0) {
-      alert(`${resource.toUpperCase()} não pode ser menor que 0`)
+      toast.error('Valor inválido', `${resource.toUpperCase()} não pode ser menor que 0`)
       return
     }
     if (newValue > max) {
-      alert(`${resource.toUpperCase()} não pode exceder o máximo (${max})`)
+      toast.error('Valor inválido', `${resource.toUpperCase()} não pode exceder o máximo (${max})`)
       return
     }
     
@@ -166,8 +184,6 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
             {san.current} / {san.max}
           </span>
         </div>
-        {/* Indicador de Estado de Insanidade */}
-        <InsanityIndicator currentSAN={san.current} maxSAN={san.max} />
         <AnimatedProgress 
           value={san.current} 
           max={san.max}
@@ -225,7 +241,12 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
       {/* PE - Pontos de Esforço */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-green-400 font-semibold">Pontos de Esforço (PE)</Label>
+          <div className="flex items-center gap-2">
+            <Label className="text-green-400 font-semibold">Pontos de Esforço (PE)</Label>
+            <Badge variant="outline" className="text-xs">
+              Limite/Turno: {peTurnLimit}
+            </Badge>
+          </div>
           <span className="text-white text-sm">
             {pe.current} / {pe.max}
           </span>
@@ -293,44 +314,6 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
         <div>
           <Label className="text-yellow-400 font-semibold">Defesa</Label>
           <div className="text-2xl font-bold text-white mt-1">{defense}</div>
-        </div>
-      </div>
-
-      {/* RD - Resistência a Dano */}
-      <div className="pt-4 border-t border-border">
-        <Label className="text-orange-400 font-semibold mb-2 block">
-          Resistência a Dano (RD)
-        </Label>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          {(() => {
-            const resistances = (character.resistances as Record<string, number>) || {}
-            const damageTypes = [
-              { key: 'balistico', label: 'Balístico' },
-              { key: 'cortante', label: 'Cortante' },
-              { key: 'perfurante', label: 'Perfurante' },
-              { key: 'impacto', label: 'Impacto' },
-              { key: 'fogo', label: 'Fogo' },
-              { key: 'eletricidade', label: 'Eletricidade' },
-              { key: 'geral', label: 'Geral' },
-            ]
-
-            return damageTypes.map((type) => {
-              const rd = resistances[type.key] || 0
-              if (rd === 0) return null // Não mostrar tipos sem RD
-
-              return (
-                <div key={type.key} className="flex items-center justify-between bg-card-secondary p-2 rounded">
-                  <span className="text-text-secondary">{type.label}</span>
-                  <span className="text-orange-400 font-semibold">RD {rd}</span>
-                </div>
-              )
-            })
-          })()}
-          {Object.keys(character.resistances || {}).length === 0 && (
-            <div className="col-span-2 text-text-secondary text-xs text-center py-2">
-              Nenhuma resistência configurada
-            </div>
-          )}
         </div>
       </div>
     </div>

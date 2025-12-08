@@ -1,10 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Trash2, Plus } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { AlertCircle, Trash2, Plus } from 'lucide-react'
+import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { supabase } from '@/integrations/supabase/client'
 import { AddItemModal } from './AddItemModal'
+import { useCarryCapacity } from '@/hooks/useCarryCapacity'
+import { useToast } from '@/hooks/useToast'
 import { Character, CharacterInventoryItem } from '@/types/character'
+import { Attributes } from '@/types/ordemParanormal'
 
 interface InventoryPanelProps {
   character: Character
@@ -19,17 +24,33 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<CharacterInventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
-  const [loadInfo, setLoadInfo] = useState<{
-    currentLoad: number
-    maxLoad: number
-    isOverloaded: boolean
-    remaining: number
-  } | null>(null)
+  const toast = useToast()
+
+  // Converter attributes para formato Attributes
+  const attributes: Attributes = useMemo(
+    () => ({
+      agi: character.attributes?.agi || 0,
+      for: character.attributes?.for || 0,
+      int: character.attributes?.int || 0,
+      pre: character.attributes?.pre || 0,
+      vig: character.attributes?.vig || 0,
+    }),
+    [character.attributes]
+  )
+
+  // Calcular peso total
+  const totalWeight = useMemo(() => {
+    return inventory.reduce((sum, item) => {
+      return sum + (item.item?.weight || 0) * (item.quantity || 1)
+    }, 0)
+  }, [inventory])
+
+  // Hook para capacidade de carga
+  const { maxCapacity, overloaded, capacityPercentage } = useCarryCapacity(attributes, totalWeight)
 
   useEffect(() => {
     if (character?.id) {
       loadInventory()
-      loadLoadInfo()
     }
   }, [character?.id])
 
@@ -65,35 +86,6 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   }
 
   /**
-   * Carrega informações de carga do personagem
-   */
-  const loadLoadInfo = async () => {
-    try {
-      if (!character?.id) return
-
-      const { data: session } = await supabase.auth.getSession()
-      if (!session.session) return
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      const response = await fetch(
-        `${apiUrl}/api/characters/${character.id}/load`,
-        {
-          headers: {
-            Authorization: `Bearer ${session.session.access_token}`,
-          },
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        setLoadInfo(data)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar carga:', error)
-    }
-  }
-
-  /**
    * Remove item do inventário
    */
   const handleRemoveItem = async (itemId: string) => {
@@ -116,74 +108,59 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
 
       if (response.ok) {
         loadInventory()
-        loadLoadInfo()
         onUpdate()
+        
+        // Verificar sobrecarga após remover item
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+        try {
+          await fetch(`${apiUrl}/api/characters/${character.id}/inventory/check-overload`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${session.session.access_token}`,
+            },
+          })
+        } catch (err) {
+          // Ignorar erro de verificação de sobrecarga
+        }
       }
     } catch (error) {
       console.error('Erro ao remover item:', error)
-      alert('Erro ao remover item. Tente novamente.')
+      toast.error('Erro ao remover item', 'Tente novamente.')
     }
   }
-
-  /**
-   * Calcula peso total
-   */
-  const totalWeight = inventory.reduce((sum, item) => {
-    return sum + (item.item?.weight || 0) * (item.quantity || 1)
-  }, 0)
 
   if (loading) {
     return <div className="text-muted-foreground">Carregando inventário...</div>
   }
 
-  // Calcular capacidade máxima (5 * FOR, mínimo 2)
-  const attributes = character.attributes || {}
-  const forAttr = attributes.for || 0
-  const calculatedMaxLoad = Math.max(5 * forAttr, 2)
-  const maxLoad = loadInfo?.maxLoad || calculatedMaxLoad
-  const currentLoad = loadInfo?.currentLoad || totalWeight
-  const isOverloaded = loadInfo?.isOverloaded || currentLoad > maxLoad
-  const loadPercentage = maxLoad > 0 ? Math.min((currentLoad / maxLoad) * 100, 100) : 0
-
   return (
     <div className="space-y-4">
-      {/* Carga e Moedas */}
+      {/* Peso e Moedas */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-muted-foreground">Carga</Label>
-            {isOverloaded && (
-              <span className="text-red-400 text-xs font-semibold">SOBRECARREGADO</span>
+            <Label className="text-muted-foreground">Peso Total</Label>
+            {overloaded && (
+              <Badge variant="destructive" className="text-xs flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Sobrecarregado
+              </Badge>
             )}
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <span className="text-lg font-bold text-white">
-                {currentLoad.toFixed(1)} / {maxLoad} kg
-              </span>
-              <span className={`text-sm ${isOverloaded ? 'text-red-400' : 'text-green-400'}`}>
-                {loadInfo?.remaining !== undefined ? `${loadInfo.remaining.toFixed(1)} restantes` : ''}
-              </span>
-            </div>
-            {/* Barra de progresso */}
-            <div className="w-full bg-card-secondary rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-full transition-all ${
-                  isOverloaded
-                    ? 'bg-red-500'
-                    : loadPercentage > 80
-                    ? 'bg-yellow-500'
-                    : 'bg-green-500'
-                }`}
-                style={{ width: `${Math.min(loadPercentage, 100)}%` }}
-              />
-            </div>
-            {isOverloaded && (
-              <div className="text-xs text-red-400 mt-1">
-                Penalidades: -5 em testes de FOR/AGI/VIG, -3m em Deslocamento
-              </div>
-            )}
+          <div className="text-lg font-bold text-white">
+            {totalWeight.toFixed(1)} / {maxCapacity} kg
           </div>
+          <AnimatedProgress
+            value={capacityPercentage}
+            max={100}
+            color={overloaded ? 'red' : capacityPercentage > 80 ? 'yellow' : 'green'}
+            className="h-2"
+          />
+          {overloaded && (
+            <p className="text-xs text-red-400">
+              Penalidades: -5 em testes FOR/AGI/VIG, -3m deslocamento
+            </p>
+          )}
         </div>
         <div>
           <Label className="text-muted-foreground">Moedas</Label>
@@ -215,7 +192,6 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
           campaignId={character.campaign_id}
           onSuccess={() => {
             loadInventory()
-            loadLoadInfo()
             onUpdate()
           }}
         />

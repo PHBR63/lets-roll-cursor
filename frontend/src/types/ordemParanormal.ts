@@ -103,8 +103,6 @@ export type Condition =
   | 'FASCINADO'
   | 'INDEFESO'
   | 'SOBRECARREGADO'
-  | 'VULNERAVEL'
-  | 'MORTO'
 
 /**
  * Dados completos do personagem no sistema Ordem Paranormal
@@ -254,6 +252,58 @@ export const TRAINING_BONUS: Record<SkillTraining, number> = {
 }
 
 /**
+ * Patentes da Ordem
+ */
+export type Rank = 'RECRUTA' | 'OPERADOR' | 'AGENTE_ESPECIAL' | 'OFICIAL_OPERACOES' | 'ELITE'
+
+/**
+ * Categorias de itens (0 a IV)
+ */
+export type ItemCategory = 0 | 1 | 2 | 3 | 4
+
+/**
+ * Tabela de permissão de categoria por patente
+ * [Patente][Categoria] = Quantidade máxima permitida
+ */
+export const RANK_CATEGORY_PERMISSIONS: Record<Rank, Record<ItemCategory, number>> = {
+  RECRUTA: {
+    0: 3, // Categoria I
+    1: 2, // Categoria II
+    2: 0, // Categoria III
+    3: 0, // Categoria IV
+    4: 0, // Categoria V (se existir)
+  },
+  OPERADOR: {
+    0: 3, // Categoria I
+    1: 3, // Categoria II
+    2: 1, // Categoria III
+    3: 0, // Categoria IV
+    4: 0, // Categoria V
+  },
+  AGENTE_ESPECIAL: {
+    0: 3, // Categoria I
+    1: 3, // Categoria II
+    2: 2, // Categoria III
+    3: 1, // Categoria IV
+    4: 0, // Categoria V
+  },
+  OFICIAL_OPERACOES: {
+    0: 3, // Categoria I
+    1: 3, // Categoria II
+    2: 3, // Categoria III
+    3: 2, // Categoria IV
+    4: 1, // Categoria V
+  },
+  ELITE: {
+    0: 3, // Categoria I
+    1: 3, // Categoria II
+    2: 3, // Categoria III
+    3: 3, // Categoria IV
+    4: 2, // Categoria V
+  },
+}
+
+/**
  * Lista completa de condições disponíveis
  */
 export const ALL_CONDITIONS: Condition[] = [
@@ -287,6 +337,5 @@ export const ALL_CONDITIONS: Condition[] = [
   'EM_CHAMAS',
   'FASCINADO',
   'INDEFESO',
-  'SOBRECARREGADO',
 ]
 

@@ -4,10 +4,8 @@
 import { supabase } from '../../config/supabase'
 import { logger } from '../../utils/logger'
 import { AppError } from '../../types/common'
+import { Rank, ItemCategory, RANK_CATEGORY_PERMISSIONS } from '../../types/ordemParanormal'
 import { ordemParanormalService } from '../ordemParanormalService'
-import { characterConditionsService } from './characterConditionsService'
-import { rankService } from '../rankService'
-import { deleteCache, getCharacterCacheKey } from '../cache'
 
 export const characterInventoryService = {
   /**
@@ -28,8 +26,7 @@ export const characterInventoryService = {
             type,
             description,
             attributes,
-            rarity,
-            weight
+            rarity
           )
         `
         )
@@ -46,14 +43,81 @@ export const characterInventoryService = {
   },
 
   /**
+   * Valida se o personagem pode equipar item da categoria baseado na patente
+   * @param rank - Patente do personagem
+   * @param category - Categoria do item (0-4)
+   * @param currentCount - Quantidade atual de itens dessa categoria equipados
+   * @returns true se pode equipar, false caso contrário
+   */
+  validateItemCategory(rank: Rank, category: ItemCategory, currentCount: number = 0): boolean {
+    const permissions = RANK_CATEGORY_PERMISSIONS[rank]
+    const maxAllowed = permissions[category] || 0
+    return currentCount < maxAllowed
+  },
+
+  /**
    * Adiciona item ao inventário do personagem
    * @param characterId - ID do personagem
    * @param itemId - ID do item
    * @param quantity - Quantidade (padrão: 1)
+   * @param validateCategory - Se deve validar categoria por patente (padrão: true)
    * @returns Item adicionado ao inventário
    */
-  async addItemToCharacter(characterId: string, itemId: string, quantity: number = 1) {
+  async addItemToCharacter(
+    characterId: string,
+    itemId: string,
+    quantity: number = 1,
+    validateCategory: boolean = true
+  ) {
     try {
+      // Buscar personagem para validar patente
+      const { data: character, error: charError } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', characterId)
+        .single()
+
+      if (charError) throw charError
+
+      // Buscar item para obter categoria
+      const { data: item, error: itemError } = await supabase
+        .from('items')
+        .select('*')
+        .eq('id', itemId)
+        .single()
+
+      if (itemError) throw itemError
+
+      // Validar categoria por patente se necessário
+      if (validateCategory && item.category !== null && item.category !== undefined) {
+        const rank = (character.rank as Rank) || 'RECRUTA'
+        const category = item.category as ItemCategory
+
+        // Contar itens da mesma categoria já equipados
+        const { data: equippedItems } = await supabase
+          .from('character_items')
+          .select(
+            `
+            *,
+            item:items (category)
+          `
+          )
+          .eq('character_id', characterId)
+          .eq('equipped', true)
+
+        const categoryCount =
+          equippedItems?.filter((ci: any) => ci.item?.category === category).length || 0
+
+        const canEquip = this.validateItemCategory(rank, category, categoryCount)
+        if (!canEquip) {
+          const permissions = RANK_CATEGORY_PERMISSIONS[rank]
+          const maxAllowed = permissions[category] || 0
+          throw new Error(
+            `Patente ${rank} não permite equipar mais itens da Categoria ${category}. Limite: ${maxAllowed}`
+          )
+        }
+      }
+
       // Verificar se item já existe no inventário
       const { data: existing, error: queryError } = await supabase
         .from('character_items')
@@ -79,10 +143,6 @@ export const characterInventoryService = {
             .single()
 
           if (insertError) throw insertError
-          
-          // Verificar carga após adicionar item
-          await this.checkAndApplyOverload(characterId)
-          
           return data
         } else {
           // Erro real de banco de dados - propagar erro
@@ -100,10 +160,6 @@ export const characterInventoryService = {
           .single()
 
         if (updateError) throw updateError
-        
-        // Verificar carga após atualizar quantidade
-        await this.checkAndApplyOverload(characterId)
-        
         return data
       }
 
@@ -120,10 +176,6 @@ export const characterInventoryService = {
         .single()
 
       if (insertError) throw insertError
-      
-      // Verificar carga após adicionar item
-      await this.checkAndApplyOverload(characterId)
-      
       return data
     } catch (error: unknown) {
       const err = error as AppError
@@ -146,9 +198,6 @@ export const characterInventoryService = {
         .eq('item_id', itemId)
 
       if (error) throw error
-
-      // Verificar carga após remover item
-      await this.checkAndApplyOverload(characterId)
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Error removing item from character')
@@ -165,14 +214,6 @@ export const characterInventoryService = {
    */
   async equipItem(characterId: string, itemId: string, equipped: boolean = true) {
     try {
-      // Se está tentando equipar, validar permissão de patente
-      if (equipped) {
-        const validation = await rankService.validateEquipPermission(characterId, itemId)
-        if (!validation.canEquip) {
-          throw new Error(validation.reason || 'Não é possível equipar este item')
-        }
-      }
-
       const { data, error } = await supabase
         .from('character_items')
         .update({ equipped })
@@ -183,9 +224,6 @@ export const characterInventoryService = {
 
       if (error) throw error
 
-      // Verificar carga após equipar/desequipar
-      await this.checkAndApplyOverload(characterId)
-
       return data
     } catch (error: unknown) {
       const err = error as AppError
@@ -195,92 +233,92 @@ export const characterInventoryService = {
   },
 
   /**
-   * Calcula carga total do inventário do personagem
+   * Calcula o peso total do inventário do personagem
    * @param characterId - ID do personagem
-   * @returns Carga total (soma dos pesos de todos os itens)
+   * @returns Peso total em kg
    */
-  async calculateLoad(characterId: string): Promise<number> {
+  async calculateTotalWeight(characterId: string): Promise<number> {
     try {
-      const inventory = await this.getCharacterInventory(characterId)
-      let totalLoad = 0
-
-      for (const inventoryItem of inventory) {
-        const item = inventoryItem.item as { weight?: number } | null
-        const quantity = inventoryItem.quantity || 1
-        const weight = (item?.weight || 0) * quantity
-        totalLoad += weight
-      }
-
-      return totalLoad
-    } catch (error: unknown) {
-      const err = error as AppError
-      logger.error({ error }, 'Error calculating load')
-      throw new Error('Erro ao calcular carga: ' + (err.message || 'Erro desconhecido'))
-    }
-  },
-
-  /**
-   * Obtém capacidade máxima de carga do personagem
-   * @param characterId - ID do personagem
-   * @returns Capacidade máxima (5 * FOR, mínimo 2)
-   */
-  async getMaxLoad(characterId: string): Promise<number> {
-    try {
-      const { data: character, error } = await supabase
-        .from('characters')
-        .select('attributes')
-        .eq('id', characterId)
-        .single()
+      const { data: inventory, error } = await supabase
+        .from('character_items')
+        .select(
+          `
+          quantity,
+          item:items (weight)
+        `
+        )
+        .eq('character_id', characterId)
 
       if (error) throw error
 
-      const attributes = (character.attributes as { for?: number }) || {}
-      const forAttr = attributes.for || 0
+      let totalWeight = 0
+      for (const item of inventory || []) {
+        const weight = (item.item as any)?.weight || 0
+        const quantity = item.quantity || 1
+        totalWeight += weight * quantity
+      }
 
-      return ordemParanormalService.calculateMaxLoad(forAttr)
+      return totalWeight
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error }, 'Error getting max load')
-      throw new Error('Erro ao obter capacidade máxima: ' + (err.message || 'Erro desconhecido'))
+      logger.error({ error }, 'Error calculating total weight')
+      throw new Error('Erro ao calcular peso: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
-   * Verifica se personagem está sobrecarregado e aplica condição automaticamente
+   * Verifica se o personagem está sobrecarregado e aplica condição se necessário
    * @param characterId - ID do personagem
-   * @returns Se está sobrecarregado
+   * @returns Informações sobre carga e sobrecarga
    */
-  async checkAndApplyOverload(characterId: string): Promise<boolean> {
+  async checkOverload(characterId: string): Promise<{
+    currentWeight: number
+    maxCapacity: number
+    isOverloaded: boolean
+  }> {
     try {
-      const currentLoad = await this.calculateLoad(characterId)
-      const maxLoad = await this.getMaxLoad(characterId)
-      const isOverloaded = ordemParanormalService.isOverloaded(currentLoad, maxLoad)
-
-      // Buscar personagem para verificar condições atuais
-      const { data: character, error: fetchError } = await supabase
+      // Buscar personagem
+      const { data: character, error: charError } = await supabase
         .from('characters')
-        .select('conditions')
+        .select('*')
         .eq('id', characterId)
         .single()
 
-      if (fetchError) throw fetchError
+      if (charError) throw charError
 
-      const currentConditions = (character.conditions as string[]) || []
-      const hasOverloaded = currentConditions.includes('SOBRECARREGADO')
+      const attributes = character.attributes || {}
+      const forca = attributes.for || 0
 
-      // Aplicar ou remover condição Sobrecarregado
-      if (isOverloaded && !hasOverloaded) {
-        await characterConditionsService.applyCondition(characterId, 'SOBRECARREGADO' as any)
-        logger.info({ characterId, currentLoad, maxLoad }, 'Condição Sobrecarregado aplicada')
-      } else if (!isOverloaded && hasOverloaded) {
-        await characterConditionsService.removeCondition(characterId, 'SOBRECARREGADO' as any)
-        logger.info({ characterId, currentLoad, maxLoad }, 'Condição Sobrecarregado removida')
+      // Calcular capacidade máxima
+      const maxCapacity = ordemParanormalService.calculateMaxCarryCapacity(forca)
+
+      // Calcular peso atual
+      const currentWeight = await this.calculateTotalWeight(characterId)
+
+      // Verificar sobrecarga
+      const isOverloaded = ordemParanormalService.isOverloaded(currentWeight, maxCapacity)
+
+      // Se sobrecarregado, aplicar condição automaticamente
+      if (isOverloaded) {
+        const conditions: string[] = character.conditions || []
+        if (!conditions.includes('SOBRECARREGADO')) {
+          const { characterConditionsService } = await import('./characterConditionsService')
+          await characterConditionsService.applyCondition(characterId, 'SOBRECARREGADO')
+        }
+      } else {
+        // Se não está sobrecarregado, remover condição se existir
+        const conditions: string[] = character.conditions || []
+        if (conditions.includes('SOBRECARREGADO')) {
+          const { characterConditionsService } = await import('./characterConditionsService')
+          await characterConditionsService.removeCondition(characterId, 'SOBRECARREGADO')
+        }
       }
 
-      // Invalidar cache
-      await deleteCache(getCharacterCacheKey({ characterId }))
-
-      return isOverloaded
+      return {
+        currentWeight,
+        maxCapacity,
+        isOverloaded,
+      }
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Error checking overload')

@@ -109,15 +109,32 @@ export function AddItemModal({
         }
       )
 
-      if (!response.ok) throw new Error('Erro ao adicionar item')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido' }))
+        throw new Error(errorData.error || 'Erro ao adicionar item')
+      }
 
       onSuccess()
       setSelectedItemId('')
       setQuantity(1)
       onOpenChange(false)
-    } catch (error) {
+
+      // Verificar sobrecarga após adicionar item
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      try {
+        await fetch(`${apiUrl}/api/characters/${characterId}/inventory/check-overload`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.session.access_token}`,
+          },
+        })
+      } catch (err) {
+        // Ignorar erro de verificação de sobrecarga
+      }
+    } catch (error: unknown) {
+      const err = error as Error
       console.error('Erro ao adicionar item:', error)
-      alert('Erro ao adicionar item. Tente novamente.')
+      alert(err.message || 'Erro ao adicionar item. Tente novamente.')
     } finally {
       setLoading(false)
     }

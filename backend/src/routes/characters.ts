@@ -4,14 +4,6 @@ import { characterService } from '../services/characterService'
 import { validate } from '../middleware/validation'
 import { CharacterFilterSchema, CreateCharacterSchema, UpdateCharacterSchema } from '../middleware/schemas/characterSchemas'
 import { AppError } from '../types/common'
-import { supabase } from '../config/supabase'
-
-/**
- * @swagger
- * tags:
- *   - name: Characters
- *     description: Operações relacionadas a personagens
- */
 
 /**
  * Rotas para CRUD de personagens
@@ -20,43 +12,6 @@ export const charactersRouter = Router()
 
 charactersRouter.use(authenticateToken)
 
-/**
- * @swagger
- * /api/characters:
- *   get:
- *     summary: Lista personagens
- *     tags: [Characters]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: campaignId
- *         schema:
- *           type: string
- *           format: uuid
- *         description: ID da campanha para filtrar
- *       - in: query
- *         name: userId
- *         schema:
- *           type: string
- *           format: uuid
- *         description: ID do usuário para filtrar
- *     responses:
- *       200:
- *         description: Lista de personagens
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Character'
- *       401:
- *         description: Não autenticado
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
 // Listar personagens
 charactersRouter.get(
   '/',
@@ -72,53 +27,6 @@ charactersRouter.get(
   }
 )
 
-/**
- * @swagger
- * /api/characters:
- *   post:
- *     summary: Cria um novo personagem
- *     tags: [Characters]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - campaignId
- *               - class
- *             properties:
- *               name:
- *                 type: string
- *               campaignId:
- *                 type: string
- *                 format: uuid
- *               class:
- *                 type: string
- *                 enum: [COMBATENTE, ESPECIALISTA, OCULTISTA]
- *               origin:
- *                 type: string
- *               attributes:
- *                 type: object
- *               nex:
- *                 type: number
- *                 minimum: 0
- *                 maximum: 99
- *     responses:
- *       201:
- *         description: Personagem criado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Character'
- *       400:
- *         description: Dados inválidos
- *       401:
- *         description: Não autenticado
- */
 // Criar personagem
 charactersRouter.post(
   '/',
@@ -149,25 +57,6 @@ charactersRouter.get('/:id/inventory', async (req: Request, res: Response) => {
   }
 })
 
-// Obter carga e capacidade máxima do personagem
-charactersRouter.get('/:id/load', async (req: Request, res: Response) => {
-  try {
-    const { characterInventoryService } = await import('../services/character/characterInventoryService')
-    const currentLoad = await characterInventoryService.calculateLoad(req.params.id)
-    const maxLoad = await characterInventoryService.getMaxLoad(req.params.id)
-    const isOverloaded = currentLoad > maxLoad
-    
-    res.json({
-      currentLoad,
-      maxLoad,
-      isOverloaded,
-      remaining: Math.max(0, maxLoad - currentLoad),
-    })
-  } catch (error: any) {
-    res.status(500).json({ error: error.message })
-  }
-})
-
 // Adicionar item ao inventário
 charactersRouter.post('/:id/inventory', async (req: Request, res: Response) => {
   try {
@@ -191,6 +80,17 @@ charactersRouter.delete('/:id/inventory/:itemId', async (req: Request, res: Resp
   try {
     await characterService.removeItemFromCharacter(req.params.id, req.params.itemId)
     res.status(204).send()
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Verificar sobrecarga do inventário
+charactersRouter.post('/:id/inventory/check-overload', async (req: Request, res: Response) => {
+  try {
+    const { characterInventoryService } = await import('../services/character/characterInventoryService')
+    const result = await characterInventoryService.checkOverload(req.params.id)
+    res.json(result)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
   }
@@ -412,16 +312,16 @@ charactersRouter.put('/:id/san', async (req: Request, res: Response) => {
 // Atualizar PE
 charactersRouter.put('/:id/pe', async (req: Request, res: Response) => {
   try {
-    const { pe, isDelta, validateTurnLimit, peSpentThisTurn } = req.body
+    const { pe, isDelta, validateTurnLimit } = req.body
     if (pe === undefined) {
       return res.status(400).json({ error: 'pe é obrigatório' })
     }
-    const character = await characterService.updatePE(
+    const { characterResourcesService } = await import('../services/character/characterResourcesService')
+    const character = await characterResourcesService.updatePE(
       req.params.id,
       pe,
       isDelta || false,
-      validateTurnLimit || false,
-      peSpentThisTurn || 0
+      validateTurnLimit || false
     )
     res.json(character)
   } catch (error: any) {
@@ -429,98 +329,18 @@ charactersRouter.put('/:id/pe', async (req: Request, res: Response) => {
   }
 })
 
-// Gastar PE com validação de limite por turno
+// Gastar PE (com validação de limite por turno)
 charactersRouter.post('/:id/spend-pe', async (req: Request, res: Response) => {
   try {
-    const { peCost, peSpentThisTurn } = req.body
+    const { peCost } = req.body
     if (peCost === undefined || peCost <= 0) {
-      return res.status(400).json({ error: 'peCost deve ser maior que zero' })
+      return res.status(400).json({ error: 'peCost deve ser um número positivo' })
     }
-    const character = await characterService.spendPE(
-      req.params.id,
-      peCost,
-      peSpentThisTurn || 0
-    )
+    const { characterResourcesService } = await import('../services/character/characterResourcesService')
+    const character = await characterResourcesService.spendPE(req.params.id, peCost)
     res.json(character)
   } catch (error: any) {
-    res.status(400).json({ error: error.message })
-  }
-})
-
-// Aplicar dano com RD
-charactersRouter.post('/:id/apply-damage', async (req: Request, res: Response) => {
-  try {
-    const { damage, type, damageType } = req.body
-    if (damage === undefined || damage <= 0) {
-      return res.status(400).json({ error: 'damage deve ser maior que zero' })
-    }
-    const result = await characterService.applyDamage(
-      req.params.id,
-      damage,
-      type || 'physical',
-      damageType || 'geral'
-    )
-    res.json(result)
-  } catch (error: any) {
-    res.status(400).json({ error: error.message })
-  }
-})
-
-// Atualizar resistências (RD)
-charactersRouter.put('/:id/resistances', async (req: Request, res: Response) => {
-  try {
-    const { resistances } = req.body
-    if (!resistances || typeof resistances !== 'object') {
-      return res.status(400).json({ error: 'resistances deve ser um objeto' })
-    }
-
-    const { data: character, error: fetchError } = await supabase
-      .from('characters')
-      .select('*')
-      .eq('id', req.params.id)
-      .single()
-
-    if (fetchError) throw fetchError
-
-    const { data, error } = await supabase
-      .from('characters')
-      .update({
-        resistances,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', req.params.id)
-      .select()
-      .single()
-
-    if (error) throw error
-
-    // Invalidar cache
-    const { deleteCache, getCharacterCacheKey } = await import('../services/cache')
-    await deleteCache(getCharacterCacheKey({ characterId: req.params.id }))
-
-    res.json(data)
-  } catch (error: any) {
     res.status(500).json({ error: error.message })
-  }
-})
-
-// Processar turno (aplicar condições automáticas)
-charactersRouter.post('/:id/process-turn', async (req: Request, res: Response) => {
-  try {
-    const result = await characterService.processTurn(req.params.id)
-    res.json(result)
-  } catch (error: any) {
-    res.status(400).json({ error: error.message })
-  }
-})
-
-// Estancar sangramento (teste de Vigor DT 20)
-charactersRouter.post('/:id/stop-bleeding', async (req: Request, res: Response) => {
-  try {
-    const result = await characterService.stopBleeding(req.params.id)
-    res.json(result)
-  } catch (error: any) {
-    res.status(400).json({ error: error.message })
   }
 })
 
@@ -531,26 +351,6 @@ charactersRouter.post('/:id/recover-pe', async (req: Request, res: Response) => 
     res.json(character)
   } catch (error: any) {
     res.status(500).json({ error: error.message })
-  }
-})
-
-// Conjurar ritual com teste de custo
-charactersRouter.post('/:id/conjure-ritual', async (req: Request, res: Response) => {
-  try {
-    const { ritualCost, peSpentThisTurn } = req.body
-    if (ritualCost === undefined || ritualCost <= 0) {
-      return res.status(400).json({ error: 'ritualCost deve ser maior que zero' })
-    }
-
-    const { ritualService } = await import('../services/ritualService')
-    const result = await ritualService.conjureRitualWithCost(
-      req.params.id,
-      ritualCost,
-      peSpentThisTurn || 0
-    )
-    res.json(result)
-  } catch (error: any) {
-    res.status(400).json({ error: error.message })
   }
 })
 
