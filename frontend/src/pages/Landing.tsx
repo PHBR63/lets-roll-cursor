@@ -290,18 +290,8 @@ export function Landing() {
                 </Link>
               </div>
             </SpotlightCard>
-            <div className="group relative">
+            <div className="group relative mt-4">
               <BorderBeam size={200} duration={20} />
-            </div>
-          </div>
-
-              <div className="mt-8">
-                <Link to="/register" className="block">
-                  <ShimmerButton className="w-full py-4 text-lg">
-                    Criar Conta Grátis
-                  </ShimmerButton>
-                </Link>
-              </div>
             </div>
           </div>
         </div>

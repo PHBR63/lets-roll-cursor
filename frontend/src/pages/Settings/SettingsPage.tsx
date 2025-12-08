@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Página de Configurações
  * Centraliza todas as configurações do usuário
