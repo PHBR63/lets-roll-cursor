@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,8 +70,14 @@ export function Login() {
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="register">
-                <Link to="/register">Registrar-se</Link>
+              <TabsTrigger 
+                value="register"
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate('/register')
+                }}
+              >
+                Registrar-se
               </TabsTrigger>
             </TabsList>
 
