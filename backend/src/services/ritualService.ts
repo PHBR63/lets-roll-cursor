@@ -85,7 +85,7 @@ export const ritualService = {
 
       // Gastar PE (com validação de limite por turno)
       try {
-        await characterResourcesService.spendPE(characterId, ritualCost, peSpentThisTurn)
+        await characterResourcesService.spendPE(characterId, ritualCost)
       } catch (peError: any) {
         throw new Error(peError.message || 'Erro ao gastar PE')
       }

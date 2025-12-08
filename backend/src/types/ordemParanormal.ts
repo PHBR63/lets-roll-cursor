@@ -103,6 +103,7 @@ export type Condition =
   | 'FASCINADO'
   | 'INDEFESO'
   | 'SOBRECARREGADO'
+  | 'VULNERAVEL'
 
 /**
  * Configuração de classe para cálculos

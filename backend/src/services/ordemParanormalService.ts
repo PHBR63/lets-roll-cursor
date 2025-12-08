@@ -679,6 +679,9 @@ export const ordemParanormalService = {
     rollResult: number
     dt: number
     criticalFailure: boolean
+    dice: number[]
+    attributeValue: number
+    skillBonus: number
   } {
     // DT = 10 + custo do ritual
     const dt = 10 + ritualCost
@@ -700,6 +703,9 @@ export const ordemParanormalService = {
       rollResult: rollResult.total,
       dt,
       criticalFailure,
+      dice: rollResult.dice,
+      attributeValue: intValue,
+      skillBonus: ocultismoBonus,
     }
   },
 }

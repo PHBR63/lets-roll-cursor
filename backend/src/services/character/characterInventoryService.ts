@@ -325,5 +325,53 @@ export const characterInventoryService = {
       throw new Error('Erro ao verificar sobrecarga: ' + (err.message || 'Erro desconhecido'))
     }
   },
+
+  /**
+   * Calcula a carga atual do personagem
+   * @param characterId - ID do personagem
+   * @returns Peso total em kg
+   */
+  async calculateLoad(characterId: string): Promise<number> {
+    return this.calculateTotalWeight(characterId)
+  },
+
+  /**
+   * Obtém a capacidade máxima de carga do personagem
+   * @param characterId - ID do personagem
+   * @returns Capacidade máxima em kg
+   */
+  async getMaxLoad(characterId: string): Promise<number> {
+    try {
+      const { data: character, error } = await supabase
+        .from('characters')
+        .select('attributes')
+        .eq('id', characterId)
+        .single()
+
+      if (error) throw error
+
+      const attributes = character.attributes || {}
+      const forca = attributes.for || 0
+
+      return ordemParanormalService.calculateMaxCarryCapacity(forca)
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error getting max load')
+      throw new Error('Erro ao obter capacidade máxima: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Verifica e aplica condição de sobrecarga se necessário
+   * @param characterId - ID do personagem
+   * @returns Informações sobre carga e sobrecarga
+   */
+  async checkAndApplyOverload(characterId: string): Promise<{
+    currentWeight: number
+    maxCapacity: number
+    isOverloaded: boolean
+  }> {
+    return this.checkOverload(characterId)
+  },
 }
 
