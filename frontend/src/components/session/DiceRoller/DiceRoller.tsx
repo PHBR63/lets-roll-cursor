@@ -158,7 +158,7 @@ export function DiceRoller({ sessionId, campaignId }: DiceRollerProps) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <DTCalculator />
             <ChainRoller
-              onRoll={(result) => handleRoll(result as any)}
+              onRoll={(result) => handleRoll(result)}
               sessionId={sessionId}
               campaignId={campaignId}
               characterId={character?.id}

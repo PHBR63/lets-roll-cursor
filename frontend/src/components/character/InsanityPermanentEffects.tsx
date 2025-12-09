@@ -48,7 +48,7 @@ export function InsanityPermanentEffects({
 
   // Buscar efeitos permanentes do personagem
   useEffect(() => {
-    const permanentEffects = (character as any).permanentEffects || []
+    const permanentEffects = character.permanentEffects || []
     setEffects(permanentEffects)
   }, [character])
 

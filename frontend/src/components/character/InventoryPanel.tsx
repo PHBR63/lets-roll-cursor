@@ -3,10 +3,11 @@ import { useState, useEffect, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { AlertCircle, Trash2, Plus } from 'lucide-react'
+import { AlertCircle, Trash2, Plus, Package } from 'lucide-react'
 import { AnimatedProgress } from '@/components/ui/animated-progress'
 import { supabase } from '@/integrations/supabase/client'
 import { AddItemModal } from './AddItemModal'
+import { EquipmentModal } from '@/components/items/EquipmentModal'
 import { useCarryCapacity } from '@/hooks/useCarryCapacity'
 import { useToast } from '@/hooks/useToast'
 import { Character, CharacterInventoryItem } from '@/types/character'
@@ -25,6 +26,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<CharacterInventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showEquipmentModal, setShowEquipmentModal] = useState(false)
   const toast = useToast()
 
   // Converter attributes para formato Attributes
@@ -175,15 +177,28 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label className="text-white font-semibold">Itens</Label>
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-2"
-            onClick={() => setShowAddModal(true)}
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar Item
-          </Button>
+          <div className="flex gap-2">
+            {character.campaign_id && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                onClick={() => setShowEquipmentModal(true)}
+              >
+                <Package className="w-4 h-4" />
+                Ver Equipamentos
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              onClick={() => setShowAddModal(true)}
+            >
+              <Plus className="w-4 h-4" />
+              Adicionar Item
+            </Button>
+          </div>
         </div>
 
         <AddItemModal
@@ -229,6 +244,15 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
           </div>
         )}
       </div>
+
+      {/* Modal de Equipamentos da Campanha */}
+      {character.campaign_id && (
+        <EquipmentModal
+          open={showEquipmentModal}
+          onOpenChange={setShowEquipmentModal}
+          campaignId={character.campaign_id}
+        />
+      )}
     </div>
   )
 }

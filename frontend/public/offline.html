@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline - Let's Roll</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1A0033 0%, #2A1A3A 100%);
+      color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      text-align: center;
+      max-width: 500px;
+    }
+    
+    .icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      opacity: 0.8;
+    }
+    
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: #8000FF;
+    }
+    
+    p {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      color: #B0B0B0;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #8000FF;
+      color: #FFFFFF;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    
+    .button:hover {
+      background: #6000CC;
+    }
+    
+    .status {
+      margin-top: 32px;
+      padding: 16px;
+      background: rgba(128, 0, 255, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(128, 0, 255, 0.3);
+    }
+    
+    .status.online {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.3);
+      color: #22C55E;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    <h1>Você está offline</h1>
+    <p>
+      Parece que você perdeu a conexão com a internet.
+      Algumas funcionalidades podem estar limitadas.
+    </p>
+    <a href="/" class="button" onclick="window.location.reload()">
+      Tentar novamente
+    </a>
+    <div class="status" id="status">
+      Verificando conexão...
+    </div>
+  </div>
+  
+  <script>
+    // Verificar status de conexão
+    function updateConnectionStatus() {
+      const statusEl = document.getElementById('status')
+      
+      if (navigator.onLine) {
+        statusEl.textContent = '✅ Conexão restaurada! Recarregue a página.'
+        statusEl.classList.add('online')
+        setTimeout(() => {
+          window.location.reload()
+        }, 2000)
+      } else {
+        statusEl.textContent = '❌ Sem conexão com a internet'
+        statusEl.classList.remove('online')
+      }
+    }
+    
+    // Verificar periodicamente
+    updateConnectionStatus()
+    setInterval(updateConnectionStatus, 3000)
+    
+    // Ouvir eventos de conexão
+    window.addEventListener('online', () => {
+      updateConnectionStatus()
+    })
+    
+    window.addEventListener('offline', () => {
+      updateConnectionStatus()
+    })
+  </script>
+</body>
+</html>
+

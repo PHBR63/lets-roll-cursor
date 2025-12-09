@@ -21,6 +21,7 @@ import { Character } from '@/types/character'
 import { SEOHead } from '@/components/common/SEOHead'
 import { getApiBaseUrl } from '@/utils/apiUrl'
 import { DiceRoller } from '@/components/session/DiceRoller/DiceRoller'
+import { CampaignMoments } from '@/components/campaign/CampaignMoments'
 
 /**
  * Página de detalhes da campanha
@@ -306,6 +307,15 @@ export function CampaignDetail() {
                   }
                 />
               )}
+            </section>
+
+            {/* Seção Momentos da Campanha */}
+            <section className="bg-card border border-card-secondary rounded-lg p-6">
+              <CampaignMoments
+                campaignId={id!}
+                sessionId={undefined}
+                canCreate={true}
+              />
             </section>
           </div>
 

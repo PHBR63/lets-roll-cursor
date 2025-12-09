@@ -27,6 +27,7 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
   const [editItemModalOpen, setEditItemModalOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
   const [itemModalType, setItemModalType] = useState<'equipment' | 'item'>('item')
+  const [equipmentModalOpen, setEquipmentModalOpen] = useState(false)
   
   // Estados para modais de habilidades
   const [createAbilityModalOpen, setCreateAbilityModalOpen] = useState(false)
@@ -171,6 +172,15 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
         {/* Tab Equipamentos */}
         <TabsContent value="equipments" className="flex-1 overflow-y-auto mt-4">
           <div className="space-y-2">
+            <Button
+              size="sm"
+              variant="default"
+              onClick={() => setEquipmentModalOpen(true)}
+              className="w-full mb-2 bg-primary hover:bg-primary/90"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Abrir Modal de Equipamentos
+            </Button>
             {equipments.length === 0 ? (
               <div className="text-text-secondary text-sm text-center py-8">
                 Nenhum equipamento criado
@@ -370,6 +380,15 @@ export function NPCsPanel({ campaignId }: NPCsPanelProps) {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Equipamentos */}
+      {campaignId && (
+        <EquipmentModal
+          open={equipmentModalOpen}
+          onOpenChange={setEquipmentModalOpen}
+          campaignId={campaignId}
+        />
+      )}
     </div>
   )
 }

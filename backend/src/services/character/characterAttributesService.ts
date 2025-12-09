@@ -95,6 +95,29 @@ export const characterAttributesService = {
    */
   async updateSkills(id: string, skills: Record<string, { training: string; bonus?: number }>) {
     try {
+      // Buscar personagem para obter NEX
+      const { data: character, error: fetchError } = await supabase
+        .from('characters')
+        .select('stats')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const stats = character.stats || {}
+      const nex = stats.nex || 5
+
+      // Validar cada perícia antes de atualizar
+      for (const [skillName, skillData] of Object.entries(skills)) {
+        const training = skillData.training as SkillTraining
+        if (!ordemParanormalService.canUseSkillTraining(training, nex)) {
+          throw new Error(
+            `Nível de treinamento ${training} não é permitido para NEX ${nex}%. ` +
+            `COMPETENT requer NEX >= 35% e EXPERT requer NEX >= 70%.`
+          )
+        }
+      }
+
       // Recalcular bônus de todas as perícias
       const updatedSkills: Record<string, { training: string; bonus: number }> = {}
       for (const [skillName, skillData] of Object.entries(skills)) {

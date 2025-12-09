@@ -20,6 +20,7 @@ jest.mock('../ordemParanormalService', () => ({
   ordemParanormalService: {
     rollRitualCostTest: jest.fn(),
     calculateSkillBonus: jest.fn(),
+    getMaxPETurn: jest.fn(),
   },
 }))
 
@@ -214,24 +215,104 @@ describe('ritualService', () => {
       )
     })
 
-    it('deve validar limite de PE por turno', async () => {
+    it('deve validar limite de PE por turno antes de gastar PE', async () => {
+      const characterLowNEX = {
+        ...mockCharacter,
+        stats: {
+          ...mockCharacter.stats,
+          nex: 5, // NEX 5% = limite de 1 PE por turno
+        },
+      }
+
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({
-          data: mockCharacter,
+          data: characterLowNEX,
           error: null,
         }),
       }
 
       ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockRejectedValue(
-        new Error('Limite de PE por turno excedido')
+      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(1) // Limite de 1 PE para NEX 5
+
+      // Tentar conjurar ritual de 2 PE quando já gastou 0 PE e o limite é 1
+      await expect(ritualService.conjureRitualWithCost('char-123', 2, 0)).rejects.toThrow(
+        'Limite de 1 PE por turno excedido'
       )
 
-      await expect(ritualService.conjureRitualWithCost('char-123', 5, 3)).rejects.toThrow(
-        'Limite de PE por turno excedido'
+      // Verificar que getMaxPETurn foi chamado
+      expect(ordemParanormalService.getMaxPETurn).toHaveBeenCalledWith(5)
+      // Verificar que spendPE NÃO foi chamado (validação ocorre antes)
+      expect(characterResourcesService.spendPE).not.toHaveBeenCalled()
+    })
+
+    it('deve permitir conjuração dentro do limite de PE por turno', async () => {
+      const characterHighNEX = {
+        ...mockCharacter,
+        stats: {
+          ...mockCharacter.stats,
+          nex: 20, // NEX 20% = limite de 3 PE por turno
+        },
+      }
+
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: characterHighNEX,
+          error: null,
+        }),
+        update: jest.fn().mockReturnThis(),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(3) // Limite de 3 PE para NEX 20
+      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
+        character: characterHighNEX,
+      })
+      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
+        success: true,
+        rollResult: 20,
+        dt: 15,
+        criticalFailure: false,
+      })
+
+      // Conjurar ritual de 2 PE quando já gastou 1 PE (total: 3, dentro do limite)
+      const result = await ritualService.conjureRitualWithCost('char-123', 2, 1)
+
+      expect(ordemParanormalService.getMaxPETurn).toHaveBeenCalledWith(20)
+      expect(characterResourcesService.spendPE).toHaveBeenCalledWith('char-123', 2)
+      expect(result.success).toBe(true)
+    })
+
+    it('deve rejeitar quando peSpentThisTurn + ritualCost excede o limite', async () => {
+      const characterMidNEX = {
+        ...mockCharacter,
+        stats: {
+          ...mockCharacter.stats,
+          nex: 10, // NEX 10% = limite de 2 PE por turno
+        },
+      }
+
+      const mockQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: characterMidNEX,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(2) // Limite de 2 PE para NEX 10
+
+      // Tentar conjurar ritual de 2 PE quando já gastou 1 PE (total: 3, excede limite de 2)
+      await expect(ritualService.conjureRitualWithCost('char-123', 2, 1)).rejects.toThrow(
+        'Limite de 2 PE por turno excedido'
       )
+
+      expect(characterResourcesService.spendPE).not.toHaveBeenCalled()
     })
 
     it('deve calcular bônus de Ocultismo corretamente', async () => {

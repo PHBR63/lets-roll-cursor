@@ -37,6 +37,14 @@ export interface Character {
   rituals?: Array<{ id: string; name: string; [key: string]: unknown }>
   ingredients?: Array<{ id: string; name: string; [key: string]: unknown }>
   resistances?: Record<string, number> // RD (Resistência a Dano) por tipo
+  permanentEffects?: Array<{
+    id: string
+    name: string
+    description: string
+    severity: 'minor' | 'moderate' | 'severe'
+    turnsTriggered: number
+    createdAt: string
+  }>
   avatar_url?: string
   created_at?: string
   updated_at?: string

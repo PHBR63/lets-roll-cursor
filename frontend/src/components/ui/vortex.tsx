@@ -4,7 +4,7 @@ import { createNoise3D } from "simplex-noise";
 import { motion } from "framer-motion";
 
 interface VortexProps {
-  children?: any;
+  children?: React.ReactNode;
   className?: string;
   containerClassName?: string;
   particleCount?: number;

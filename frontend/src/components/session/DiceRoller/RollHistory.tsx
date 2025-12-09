@@ -44,7 +44,7 @@ export function RollHistory({ sessionId, campaignId }: RollHistoryProps) {
           table: 'dice_rolls',
           filter: `session_id=eq.${sessionId}`,
         },
-        (payload: any) => {
+        (payload: { new: Record<string, unknown> }) => {
           const newRoll: RollHistoryItem = {
             id: payload.new.id,
             result: {
@@ -140,7 +140,7 @@ export function RollHistory({ sessionId, campaignId }: RollHistoryProps) {
   const formatResult = (item: RollHistoryItem): string => {
     const { result } = item
     if (result.type === 'attack') {
-      const hit = result.hit ?? (result.details as any)?.hit ?? false
+      const hit = result.hit ?? (result.details && typeof result.details === 'object' && 'hit' in result.details ? (result.details as { hit?: boolean }).hit : false) ?? false
       return `${result.formula || 'Ataque'}: ${result.total || result.result} (${hit ? 'Acertou' : 'Errou'})`
     }
     if (result.type === 'skill') {

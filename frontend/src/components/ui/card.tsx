@@ -1,23 +1,37 @@
 import * as React from "react"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { cardHover, transitions } from "@/utils/animations"
 
 /**
  * Card base com estilo cinza escuro
  */
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border border-card-secondary bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+  React.HTMLAttributes<HTMLDivElement> & {
+    hoverable?: boolean
+  }
+>(({ className, hoverable = false, ...props }, ref) => {
+  const Component = hoverable ? motion.div : 'div'
+  const motionProps = hoverable ? {
+    whileHover: { y: -4, scale: 1.01 },
+    transition: transitions.normal,
+  } : {}
+  
+  return (
+    <Component
+      ref={ref}
+      className={cn(
+        "rounded-lg border border-card-secondary bg-card text-card-foreground shadow-sm",
+        hoverable && "transition-shadow duration-200 hover:shadow-lg hover:shadow-accent/20",
+        className
+      )}
+      {...motionProps}
+      {...props}
+    />
+  )
+})
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<

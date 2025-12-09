@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Landing } from './pages/Landing'
 import { Login } from './pages/Auth/Login'
 import { Register } from './pages/Auth/Register'
@@ -69,8 +70,9 @@ function LoadingFallback() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <div className="min-h-screen">
+      <ThemeProvider>
+        <AuthProvider>
+          <div className="min-h-screen">
           <div className="pattern-icosahedrons" />
           <BrowserRouter>
             <PageTracker />
@@ -204,7 +206,8 @@ function App() {
           <PWAInstallPrompt />
           <Analytics />
         </div>
-      </AuthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

@@ -1,5 +1,5 @@
 import { ordemParanormalService } from '../ordemParanormalService'
-import { CharacterClass, Condition } from '../../types/ordemParanormal'
+import { CharacterClass, Condition, SkillTraining } from '../../types/ordemParanormal'
 
 describe('ordemParanormalService', () => {
   describe('calculateMaxPV', () => {
@@ -86,6 +86,122 @@ describe('ordemParanormalService', () => {
     it('deve retornar 15 para expert', () => {
       const result = ordemParanormalService.calculateSkillBonus('EXPERT')
       expect(result).toBe(15)
+    })
+  })
+
+  describe('validateCreationAttributes', () => {
+    it('deve aceitar atributos válidos com soma 9', () => {
+      const attributes = { agi: 2, for: 2, int: 2, pre: 2, vig: 1 }
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).not.toThrow()
+    })
+
+    it('deve aceitar atributos válidos com um zero', () => {
+      const attributes = { agi: 0, for: 2, int: 2, pre: 2, vig: 3 }
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).not.toThrow()
+    })
+
+    it('deve rejeitar soma diferente de 9', () => {
+      const attributes = { agi: 3, for: 3, int: 3, pre: 3, vig: 3 } // Soma = 15
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).toThrow(
+        'Soma de atributos inválida'
+      )
+    })
+
+    it('deve rejeitar atributo maior que 3', () => {
+      const attributes = { agi: 4, for: 1, int: 1, pre: 1, vig: 2 } // AGI > 3
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).toThrow(
+        'Nenhum atributo pode exceder 3'
+      )
+    })
+
+    it('deve rejeitar mais de um atributo em 0', () => {
+      const attributes = { agi: 0, for: 0, int: 3, pre: 3, vig: 3 } // Dois zeros
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).toThrow(
+        'Apenas um atributo pode ser reduzido para 0'
+      )
+    })
+
+    it('deve rejeitar três atributos em 0', () => {
+      const attributes = { agi: 0, for: 0, int: 0, pre: 3, vig: 6 } // Três zeros, soma ajustada
+      expect(() => ordemParanormalService.validateCreationAttributes(attributes)).toThrow(
+        'Apenas um atributo pode ser reduzido para 0'
+      )
+    })
+  })
+
+  describe('canUseSkillTraining', () => {
+    it('deve permitir UNTRAINED para qualquer NEX', () => {
+      expect(ordemParanormalService.canUseSkillTraining('UNTRAINED', 5)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('UNTRAINED', 35)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('UNTRAINED', 70)).toBe(true)
+    })
+
+    it('deve permitir TRAINED para qualquer NEX', () => {
+      expect(ordemParanormalService.canUseSkillTraining('TRAINED', 5)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('TRAINED', 35)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('TRAINED', 70)).toBe(true)
+    })
+
+    it('deve permitir COMPETENT apenas com NEX >= 35', () => {
+      expect(ordemParanormalService.canUseSkillTraining('COMPETENT', 34)).toBe(false)
+      expect(ordemParanormalService.canUseSkillTraining('COMPETENT', 35)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('COMPETENT', 50)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('COMPETENT', 70)).toBe(true)
+    })
+
+    it('deve permitir EXPERT apenas com NEX >= 70', () => {
+      expect(ordemParanormalService.canUseSkillTraining('EXPERT', 69)).toBe(false)
+      expect(ordemParanormalService.canUseSkillTraining('EXPERT', 70)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('EXPERT', 80)).toBe(true)
+      expect(ordemParanormalService.canUseSkillTraining('EXPERT', 99)).toBe(true)
+    })
+  })
+
+  describe('getMaxPETurn', () => {
+    it('deve retornar limite correto para NEX 5', () => {
+      const result = ordemParanormalService.getMaxPETurn(5)
+      expect(result).toBe(1)
+    })
+
+    it('deve retornar limite correto para NEX 10', () => {
+      const result = ordemParanormalService.getMaxPETurn(10)
+      expect(result).toBe(2)
+    })
+
+    it('deve retornar limite correto para NEX 20', () => {
+      const result = ordemParanormalService.getMaxPETurn(20)
+      expect(result).toBe(3)
+    })
+
+    it('deve retornar limite correto para NEX 35', () => {
+      const result = ordemParanormalService.getMaxPETurn(35)
+      expect(result).toBe(4)
+    })
+
+    it('deve retornar limite correto para NEX 50', () => {
+      const result = ordemParanormalService.getMaxPETurn(50)
+      expect(result).toBe(6)
+    })
+
+    it('deve retornar limite correto para NEX 70', () => {
+      const result = ordemParanormalService.getMaxPETurn(70)
+      expect(result).toBe(8)
+    })
+
+    it('deve retornar limite correto para NEX 99', () => {
+      const result = ordemParanormalService.getMaxPETurn(99)
+      expect(result).toBe(10)
+    })
+
+    it('deve retornar limite mínimo para NEX < 5', () => {
+      expect(ordemParanormalService.getMaxPETurn(0)).toBe(1)
+      expect(ordemParanormalService.getMaxPETurn(4)).toBe(1)
+    })
+
+    it('deve retornar limite correto para valores intermediários', () => {
+      expect(ordemParanormalService.getMaxPETurn(12)).toBe(2) // Entre 10 e 15
+      expect(ordemParanormalService.getMaxPETurn(22)).toBe(3) // Entre 20 e 25
+      expect(ordemParanormalService.getMaxPETurn(37)).toBe(4) // Entre 35 e 40
     })
   })
 

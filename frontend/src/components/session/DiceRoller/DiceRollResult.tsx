@@ -37,7 +37,7 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
           <div className="text-xs text-text-secondary mt-2 text-center">
             Dados rolados: [{result.dice?.join(', ')}]
             <br />
-            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
+            Dado escolhido: <span className="font-bold">{result.selectedDice || result.result}</span>
             <br />
             + Bônus de Perícia: {result.skillBonus} = <span className="font-bold">{result.total}</span>
             {result.advantage && ' (Vantagem - escolheu maior)'}
@@ -61,17 +61,17 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
           </div>
           <div className="text-text-secondary text-sm text-center mt-1">
             {result.skillName} vs Defesa {result.targetDefense}
-            {(result as any).threatRange && ` (Crítico: ${(result as any).threatRange}+)`}
+            {result.threatRange && ` (Crítico: ${result.threatRange}+)`}
           </div>
           <div className="text-xs text-text-secondary mt-2 text-center">
             Dados rolados: [{result.dice?.join(', ')}]
             <br />
-            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
-            {(result as any).threatRange && (result as any).selectedDice >= (result as any).threatRange && (
+            Dado escolhido: <span className="font-bold">{result.selectedDice || result.result}</span>
+            {result.threatRange && result.selectedDice && result.selectedDice >= result.threatRange && (
               <span className="text-yellow-400 font-bold"> (≥ Margem de Ameaça!)</span>
             )}
             <br />
-            + Bônus de Perícia: {(result as any).bonus || result.skillBonus || 0} = <span className="font-bold">{result.total}</span>
+            + Bônus de Perícia: {result.bonus || result.skillBonus || 0} = <span className="font-bold">{result.total}</span>
           </div>
           {result.hit && result.damage && (
             <div className="text-xs text-center mt-2">
@@ -97,12 +97,12 @@ export function DiceRollResult({ result }: DiceRollResultProps) {
             {result.total} {result.success ? '✅' : '❌'}
           </div>
           <div className="text-text-secondary text-sm text-center mt-1">
-            {(result as any).resistanceType} vs DT {(result as any).difficulty}
+            {result.resistanceType} vs DT {result.difficulty}
           </div>
           <div className="text-xs text-text-secondary mt-2 text-center">
             Dados rolados: [{result.dice?.join(', ')}]
             <br />
-            Dado escolhido: <span className="font-bold">{(result as any).selectedDice || result.result}</span>
+            Dado escolhido: <span className="font-bold">{result.selectedDice || result.result}</span>
             <br />
             Resultado: <span className="font-bold">{result.total}</span>
             {result.advantage && ' (Vantagem - escolheu maior)'}

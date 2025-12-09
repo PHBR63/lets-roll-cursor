@@ -97,7 +97,7 @@ export function DiceRollerResistance({ character, sessionId, campaignId, onRoll 
     <div className="space-y-4">
       <div className="space-y-2">
         <Label className="text-white">Tipo de Resistência</Label>
-        <Select value={resistanceType} onValueChange={(value: any) => setResistanceType(value)}>
+        <Select value={resistanceType} onValueChange={(value: 'Fortitude' | 'Reflexos' | 'Vontade') => setResistanceType(value)}>
           <SelectTrigger className="bg-input border-white/20">
             <SelectValue />
           </SelectTrigger>

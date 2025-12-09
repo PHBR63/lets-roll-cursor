@@ -2,8 +2,10 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { modalAnimation, backdropAnimation, transitions } from "@/utils/animations"
 
 /**
  * Modal roxo escuro reutilizável
@@ -28,8 +30,17 @@ const DialogOverlay = React.forwardRef<
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     )}
+    asChild
     {...props}
-  />
+  >
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={transitions.normal}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+    />
+  </DialogPrimitive.Overlay>
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 

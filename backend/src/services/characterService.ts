@@ -103,26 +103,15 @@ export const characterService = {
       const pre: number = typeof attributes.pre === 'number' ? attributes.pre : 1
       const vig: number = typeof attributes.vig === 'number' ? attributes.vig : 1
 
-      // Validar soma total (deve ser 9: 5 base + 4 distribuídos)
-      const totalAttributes = agi + forAttr + int + pre + vig
-      if (totalAttributes !== 9) {
-        throw new Error(
-          `Soma de atributos inválida: ${totalAttributes}. A soma deve ser exatamente 9 (5 base + 4 pontos distribuídos).`
-        )
+      // Usar função centralizada do domínio para validar atributos
+      const validatedAttributes: Attributes = {
+        agi,
+        for: forAttr,
+        int,
+        pre,
+        vig,
       }
-
-      // Validar máximo inicial de 3 por atributo
-      const attributeValues = [agi, forAttr, int, pre, vig]
-      const exceedsMax = attributeValues.some(attr => attr > 3)
-      if (exceedsMax) {
-        throw new Error('Nenhum atributo pode exceder 3 na criação de personagem.')
-      }
-
-      // Validar que apenas um atributo pode ser 0 (se houver)
-      const zeroCount = attributeValues.filter(attr => attr === 0).length
-      if (zeroCount > 1) {
-        throw new Error('Apenas um atributo pode ser reduzido para 0 na criação.')
-      }
+      ordemParanormalService.validateCreationAttributes(validatedAttributes)
 
       // Se campaignId for fornecido, validar que a campanha existe e o usuário participa
       if (data.campaignId) {
@@ -160,14 +149,7 @@ export const characterService = {
         ? (data as any).nex 
         : (typeof (data.stats as any)?.nex === 'number' ? (data.stats as any).nex : 5) // NEX inicial padrão
 
-      // Usar atributos validados
-      const validatedAttributes = {
-        agi,
-        for: forAttr,
-        int,
-        pre,
-        vig,
-      }
+      // validatedAttributes já foi criado acima
 
       // Calcular recursos máximos baseado em classe e atributos
       const maxPV = ordemParanormalService.calculateMaxPV(characterClass, validatedAttributes.vig, nex)

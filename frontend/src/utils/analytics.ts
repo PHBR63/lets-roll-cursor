@@ -97,10 +97,14 @@ export const AnalyticsEvents = {
     trackEvent({ action: 'add_token', category: 'gameboard', label: tokenType }),
 }
 
+// Tipos para Google Analytics
+type GtagCommand = 'config' | 'event' | 'set' | 'js'
+type GtagEventParams = Record<string, string | number | boolean>
+
 // Declaração de tipo para window.gtag
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void
-    dataLayer?: any[]
+    gtag?: (command: GtagCommand, targetId: string, config?: GtagEventParams) => void
+    dataLayer?: Array<Record<string, unknown>>
   }
 }

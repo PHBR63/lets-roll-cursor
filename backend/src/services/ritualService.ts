@@ -75,6 +75,7 @@ export const ritualService = {
 
       const stats = character.stats || {}
       const pe = stats.pe || { current: 0, max: 0 }
+      const nex = stats.nex || 5
       const attributes = character.attributes || {}
       const skills = character.skills || {}
 
@@ -83,7 +84,19 @@ export const ritualService = {
         throw new Error(`PE insuficiente. Você tem ${pe.current} PE, mas o ritual custa ${ritualCost} PE.`)
       }
 
-      // Gastar PE (com validação de limite por turno)
+      // Validar limite de PE por turno ANTES de gastar PE
+      const maxPeTurn = ordemParanormalService.getMaxPETurn(nex)
+      const totalPeThisTurn = (peSpentThisTurn || 0) + ritualCost
+      
+      if (totalPeThisTurn > maxPeTurn) {
+        throw new Error(
+          `Limite de ${maxPeTurn} PE por turno excedido para NEX ${nex}%. ` +
+          `Você já gastou ${peSpentThisTurn || 0} PE neste turno e o ritual custa ${ritualCost} PE ` +
+          `(total: ${totalPeThisTurn} PE).`
+        )
+      }
+
+      // Gastar PE (após validação de limite por turno)
       try {
         await characterResourcesService.spendPE(characterId, ritualCost)
       } catch (peError: any) {

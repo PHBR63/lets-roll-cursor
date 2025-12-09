@@ -21,11 +21,12 @@ import {
 } from '@/components/ui/select'
 import { supabase } from '@/integrations/supabase/client'
 import { AppError } from '@/types/common'
+import { Ability } from '@/types/ability'
 
 interface EditAbilityModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  ability: any
+  ability: Ability | null
   onSuccess: () => void
 }
 

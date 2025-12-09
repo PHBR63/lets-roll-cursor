@@ -9,42 +9,29 @@ interface SEOHeadProps {
   ogTitle?: string
   ogDescription?: string
   ogImage?: string
-  ogType?: string
+  ogType?: 'website' | 'article' | 'profile'
+  ogUrl?: string
+  ogSiteName?: string
   twitterTitle?: string
   twitterDescription?: string
+  twitterImage?: string
+  twitterCard?: 'summary' | 'summary_large_image' | 'app' | 'player'
+  twitterSite?: string
+  twitterCreator?: string
   noindex?: boolean
+  structuredData?: Record<string, unknown>
+  author?: string
+  publishedTime?: string
+  modifiedTime?: string
+  locale?: string
 }
 
 /**
  * Componente para gerenciar SEO dinâmico por página
  * Usa o hook useSEO internamente
  */
-export function SEOHead({
-  title,
-  description,
-  keywords,
-  canonical,
-  ogTitle,
-  ogDescription,
-  ogImage,
-  ogType,
-  twitterTitle,
-  twitterDescription,
-  noindex,
-}: SEOHeadProps) {
-  useSEO({
-    title,
-    description,
-    keywords,
-    canonical,
-    ogTitle,
-    ogDescription,
-    ogImage,
-    ogType,
-    twitterTitle,
-    twitterDescription,
-    noindex,
-  })
+export function SEOHead(props: SEOHeadProps) {
+  useSEO(props)
 
   return null // Componente não renderiza nada
 }

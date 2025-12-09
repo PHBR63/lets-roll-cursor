@@ -301,6 +301,96 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         })
       ).rejects.toThrow('Erro ao criar personagem')
     })
+
+    it('deve rejeitar perícia COMPETENT com NEX < 35', async () => {
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+          class: 'COMBATENTE',
+          attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
+          skills: {
+            Luta: { attribute: 'FOR', training: 'COMPETENT', bonus: 10 },
+          },
+          nex: 30, // NEX < 35
+        })
+      ).rejects.toThrow('Nível de treinamento COMPETENT não é permitido para NEX 30%')
+    })
+
+    it('deve aceitar perícia COMPETENT com NEX >= 35', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+
+      const result = await characterService.createCharacter('user-123', {
+        name: 'New Character',
+        campaignId: 'camp-123',
+        class: 'COMBATENTE',
+        attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
+        skills: {
+          Luta: { attribute: 'FOR', training: 'COMPETENT', bonus: 10 },
+        },
+        nex: 35, // NEX >= 35
+      })
+
+      expect(result).toBeDefined()
+    })
+
+    it('deve rejeitar perícia EXPERT com NEX < 70', async () => {
+      await expect(
+        characterService.createCharacter('user-123', {
+          name: 'New Character',
+          campaignId: 'camp-123',
+          class: 'COMBATENTE',
+          attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
+          skills: {
+            Luta: { attribute: 'FOR', training: 'EXPERT', bonus: 15 },
+          },
+          nex: 50, // NEX < 70
+        })
+      ).rejects.toThrow('Nível de treinamento EXPERT não é permitido para NEX 50%')
+    })
+
+    it('deve aceitar perícia EXPERT com NEX >= 70', async () => {
+      const mockQuery = {
+        insert: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: mockCharacter,
+          error: null,
+        }),
+      }
+
+      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+
+      const result = await characterService.createCharacter('user-123', {
+        name: 'New Character',
+        campaignId: 'camp-123',
+        class: 'COMBATENTE',
+        attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
+        skills: {
+          Luta: { attribute: 'FOR', training: 'EXPERT', bonus: 15 },
+        },
+        nex: 70, // NEX >= 70
+      })
+
+      expect(result).toBeDefined()
+    })
   })
 
   describe('getCharacterById', () => {

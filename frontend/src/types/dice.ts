@@ -17,6 +17,7 @@ export interface DiceRollResult {
     modifiers?: number
   }
   dice?: number[]
+  selectedDice?: number
   skillName?: string
   difficulty?: number
   skillBonus?: number
@@ -24,12 +25,14 @@ export interface DiceRollResult {
   advantage?: boolean
   disadvantage?: boolean
   targetDefense?: number
+  threatRange?: number
   hit?: boolean
   critical?: boolean
   damage?: {
     total: number
     dice: number[]
   }
+  resistanceType?: 'Fortitude' | 'Reflexos' | 'Vontade'
   session_id?: string | null
   campaign_id?: string
   character_id?: string | null

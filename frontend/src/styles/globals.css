@@ -46,7 +46,8 @@
     background-attachment: fixed;
     min-height: 100vh;
   }
-  .dark {
+  .dark,
+  .theme-dark-purple {
     /* Background: #1A0033 (roxo escuro) - hsl(271, 100%, 10%) */
     --background: 271 100% 10%;
     --foreground: 210 20% 98%;
@@ -74,6 +75,84 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+
+  .theme-light-purple {
+    --background: 270 30% 95%;
+    --foreground: 270 100% 10%;
+    --card: 270 20% 98%;
+    --card-foreground: 270 100% 10%;
+    --accent: 270 100% 50%;
+    --accent-foreground: 210 20% 98%;
+    --border: 270 20% 85%;
+    --input: 270 20% 90%;
+  }
+
+  .theme-dark-blue {
+    --background: 220 100% 10%;
+    --foreground: 210 20% 98%;
+    --card: 220 20% 20%;
+    --card-foreground: 210 20% 98%;
+    --accent: 220 100% 50%;
+    --accent-foreground: 210 20% 98%;
+    --border: 220 20% 30%;
+    --input: 220 20% 25%;
+  }
+
+  .theme-dark-green {
+    --background: 150 100% 10%;
+    --foreground: 210 20% 98%;
+    --card: 150 20% 20%;
+    --card-foreground: 210 20% 98%;
+    --accent: 150 100% 50%;
+    --accent-foreground: 210 20% 98%;
+    --border: 150 20% 30%;
+    --input: 150 20% 25%;
+  }
+
+  .theme-high-contrast {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 0%;
+    --border: 0 0% 50%;
+    --input: 0 0% 15%;
+  }
+
+  .theme-custom {
+    --background: var(--theme-background, 271 100% 10%);
+    --foreground: var(--theme-text, 210 20% 98%);
+    --card: var(--theme-card, 240 16% 20%);
+    --card-foreground: var(--theme-text, 210 20% 98%);
+    --accent: var(--theme-accent, 270 100% 50%);
+    --accent-foreground: var(--theme-text, 210 20% 98%);
+  }
+}
+
+/* Touch targets - mínimo 44x44px para acessibilidade */
+@media (max-width: 768px) {
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Swipe gestures */
+.swipeable {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

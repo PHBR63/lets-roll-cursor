@@ -20,6 +20,7 @@ import { Session } from '@/types/session'
 import { CampaignParticipant } from '@/types/campaign'
 import { InsanityAura } from '@/components/character/InsanityAura'
 import { Character } from '@/types/character'
+import { CampaignMoments } from '@/components/campaign/CampaignMoments'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -292,6 +293,17 @@ export function SessionRoom() {
             </div>
             <div className="bg-card border border-card-secondary rounded-lg min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] flex flex-col">
               <ChatPanel sessionId={session?.id} campaignId={campaignId} />
+            </div>
+          </div>
+
+          {/* Seção Momentos da Sessão */}
+          <div className="p-2 md:p-4 border-t border-card-secondary bg-background">
+            <div className="bg-card border border-card-secondary rounded-lg p-4 md:p-6">
+              <CampaignMoments
+                campaignId={campaignId!}
+                sessionId={session?.id}
+                canCreate={true}
+              />
             </div>
           </div>
         </div>

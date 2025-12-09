@@ -2,9 +2,11 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
 import { ShimmerButton } from "./shimmer-button"
+import { buttonPress, transitions } from "@/utils/animations"
 
 /**
  * Variantes do botão seguindo o design system
@@ -58,17 +60,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         <ShimmerButton
           ref={ref}
           className={cn(buttonVariants({ size }), className)}
-          {...(props as any)}
+          {...(props as React.ComponentPropsWithoutRef<typeof ShimmerButton>)}
         />
       )
     }
 
-    const Comp = asChild ? Slot : "button"
+    const Comp = asChild ? Slot : motion.button
+    const buttonClasses = cn(buttonVariants({ variant, size, className }))
+    
+    // Se for Slot (asChild), não usar animações
+    if (asChild) {
+      return (
+        <Slot
+          className={buttonClasses}
+          ref={ref}
+          {...(props as React.ComponentPropsWithoutRef<typeof Slot>)}
+        />
+      )
+    }
+    
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={buttonClasses}
         ref={ref}
-        {...(props as any)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        transition={transitions.fast}
+        {...(props as React.ComponentPropsWithoutRef<typeof Comp>)}
       />
     )
   }

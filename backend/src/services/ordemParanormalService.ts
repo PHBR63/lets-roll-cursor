@@ -76,6 +76,115 @@ export const ordemParanormalService = {
   },
 
   /**
+   * Valida atributos na criação de personagem conforme regras do Ordem Paranormal
+   * Regras:
+   * - Soma total deve ser 9 (5 base + 4 pontos distribuídos)
+   * - Nenhum atributo pode exceder 3
+   * - Máximo 1 atributo pode ser 0 (reduzir um atributo para 0 dá +1 ponto extra)
+   * @param attributes - Atributos do personagem
+   * @throws Error se validação falhar
+   */
+  validateCreationAttributes(attributes: Attributes): void {
+    const { agi, for: forAttr, int, pre, vig } = attributes
+
+    // Validar soma total (deve ser 9: 5 base + 4 distribuídos)
+    const totalAttributes = agi + forAttr + int + pre + vig
+    if (totalAttributes !== 9) {
+      throw new Error(
+        `Soma de atributos inválida: ${totalAttributes}. A soma deve ser exatamente 9 (5 base + 4 pontos distribuídos).`
+      )
+    }
+
+    // Validar máximo inicial de 3 por atributo
+    const attributeValues = [agi, forAttr, int, pre, vig]
+    const exceedsMax = attributeValues.some(attr => attr > 3)
+    if (exceedsMax) {
+      throw new Error('Nenhum atributo pode exceder 3 na criação de personagem.')
+    }
+
+    // Validar que apenas um atributo pode ser 0 (se houver)
+    const zeroCount = attributeValues.filter(attr => attr === 0).length
+    if (zeroCount > 1) {
+      throw new Error('Apenas um atributo pode ser reduzido para 0 na criação.')
+    }
+  },
+
+  /**
+   * Verifica se um nível de treinamento de perícia é permitido para o NEX do personagem
+   * Regras do Ordem Paranormal:
+   * - UNTRAINED e TRAINED: sempre permitidos
+   * - COMPETENT (Veterano): requer NEX >= 35%
+   * - EXPERT: requer NEX >= 70%
+   * @param training - Nível de treinamento
+   * @param nex - Nível de Exposição (0-99)
+   * @returns true se o treinamento é permitido para o NEX
+   */
+  canUseSkillTraining(training: SkillTraining, nex: number): boolean {
+    if (training === 'UNTRAINED' || training === 'TRAINED') {
+      return true
+    }
+    if (training === 'COMPETENT') {
+      return nex >= 35
+    }
+    if (training === 'EXPERT') {
+      return nex >= 70
+    }
+    return false
+  },
+
+  /**
+   * Tabela de limites de PE por turno baseado em NEX
+   * Conforme regras do Ordem Paranormal RPG
+   */
+  PE_TURN_LIMITS: [
+    { nex: 5, maxPE: 1 },
+    { nex: 10, maxPE: 2 },
+    { nex: 15, maxPE: 2 },
+    { nex: 20, maxPE: 3 },
+    { nex: 25, maxPE: 3 },
+    { nex: 30, maxPE: 4 },
+    { nex: 35, maxPE: 4 },
+    { nex: 40, maxPE: 5 },
+    { nex: 45, maxPE: 5 },
+    { nex: 50, maxPE: 6 },
+    { nex: 55, maxPE: 6 },
+    { nex: 60, maxPE: 7 },
+    { nex: 65, maxPE: 7 },
+    { nex: 70, maxPE: 8 },
+    { nex: 75, maxPE: 8 },
+    { nex: 80, maxPE: 9 },
+    { nex: 85, maxPE: 9 },
+    { nex: 90, maxPE: 10 },
+    { nex: 95, maxPE: 10 },
+    { nex: 99, maxPE: 10 },
+  ],
+
+  /**
+   * Retorna o limite máximo de PE que pode ser gasto por turno baseado no NEX
+   * @param nex - Nível de Exposição (0-99)
+   * @returns Limite máximo de PE por turno
+   */
+  getMaxPETurn(nex: number): number {
+    // Encontrar a entrada mais próxima (maior ou igual) na tabela
+    const limits = ordemParanormalService.PE_TURN_LIMITS
+    
+    // Se NEX for menor que o mínimo, retornar limite mínimo
+    if (nex < limits[0].nex) {
+      return limits[0].maxPE
+    }
+
+    // Buscar o limite correspondente (maior NEX que seja <= ao NEX fornecido)
+    for (let i = limits.length - 1; i >= 0; i--) {
+      if (nex >= limits[i].nex) {
+        return limits[i].maxPE
+      }
+    }
+
+    // Fallback: retornar limite máximo
+    return limits[limits.length - 1].maxPE
+  },
+
+  /**
    * Rola teste de atributo conforme regras do sistema Ordem Paranormal
    * Regra de Ouro: Rola uma quantidade de d20 igual ao valor do atributo base
    * Escolhe o maior valor (exceto quando atributo = 0, que escolhe o menor)

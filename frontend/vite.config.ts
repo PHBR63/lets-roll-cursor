@@ -46,19 +46,40 @@ export default defineConfig({
       output: {
         // Code splitting manual para melhor cache
         // NOTA: React e React-DOM não devem ser separados em chunks para evitar problemas de resolução
-        manualChunks: {
+        manualChunks: (id) => {
           // Vendor chunks (sem React para evitar problemas de resolução)
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-          ],
-          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
-          'animation-vendor': ['framer-motion'],
-          'supabase-vendor': ['@supabase/supabase-js'],
+          if (id.includes('node_modules')) {
+            // Radix UI components
+            if (id.includes('@radix-ui')) {
+              return 'ui-vendor'
+            }
+            // Form libraries
+            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
+              return 'form-vendor'
+            }
+            // Animation library
+            if (id.includes('framer-motion')) {
+              return 'animation-vendor'
+            }
+            // Supabase
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor'
+            }
+            // Router
+            if (id.includes('react-router')) {
+              return 'router-vendor'
+            }
+            // Icons
+            if (id.includes('lucide-react')) {
+              return 'icons-vendor'
+            }
+            // Utilities
+            if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
+              return 'utils-vendor'
+            }
+            // Other node_modules
+            return 'vendor'
+          }
         },
         // Nomes de arquivos mais legíveis
         chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -66,8 +87,12 @@ export default defineConfig({
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
-    // Limites de tamanho (warnings)
-    chunkSizeWarningLimit: 1000,
+    // Limites de tamanho (warnings) - reduzido para forçar otimização
+    chunkSizeWarningLimit: 500,
+    // Tree shaking otimizado
+    treeshake: {
+      moduleSideEffects: false,
+    },
   },
   // Otimizações de dependências
   optimizeDeps: {
