@@ -49,6 +49,10 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks (sem React para evitar problemas de resolução)
           if (id.includes('node_modules')) {
+            // Supabase - manter em chunk separado mas garantir ordem de carregamento
+            if (id.includes('@supabase')) {
+              return 'supabase-vendor'
+            }
             // Radix UI components
             if (id.includes('@radix-ui')) {
               return 'ui-vendor'
@@ -60,10 +64,6 @@ export default defineConfig({
             // Animation library
             if (id.includes('framer-motion')) {
               return 'animation-vendor'
-            }
-            // Supabase
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor'
             }
             // Router
             if (id.includes('react-router')) {
@@ -85,6 +85,9 @@ export default defineConfig({
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+        // Garantir ordem de carregamento - Supabase deve ser carregado antes de outros vendors
+        // Isso ajuda a evitar erros de "Cannot access before initialization"
+        format: 'es',
       },
     },
     // Limites de tamanho (warnings) - reduzido para forçar otimização

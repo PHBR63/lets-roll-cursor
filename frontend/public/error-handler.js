@@ -103,12 +103,23 @@
     if (event.message && (
       event.message.includes('Cannot access') && 
       event.message.includes('before initialization') &&
-      event.filename && event.filename.includes('supabase-vendor')
+      (event.filename && event.filename.includes('supabase'))
     )) {
-      // Este erro pode ser causado por ordem de carregamento
-      // Tentar recarregar a página após um delay se for crítico
-      console.warn('Supabase initialization error detected, may need page reload');
-      // Não prevenir o erro, mas logar para debug
+      // Este erro pode ser causado por ordem de carregamento ou minificação
+      // Tentar recarregar a página após um delay curto
+      console.warn('[App] Erro de inicialização do Supabase detectado, tentando recuperar...');
+      event.preventDefault();
+      event.stopPropagation();
+      // Tentar recarregar apenas uma vez
+      if (!window.__supabaseReloadAttempted) {
+        window.__supabaseReloadAttempted = true;
+        setTimeout(() => {
+          if (document.readyState === 'complete') {
+            window.location.reload();
+          }
+        }, 1000);
+      }
+      return false;
     }
     
     // Tratar erro de 'module is not defined' (código CommonJS não transformado)

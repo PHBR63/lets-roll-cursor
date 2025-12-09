@@ -35,12 +35,54 @@ try {
 /**
  * Cliente Supabase para uso no frontend
  * IMPORTANTE: Use apenas VITE_SUPABASE_ANON_KEY, nunca a SERVICE_ROLE_KEY
+ * 
+ * Inicialização lazy para evitar problemas de ordem de carregamento
  */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: typeof window !== 'undefined' ? localStorage : undefined,
-    persistSession: true,
-    autoRefreshToken: true,
+let supabaseClient: ReturnType<typeof createClient> | null = null
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    try {
+      supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          storage: typeof window !== 'undefined' ? localStorage : undefined,
+          persistSession: true,
+          autoRefreshToken: true,
+        },
+      })
+    } catch (error) {
+      console.error('[Supabase] Erro ao criar cliente:', error)
+      // Em caso de erro, tentar novamente após um delay
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          try {
+            supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+              auth: {
+                storage: localStorage,
+                persistSession: true,
+                autoRefreshToken: true,
+              },
+            })
+          } catch (retryError) {
+            console.error('[Supabase] Erro ao recriar cliente após retry:', retryError)
+          }
+        }, 100)
+      }
+      throw error
+    }
+  }
+  return supabaseClient
+}
+
+// Exportar como getter para garantir inicialização correta
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_target, prop) {
+    const client = getSupabaseClient()
+    const value = (client as any)[prop]
+    if (typeof value === 'function') {
+      return value.bind(client)
+    }
+    return value
   },
 })
 

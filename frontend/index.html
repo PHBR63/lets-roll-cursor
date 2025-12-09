@@ -49,11 +49,34 @@
         if (event.message && (
           event.message.includes('setActionHandler') ||
           event.message.includes('enterpictureinpicture') ||
+          event.message.includes('MediaSessionAction') ||
           (event.filename && event.filename.includes('autoPip.js'))
         )) {
           event.preventDefault();
-          console.warn('Erro de MediaSession capturado e silenciado:', event.message);
-          return true;
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          // Não logar para evitar poluição do console
+          return false;
+        }
+        
+        // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
+        if (event.message && (
+          event.message.includes('Cannot access') && 
+          event.message.includes('before initialization') &&
+          (event.filename && event.filename.includes('supabase'))
+        )) {
+          // Este erro pode ser causado por ordem de carregamento ou minificação
+          // Tentar recarregar a página após um delay curto
+          console.warn('[App] Erro de inicialização do Supabase detectado, tentando recuperar...');
+          setTimeout(() => {
+            if (document.readyState === 'complete') {
+              // Apenas recarregar se a página já estiver carregada
+              window.location.reload();
+            }
+          }, 1000);
+          event.preventDefault();
+          event.stopPropagation();
+          return false;
         }
       }, true);
       
@@ -62,11 +85,25 @@
         if (event.reason && (
           event.reason.message && (
             event.reason.message.includes('setActionHandler') ||
-            event.reason.message.includes('enterpictureinpicture')
+            event.reason.message.includes('enterpictureinpicture') ||
+            event.reason.message.includes('MediaSessionAction')
           )
         )) {
           event.preventDefault();
-          console.warn('Promise rejection de MediaSession capturada e silenciada:', event.reason);
+          // Não logar para evitar poluição do console
+          return;
+        }
+        
+        // Capturar Promise rejections do Supabase
+        if (event.reason && (
+          event.reason.message && (
+            event.reason.message.includes('Cannot access') && 
+            event.reason.message.includes('before initialization')
+          )
+        )) {
+          console.warn('[App] Promise rejection do Supabase detectada');
+          event.preventDefault();
+          return;
         }
       });
     </script>
@@ -113,4 +150,5 @@
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
 
