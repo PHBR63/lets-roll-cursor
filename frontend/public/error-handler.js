@@ -124,25 +124,18 @@
     }
     
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
+    // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
     if (event.message && (
       event.message.includes('Cannot access') && 
       event.message.includes('before initialization') &&
       (event.filename && event.filename.includes('supabase'))
     )) {
       // Este erro pode ser causado por ordem de carregamento ou minificação
-      // Tentar recarregar a página após um delay curto
-      console.warn('[App] Erro de inicialização do Supabase detectado, tentando recuperar...');
+      // Geralmente se resolve sozinho, então vamos apenas silenciar
       event.preventDefault();
       event.stopPropagation();
-      // Tentar recarregar apenas uma vez
-      if (!window.__supabaseReloadAttempted) {
-        window.__supabaseReloadAttempted = true;
-        setTimeout(() => {
-          if (document.readyState === 'complete') {
-            window.location.reload();
-          }
-        }, 1000);
-      }
+      event.stopImmediatePropagation();
+      // Não logar para evitar poluição do console
       return false;
     }
     

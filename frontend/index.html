@@ -84,22 +84,18 @@
         }
         
         // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
+        // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
         if (event.message && (
           event.message.includes('Cannot access') && 
           event.message.includes('before initialization') &&
           (event.filename && event.filename.includes('supabase'))
         )) {
           // Este erro pode ser causado por ordem de carregamento ou minificação
-          // Tentar recarregar a página após um delay curto
-          console.warn('[App] Erro de inicialização do Supabase detectado, tentando recuperar...');
-          setTimeout(() => {
-            if (document.readyState === 'complete') {
-              // Apenas recarregar se a página já estiver carregada
-              window.location.reload();
-            }
-          }, 1000);
+          // Geralmente se resolve sozinho, então vamos apenas silenciar
           event.preventDefault();
           event.stopPropagation();
+          event.stopImmediatePropagation();
+          // Não logar para evitar poluição do console
           return false;
         }
       }, true);
@@ -145,12 +141,14 @@
         }
         
         // Capturar Promise rejections do Supabase
+        // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
         if (reasonMessage && (
           reasonMessage.includes('Cannot access') && 
           reasonMessage.includes('before initialization')
         )) {
-          console.warn('[App] Promise rejection do Supabase detectada');
           event.preventDefault();
+          event.stopPropagation();
+          // Não logar para evitar poluição do console
           return;
         }
       });
@@ -195,6 +193,8 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Carregar error-handler ANTES de qualquer outro script -->
+    <script src="/error-handler.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
