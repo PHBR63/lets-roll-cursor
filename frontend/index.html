@@ -215,13 +215,17 @@
         
         // Se for erro crítico da aplicação, NÃO suprimir
         if (isAppError && event.error) {
-          console.error('[App] Erro crítico detectado:', {
-            message: event.message,
-            filename: event.filename,
-            lineno: event.lineno,
-            colno: event.colno,
-            error: event.error
-          });
+          const errorDetails = {
+            message: event.message || 'Erro sem mensagem',
+            filename: event.filename || 'Arquivo desconhecido',
+            lineno: event.lineno || 0,
+            colno: event.colno || 0,
+            errorName: event.error?.name || 'Unknown',
+            errorMessage: event.error?.message || String(event.error || 'Erro desconhecido'),
+            errorStack: event.error?.stack || 'Sem stack trace'
+          };
+          console.error('[App] Erro crítico detectado:', errorDetails);
+          console.error('[App] Stack completo:', event.error?.stack);
           // Permitir que o erro seja propagado para o error boundary
           return true;
         }
@@ -287,18 +291,26 @@
         return true;
         
         // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
-        // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
+        // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
         if (event.message && (
           event.message.includes('Cannot access') && 
           event.message.includes('before initialization') &&
           (event.filename && event.filename.includes('supabase'))
         )) {
           // Este erro pode ser causado por ordem de carregamento ou minificação
-          // Geralmente se resolve sozinho, então vamos apenas silenciar
+          // Logar apenas uma vez para debug, mas não quebrar a aplicação
+          if (!window._supabaseInitErrorLogged) {
+            console.warn('[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho):', {
+              message: event.message,
+              filename: event.filename,
+              stack: event.error?.stack
+            });
+            window._supabaseInitErrorLogged = true;
+          }
+          // Prevenir o erro para não quebrar a aplicação
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
-          // Não logar para evitar poluição do console
           return false;
         }
       }, true);
@@ -385,15 +397,22 @@
         }
         
         // Capturar Promise rejections do Supabase (apenas se não for erro crítico)
-        // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
+        // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
         if (reasonMessage && (
           reasonMessage.includes('Cannot access') && 
           reasonMessage.includes('before initialization') &&
           !isAppRejection
         )) {
+          // Logar apenas uma vez para debug
+          if (!window._supabaseInitErrorLogged) {
+            console.warn('[Supabase] Promise rejection de inicialização (geralmente se resolve sozinho):', {
+              message: reasonMessage,
+              stack: reasonStack
+            });
+            window._supabaseInitErrorLogged = true;
+          }
           event.preventDefault();
           event.stopPropagation();
-          // Não logar para evitar poluição do console
           return;
         }
         

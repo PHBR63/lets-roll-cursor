@@ -39,61 +39,10 @@
       return undefined;
     };
     
-    // ESTRATÉGIA: Interceptar usando Proxy no navigator.mediaSession
-    try {
-      const originalMediaSession = navigator.mediaSession;
-      let mediaSessionProxy = null;
-      
-      Object.defineProperty(navigator, 'mediaSession', {
-        get: function() {
-          const actualMediaSession = originalMediaSession || this._mediaSession;
-          if (!actualMediaSession) return undefined;
-          
-          if (!mediaSessionProxy && actualMediaSession) {
-            mediaSessionProxy = new Proxy(actualMediaSession, {
-              get: function(target, prop) {
-                if (prop === 'setActionHandler') {
-                  return function(action, handler) {
-                    return safeSetActionHandler(action, handler);
-                  };
-                }
-                return target[prop];
-              },
-              set: function(target, prop, value) {
-                if (prop === 'setActionHandler') return true;
-                target[prop] = value;
-                return true;
-              }
-            });
-          }
-          
-          return mediaSessionProxy || actualMediaSession;
-        },
-        set: function(value) {
-          this._mediaSession = value;
-          if (value && 'setActionHandler' in value) {
-            const original = value.setActionHandler.bind(value);
-            try {
-              Object.defineProperty(value, 'setActionHandler', {
-                value: function(action, handler) {
-                  return safeSetActionHandler(action, handler);
-                },
-                writable: false,
-                configurable: false
-              });
-            } catch (e) {
-              value.setActionHandler = function(action, handler) {
-                return safeSetActionHandler(action, handler);
-              };
-            }
-          }
-        },
-        configurable: true,
-        enumerable: true
-      });
-    } catch (e) {
-      // Fallback se Proxy não funcionar
-    }
+    // ESTRATÉGIA: Interceptar diretamente o setActionHandler sem usar Proxy
+    // (Proxy causa problemas com propriedades read-only)
+    // Aplicar wrapper diretamente no objeto mediaSession quando disponível
+    // NÃO usar Proxy - apenas wrapper direto
     
     // Função para aplicar o wrapper no setActionHandler
     const wrapMediaSession = () => {
@@ -174,13 +123,17 @@
     
     // Se for erro crítico da aplicação, NÃO suprimir
     if (isAppError && event.error) {
-      console.error('[App] Erro crítico detectado:', {
-        message: event.message,
-        filename: event.filename,
-        lineno: event.lineno,
-        colno: event.colno,
-        error: event.error
-      });
+      const errorDetails = {
+        message: event.message || 'Erro sem mensagem',
+        filename: event.filename || 'Arquivo desconhecido',
+        lineno: event.lineno || 0,
+        colno: event.colno || 0,
+        errorName: event.error?.name || 'Unknown',
+        errorMessage: event.error?.message || String(event.error || 'Erro desconhecido'),
+        errorStack: event.error?.stack || 'Sem stack trace'
+      };
+      console.error('[App] Erro crítico detectado:', errorDetails);
+      console.error('[App] Stack completo:', event.error?.stack);
       // Permitir que o erro seja propagado para o error boundary
       return true;
     }
@@ -254,18 +207,26 @@
     return true;
     
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
-    // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
+    // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
     if (event.message && (
       event.message.includes('Cannot access') && 
       event.message.includes('before initialization') &&
       (event.filename && event.filename.includes('supabase'))
     )) {
       // Este erro pode ser causado por ordem de carregamento ou minificação
-      // Geralmente se resolve sozinho, então vamos apenas silenciar
+      // Logar apenas uma vez para debug, mas não quebrar a aplicação
+      if (!window._supabaseInitErrorLogged) {
+        console.warn('[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho):', {
+          message: event.message,
+          filename: event.filename,
+          stack: event.error?.stack
+        });
+        window._supabaseInitErrorLogged = true;
+      }
+      // Prevenir o erro para não quebrar a aplicação
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
-      // Não logar para evitar poluição do console
       return false;
     }
     
