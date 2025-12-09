@@ -29,39 +29,46 @@
       if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
         const original = navigator.mediaSession.setActionHandler;
         try {
+          // Tentar tornar não configurável para evitar que extensões substituam
           Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
             value: function(action, handler) {
               if (!supportedActions.includes(action)) {
+                // Silently ignore unsupported actions
                 return undefined;
               }
               try {
                 return original.call(navigator.mediaSession, action, handler);
               } catch (e) {
+                // Silently ignore errors during handler execution
                 return undefined;
               }
             },
-            writable: true,
-            configurable: true
+            writable: false,
+            configurable: false // Não configurável para evitar substituição
           });
         } catch (e) {
-          // Fallback: substituição direta
-          navigator.mediaSession.setActionHandler = function(action, handler) {
-            if (!supportedActions.includes(action)) return undefined;
-            try {
-              return original.call(navigator.mediaSession, action, handler);
-            } catch (e) {
-              return undefined;
-            }
-          };
+          // Fallback: substituição direta se Object.defineProperty falhar
+          try {
+            navigator.mediaSession.setActionHandler = function(action, handler) {
+              if (!supportedActions.includes(action)) return undefined;
+              try {
+                return original.call(navigator.mediaSession, action, handler);
+              } catch (e) {
+                return undefined;
+              }
+            };
+          } catch (e2) {
+            // Se tudo falhar, pelo menos tentar interceptar no nível de erro
+          }
         }
       }
     };
     
-    // Tentar interceptar imediatamente
+    // Aplicar múltiplas vezes para garantir interceptação
     wrapMediaSession();
-    
-    // Tentar novamente após um pequeno delay (caso mediaSession ainda não exista)
     setTimeout(wrapMediaSession, 0);
+    setTimeout(wrapMediaSession, 10);
+    setTimeout(wrapMediaSession, 100);
     
     // Interceptar quando mediaSession for criado
     if (!navigator.mediaSession) {
