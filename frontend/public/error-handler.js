@@ -86,13 +86,37 @@
   // Handler global de erros não capturados
   // Usar capture phase para interceptar antes de outros handlers
   window.addEventListener('error', function(event) {
+    // Captura erros de extensões do navegador
+    const isExtensionError = event.filename && (
+      event.filename.includes('chrome-extension://') ||
+      event.filename.includes('moz-extension://') ||
+      event.filename.includes('safari-extension://') ||
+      event.filename.includes('autoPip.js') ||
+      event.filename.includes('content.ts') ||
+      event.filename.includes('snippets.js') ||
+      event.filename.includes('extension://')
+    );
+    
     // Ignorar erros de MediaSession (incluindo enterpictureinpicture)
-    if (event.message && (
+    const isMediaSessionError = event.message && (
       event.message.includes('MediaSession') || 
       event.message.includes('enterpictureinpicture') ||
       event.message.includes('setActionHandler') ||
-      (event.filename && event.filename.includes('autoPip.js'))
-    )) {
+      event.message.includes('MediaSessionAction')
+    );
+    
+    // Captura erros de fetch de extensões
+    const isExtensionFetchError = event.message && (
+      event.message.includes('Failed to fetch dynamically imported module') ||
+      event.message.includes('Failed to fetch') ||
+      (event.filename && (
+        event.filename.includes('chrome-extension://') ||
+        event.filename.includes('content.ts') ||
+        event.filename.includes('snippets.js')
+      ))
+    );
+    
+    if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
@@ -155,9 +179,35 @@
 
   // Handler de rejeições de promises não tratadas
   window.addEventListener('unhandledrejection', function(event) {
+    const reason = event.reason;
+    const reasonMessage = reason?.message || String(reason || '');
+    const reasonStack = reason?.stack || '';
+    
+    // Captura erros de extensões do navegador
+    const isExtensionError = reasonStack && (
+      reasonStack.includes('chrome-extension://') ||
+      reasonStack.includes('moz-extension://') ||
+      reasonStack.includes('safari-extension://') ||
+      reasonStack.includes('autoPip.js') ||
+      reasonStack.includes('content.ts') ||
+      reasonStack.includes('snippets.js')
+    );
+    
     // Ignorar rejeições relacionadas a MediaSession
-    if (event.reason && event.reason.message && event.reason.message.includes('MediaSession')) {
+    const isMediaSessionError = reasonMessage && reasonMessage.includes('MediaSession');
+    
+    // Captura erros de fetch de extensões
+    const isExtensionFetchError = reasonMessage && (
+      reasonMessage.includes('Failed to fetch dynamically imported module') ||
+      reasonMessage.includes('Failed to fetch') ||
+      reasonStack.includes('chrome-extension://') ||
+      reasonStack.includes('content.ts') ||
+      reasonStack.includes('snippets.js')
+    );
+    
+    if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
       event.preventDefault();
+      event.stopPropagation();
       return false;
     }
   });

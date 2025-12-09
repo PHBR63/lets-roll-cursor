@@ -45,13 +45,37 @@
       
       // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
       window.addEventListener('error', function(event) {
+        // Captura erros de extensões do navegador (chrome-extension://, moz-extension://, etc.)
+        const isExtensionError = event.filename && (
+          event.filename.includes('chrome-extension://') ||
+          event.filename.includes('moz-extension://') ||
+          event.filename.includes('safari-extension://') ||
+          event.filename.includes('autoPip.js') ||
+          event.filename.includes('content.ts') ||
+          event.filename.includes('snippets.js') ||
+          event.filename.includes('extension://')
+        );
+        
         // Captura erros de MediaSession e autoPip.js (pode vir de extensões do navegador)
-        if (event.message && (
+        const isMediaSessionError = event.message && (
           event.message.includes('setActionHandler') ||
           event.message.includes('enterpictureinpicture') ||
           event.message.includes('MediaSessionAction') ||
-          (event.filename && event.filename.includes('autoPip.js'))
-        )) {
+          event.message.includes('MediaSession')
+        );
+        
+        // Captura erros de fetch de extensões
+        const isExtensionFetchError = event.message && (
+          event.message.includes('Failed to fetch dynamically imported module') ||
+          event.message.includes('Failed to fetch') ||
+          (event.filename && (
+            event.filename.includes('chrome-extension://') ||
+            event.filename.includes('content.ts') ||
+            event.filename.includes('snippets.js')
+          ))
+        );
+        
+        if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
@@ -82,24 +106,48 @@
       
       // Handler para Promise rejections não tratadas
       window.addEventListener('unhandledrejection', function(event) {
-        if (event.reason && (
-          event.reason.message && (
-            event.reason.message.includes('setActionHandler') ||
-            event.reason.message.includes('enterpictureinpicture') ||
-            event.reason.message.includes('MediaSessionAction')
-          )
-        )) {
+        const reason = event.reason;
+        const reasonMessage = reason?.message || String(reason || '');
+        const reasonStack = reason?.stack || '';
+        
+        // Captura erros de extensões do navegador
+        const isExtensionError = reasonStack && (
+          reasonStack.includes('chrome-extension://') ||
+          reasonStack.includes('moz-extension://') ||
+          reasonStack.includes('safari-extension://') ||
+          reasonStack.includes('autoPip.js') ||
+          reasonStack.includes('content.ts') ||
+          reasonStack.includes('snippets.js')
+        );
+        
+        // Captura erros de MediaSession
+        const isMediaSessionError = reasonMessage && (
+          reasonMessage.includes('setActionHandler') ||
+          reasonMessage.includes('enterpictureinpicture') ||
+          reasonMessage.includes('MediaSessionAction') ||
+          reasonMessage.includes('MediaSession')
+        );
+        
+        // Captura erros de fetch de extensões
+        const isExtensionFetchError = reasonMessage && (
+          reasonMessage.includes('Failed to fetch dynamically imported module') ||
+          reasonMessage.includes('Failed to fetch') ||
+          reasonStack.includes('chrome-extension://') ||
+          reasonStack.includes('content.ts') ||
+          reasonStack.includes('snippets.js')
+        );
+        
+        if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
           event.preventDefault();
+          event.stopPropagation();
           // Não logar para evitar poluição do console
           return;
         }
         
         // Capturar Promise rejections do Supabase
-        if (event.reason && (
-          event.reason.message && (
-            event.reason.message.includes('Cannot access') && 
-            event.reason.message.includes('before initialization')
-          )
+        if (reasonMessage && (
+          reasonMessage.includes('Cannot access') && 
+          reasonMessage.includes('before initialization')
         )) {
           console.warn('[App] Promise rejection do Supabase detectada');
           event.preventDefault();
