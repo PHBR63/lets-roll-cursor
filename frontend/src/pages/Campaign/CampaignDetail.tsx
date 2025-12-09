@@ -14,7 +14,7 @@ import { EmptyState, NotFoundState } from '@/components/common/EmptyState'
 import { Users } from 'lucide-react'
 import { ChevronRight, Edit, Settings } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
-import { LazyImage } from '@/components/common/LazyImage'
+import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { useRetry } from '@/hooks/useRetry'
 import { Campaign, CampaignParticipant } from '@/types/campaign'
 import { Character } from '@/types/character'
@@ -200,7 +200,7 @@ export function CampaignDetail() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-card border border-card-secondary rounded-lg h-64 overflow-hidden">
                 {campaign.image_url ? (
-                  <LazyImage
+                  <OptimizedImage
                     src={campaign.image_url}
                     alt={`Imagem da campanha ${campaignName} - RPG de mesa online`}
                     className="w-full h-full rounded-lg"

@@ -12,7 +12,7 @@ import { Link } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { SwipeableCard } from '@/components/common/SwipeableCard'
 import { QuickActions } from '@/components/common/QuickActions'
-import { LazyImage } from '@/components/common/LazyImage'
+import { OptimizedImage } from '@/components/common/OptimizedImage'
 
 /**
  * Card de status de personagem
@@ -119,7 +119,7 @@ export const CharacterStatusCard = memo(function CharacterStatusCard({ character
                   {/* Avatar quadrado à esquerda */}
                   <div className="w-16 h-16 md:w-20 md:h-20 bg-card-secondary border border-card-secondary flex-shrink-0 overflow-hidden">
                     {character.avatar_url ? (
-                      <LazyImage
+                      <OptimizedImage
                         src={character.avatar_url}
                         alt={`Avatar do personagem ${character.name} - ${character.class || 'RPG'}`}
                         className="w-full h-full"

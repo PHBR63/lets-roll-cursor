@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Trash2, Calendar, User, Link as LinkIcon, Dice1 } from 'lucide-react'
 import { CampaignMoment } from '@/types/moment'
 import { useAuth } from '@/context/AuthContext'
-import { LazyImage } from '@/components/common/LazyImage'
+import { OptimizedImage } from '@/components/common/OptimizedImage'
 
 interface MomentCardProps {
   moment: CampaignMoment
@@ -37,7 +37,7 @@ export function MomentCard({ moment, onDelete }: MomentCardProps) {
         {/* Imagem (se houver) */}
         {moment.image_url && (
           <div className="mb-3 rounded-lg overflow-hidden">
-            <LazyImage
+            <OptimizedImage
               src={moment.image_url}
               alt={moment.title}
               className="w-full h-48 object-cover"

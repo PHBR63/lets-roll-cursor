@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { History, X, Copy, Check, Download } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/useToast'
 import { supabase } from '@/integrations/supabase/client'
 import { DiceRollResult as DiceRollResultType } from '@/types/dice'
 
@@ -77,34 +77,20 @@ export function RollHistory({ sessionId, campaignId }: RollHistoryProps) {
           prev.map((item) => (item.id === itemId ? { ...item, copied: false } : item))
         )
       }, 2000)
-      toast.toast({
-        title: 'Copiado!',
-        description: 'Resultado copiado para a área de transferência',
-      })
+      toast.success('Copiado!', { description: 'Resultado copiado para a área de transferência' })
     } catch (error) {
-      toast.toast({
-        title: 'Erro',
-        description: 'Não foi possível copiar',
-        variant: 'destructive',
-      })
+      toast.error('Erro', { description: 'Não foi possível copiar' })
     }
   }
 
   const clearHistory = () => {
     setHistory([])
-    toast.toast({
-      title: 'Histórico limpo',
-      description: 'Todas as rolagens foram removidas',
-    })
+    toast.success('Histórico limpo', { description: 'Todas as rolagens foram removidas' })
   }
 
   const exportHistory = () => {
     if (history.length === 0) {
-      toast.toast({
-        title: 'Histórico vazio',
-        description: 'Não há rolagens para exportar',
-        variant: 'destructive',
-      })
+      toast.error('Histórico vazio', { description: 'Não há rolagens para exportar' })
       return
     }
 
@@ -131,10 +117,7 @@ export function RollHistory({ sessionId, campaignId }: RollHistoryProps) {
     link.click()
     document.body.removeChild(link)
 
-    toast.toast({
-      title: 'Histórico exportado',
-      description: 'Arquivo CSV baixado com sucesso',
-    })
+    toast.success('Histórico exportado', { description: 'Arquivo CSV baixado com sucesso' })
   }
 
   const formatResult = (item: RollHistoryItem): string => {

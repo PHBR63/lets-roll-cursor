@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/useToast'
 import { useApiError } from '@/hooks/useApiError'
 import { RefreshCcw, Minus, Plus } from 'lucide-react'
 import { AnimatedProgress } from '@/components/ui/animated-progress'
@@ -94,10 +94,7 @@ export function AmmunitionPanel({ characterId, sessionId, isMaster }: Ammunition
 
       const data = await response.json()
       setAmmunition(data.ammunition)
-      toast.toast({
-        title: 'Munição gasta',
-        description: `Munição reduzida em ${amount}. Restante: ${data.ammunition}%`,
-      })
+      toast.success('Munição gasta', { description: `Munição reduzida em ${amount}. Restante: ${data.ammunition}%` })
     } catch (error) {
       handleErrorWithToast(error, 'Erro ao gastar munição')
     } finally {
@@ -133,10 +130,7 @@ export function AmmunitionPanel({ characterId, sessionId, isMaster }: Ammunition
 
       const data = await response.json()
       setAmmunition(data.ammunition)
-      toast.toast({
-        title: 'Munição recarregada',
-        description: `Munição aumentada em ${amount}. Total: ${data.ammunition}%`,
-      })
+      toast.success('Munição recarregada', { description: `Munição aumentada em ${amount}. Total: ${data.ammunition}%` })
     } catch (error) {
       handleErrorWithToast(error, 'Erro ao recarregar munição')
     } finally {
@@ -172,10 +166,7 @@ export function AmmunitionPanel({ characterId, sessionId, isMaster }: Ammunition
 
       const data = await response.json()
       setAmmunition(data.ammunition)
-      toast.toast({
-        title: 'Munição definida',
-        description: `Munição ajustada para ${data.ammunition}%`,
-      })
+      toast.success('Munição definida', { description: `Munição ajustada para ${data.ammunition}%` })
     } catch (error) {
       handleErrorWithToast(error, 'Erro ao definir munição')
     } finally {

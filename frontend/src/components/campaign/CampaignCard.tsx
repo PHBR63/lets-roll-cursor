@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { BentoCard } from '@/components/ui/bento-grid'
 import { SpotlightCard } from '@/components/ui/spotlight-card'
 import { BorderBeam } from '@/components/ui/border-beam'
-import { LazyImage } from '@/components/common/LazyImage'
+import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { Gamepad2 } from 'lucide-react'
 
 /**
@@ -48,7 +48,7 @@ export const CampaignCard = memo(function CampaignCard({ campaign }: CampaignCar
       <div className="mt-4 flex flex-col gap-3">
         {campaign.image_url && (
           <div className="w-full h-32 rounded-md overflow-hidden border border-[#8000FF]/20">
-            <LazyImage
+            <OptimizedImage
               src={campaign.image_url}
               alt={campaign.name}
               className="w-full h-full object-cover"

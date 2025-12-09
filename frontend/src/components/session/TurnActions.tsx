@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { useToast } from '@/hooks/use-toast'
+import { useToast } from '@/hooks/useToast'
 import { useApiError } from '@/hooks/useApiError'
 import { RefreshCw, Droplet } from 'lucide-react'
 import { Character } from '@/types/character'
@@ -64,11 +64,11 @@ export function TurnActions({ character, onCharacterUpdate }: TurnActionsProps) 
       
       // Mostrar mudanças aplicadas
       if (result.changes && result.changes.length > 0) {
-        toast.toast({
-          title: 'Turno processado',
-          description: result.changes.join(', '),
-          variant: result.isDead ? 'destructive' : 'default',
-        })
+        if (result.isDead) {
+          toast.error('Turno processado', { description: result.changes.join(', ') })
+        } else {
+          toast.success('Turno processado', { description: result.changes.join(', ') })
+        }
       }
 
       // Atualizar personagem
@@ -77,11 +77,7 @@ export function TurnActions({ character, onCharacterUpdate }: TurnActionsProps) 
       }
 
       if (result.isDead) {
-        toast.toast({
-          title: 'Personagem morreu',
-          description: 'O personagem morreu após 3 rodadas em estado de Morrendo.',
-          variant: 'destructive',
-        })
+        toast.error('Personagem morreu', { description: 'O personagem morreu após 3 rodadas em estado de Morrendo.' })
       }
     } catch (error) {
       handleErrorWithToast(error, 'Erro ao processar turno')
@@ -119,11 +115,11 @@ export function TurnActions({ character, onCharacterUpdate }: TurnActionsProps) 
 
       const result = await response.json()
       
-      toast.toast({
-        title: result.success ? 'Sangramento estancado!' : 'Falha ao estancar',
-        description: result.message,
-        variant: result.success ? 'default' : 'destructive',
-      })
+      if (result.success) {
+        toast.success('Sangramento estancado!', { description: result.message })
+      } else {
+        toast.error('Falha ao estancar', { description: result.message })
+      }
 
       // Atualizar personagem se sucesso
       if (result.success && result.character && onCharacterUpdate) {
