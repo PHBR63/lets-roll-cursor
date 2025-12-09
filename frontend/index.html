@@ -275,10 +275,33 @@
       
       // Handler para Promise rejections não tratadas
       // Intercepta rejeições de Promises relacionadas ao MediaSession
+      // IMPORTANTE: NÃO suprimir rejeições críticas da aplicação
       window.addEventListener('unhandledrejection', function(event) {
         const reason = event.reason;
         const reasonMessage = reason?.message || String(reason || '');
         const reasonStack = reason?.stack || '';
+        
+        // Verificar se é uma rejeição crítica da aplicação
+        const isAppRejection = reasonStack && (
+          reasonStack.includes('/src/') ||
+          reasonStack.includes('/assets/') ||
+          reasonStack.includes('main.tsx') ||
+          reasonStack.includes('App.tsx') ||
+          (!reasonStack.includes('chrome-extension://') &&
+           !reasonStack.includes('moz-extension://') &&
+           !reasonStack.includes('safari-extension://'))
+        );
+        
+        // Se for rejeição crítica da aplicação, NÃO suprimir
+        if (isAppRejection) {
+          console.error('[App] Promise rejeitada crítica detectada:', {
+            message: reasonMessage,
+            stack: reasonStack,
+            reason: reason
+          });
+          // Permitir que a rejeição seja propagada
+          return true;
+        }
         
         // Captura erros de extensões do navegador
         const isExtensionError = reasonStack && (
@@ -323,12 +346,16 @@
           reasonMessage.includes('listener indicated an asynchronous response')
         );
         
+        // Apenas suprimir rejeições de extensões, não da aplicação
         if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
           event.preventDefault();
           event.stopPropagation();
           // Não logar para evitar poluição do console
           return;
         }
+        
+        // Permitir que outras rejeições sejam propagadas
+        return true;
         
         // Capturar Promise rejections do Supabase
         // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar

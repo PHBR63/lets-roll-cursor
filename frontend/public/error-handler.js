@@ -158,7 +158,33 @@
   // Handler global de erros não capturados
   // Usar capture phase para interceptar antes de outros handlers
   // Este handler deve interceptar TODOS os erros relacionados ao MediaSession
+  // IMPORTANTE: Não suprimir erros críticos da aplicação
   window.addEventListener('error', function(event) {
+    // Verificar se é um erro crítico da aplicação (não de extensão)
+    const isAppError = event.filename && (
+      event.filename.includes('/src/') ||
+      event.filename.includes('/assets/') ||
+      event.filename.includes('main.tsx') ||
+      event.filename.includes('App.tsx') ||
+      (!event.filename.includes('chrome-extension://') &&
+       !event.filename.includes('moz-extension://') &&
+       !event.filename.includes('safari-extension://') &&
+       !event.filename.includes('extension://'))
+    );
+    
+    // Se for erro crítico da aplicação, NÃO suprimir
+    if (isAppError && event.error) {
+      console.error('[App] Erro crítico detectado:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error
+      });
+      // Permitir que o erro seja propagado para o error boundary
+      return true;
+    }
+    
     // Captura erros de extensões do navegador
     const isExtensionError = event.filename && (
       event.filename.includes('chrome-extension://') ||
@@ -205,6 +231,7 @@
       event.message.includes('listener indicated an asynchronous response')
     );
     
+    // Apenas suprimir erros de extensões, não erros da aplicação
     if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
       event.preventDefault();
       event.stopPropagation();
@@ -222,6 +249,9 @@
       event.stopImmediatePropagation();
       return false;
     }
+    
+    // Permitir que outros erros sejam propagados
+    return true;
     
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
     // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
@@ -276,6 +306,28 @@
     const reasonMessage = reason?.message || String(reason || '');
     const reasonStack = reason?.stack || '';
     
+    // Verificar se é uma rejeição crítica da aplicação
+    const isAppRejection = reasonStack && (
+      reasonStack.includes('/src/') ||
+      reasonStack.includes('/assets/') ||
+      reasonStack.includes('main.tsx') ||
+      reasonStack.includes('App.tsx') ||
+      (!reasonStack.includes('chrome-extension://') &&
+       !reasonStack.includes('moz-extension://') &&
+       !reasonStack.includes('safari-extension://'))
+    );
+    
+    // Se for rejeição crítica da aplicação, NÃO suprimir
+    if (isAppRejection) {
+      console.error('[App] Promise rejeitada crítica detectada:', {
+        message: reasonMessage,
+        stack: reasonStack,
+        reason: reason
+      });
+      // Permitir que a rejeição seja propagada
+      return true;
+    }
+    
     // Captura erros de extensões do navegador
     const isExtensionError = reasonStack && (
       reasonStack.includes('chrome-extension://') ||
@@ -313,11 +365,15 @@
       reasonStack.includes('snippets.js')
     );
     
+    // Apenas suprimir rejeições de extensões, não da aplicação
     if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
       event.preventDefault();
       event.stopPropagation();
       return false;
     }
+    
+    // Permitir que outras rejeições sejam propagadas
+    return true;
   });
 })();
 
