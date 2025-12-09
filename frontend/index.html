@@ -36,14 +36,41 @@
       };
       
       // Substituir o setActionHandler original por uma versão segura
-      if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
-        const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
-        navigator.mediaSession.setActionHandler = function(action, handler) {
-          safeSetActionHandler(action, handler);
-        };
+      // IMPORTANTE: Fazer isso ANTES de qualquer extensão tentar usar
+      if ('mediaSession' in navigator) {
+        try {
+          if ('setActionHandler' in navigator.mediaSession) {
+            const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+            navigator.mediaSession.setActionHandler = function(action, handler) {
+              safeSetActionHandler(action, handler);
+            };
+          }
+        } catch (e) {
+          // Ignorar se não conseguir substituir
+        }
+      }
+      
+      // Interceptar criação de mediaSession se ainda não existir
+      if (!navigator.mediaSession) {
+        Object.defineProperty(navigator, 'mediaSession', {
+          get: function() {
+            return this._mediaSession;
+          },
+          set: function(value) {
+            this._mediaSession = value;
+            if (value && 'setActionHandler' in value) {
+              const original = value.setActionHandler.bind(value);
+              value.setActionHandler = function(action, handler) {
+                safeSetActionHandler(action, handler);
+              };
+            }
+          },
+          configurable: true
+        });
       }
       
       // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
+      // IMPORTANTE: Usar capture phase e ser o primeiro handler
       window.addEventListener('error', function(event) {
         // Captura erros de extensões do navegador (chrome-extension://, moz-extension://, etc.)
         const isExtensionError = event.filename && (
@@ -75,7 +102,13 @@
           ))
         );
         
-        if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
+        // Captura erros de "message channel closed" (extensões do navegador)
+        const isMessageChannelError = event.message && (
+          event.message.includes('message channel closed') ||
+          event.message.includes('listener indicated an asynchronous response')
+        );
+        
+        if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
@@ -133,7 +166,13 @@
           reasonStack.includes('snippets.js')
         );
         
-        if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
+        // Captura erros de "message channel closed" (extensões do navegador)
+        const isMessageChannelError = reasonMessage && (
+          reasonMessage.includes('message channel closed') ||
+          reasonMessage.includes('listener indicated an asynchronous response')
+        );
+        
+        if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
           event.preventDefault();
           event.stopPropagation();
           // Não logar para evitar poluição do console

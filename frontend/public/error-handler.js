@@ -116,7 +116,13 @@
       ))
     );
     
-    if (isExtensionError || isMediaSessionError || isExtensionFetchError) {
+    // Captura erros de "message channel closed" (extensões do navegador)
+    const isMessageChannelError = event.message && (
+      event.message.includes('message channel closed') ||
+      event.message.includes('listener indicated an asynchronous response')
+    );
+    
+    if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
