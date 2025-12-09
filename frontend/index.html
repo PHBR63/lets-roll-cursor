@@ -199,7 +199,33 @@
       
       // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
       // IMPORTANTE: Usar capture phase e ser o primeiro handler
+      // IMPORTANTE: NÃO suprimir erros críticos da aplicação
       window.addEventListener('error', function(event) {
+        // Verificar se é um erro crítico da aplicação (não de extensão)
+        const isAppError = event.filename && (
+          event.filename.includes('/src/') ||
+          event.filename.includes('/assets/') ||
+          event.filename.includes('main.tsx') ||
+          event.filename.includes('App.tsx') ||
+          (!event.filename.includes('chrome-extension://') &&
+           !event.filename.includes('moz-extension://') &&
+           !event.filename.includes('safari-extension://') &&
+           !event.filename.includes('extension://'))
+        );
+        
+        // Se for erro crítico da aplicação, NÃO suprimir
+        if (isAppError && event.error) {
+          console.error('[App] Erro crítico detectado:', {
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+            error: event.error
+          });
+          // Permitir que o erro seja propagado para o error boundary
+          return true;
+        }
+        
         // Captura erros de extensões do navegador (chrome-extension://, moz-extension://, etc.)
         const isExtensionError = event.filename && (
           event.filename.includes('chrome-extension://') ||
@@ -237,6 +263,7 @@
           event.message.includes('listener indicated an asynchronous response')
         );
         
+        // Apenas suprimir erros de extensões, não erros da aplicação
         if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
           event.preventDefault();
           event.stopPropagation();
@@ -255,6 +282,9 @@
           event.stopImmediatePropagation();
           return false;
         }
+        
+        // Permitir que outros erros sejam propagados
+        return true;
         
         // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
         // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
@@ -354,20 +384,21 @@
           return;
         }
         
-        // Permitir que outras rejeições sejam propagadas
-        return true;
-        
-        // Capturar Promise rejections do Supabase
+        // Capturar Promise rejections do Supabase (apenas se não for erro crítico)
         // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
         if (reasonMessage && (
           reasonMessage.includes('Cannot access') && 
-          reasonMessage.includes('before initialization')
+          reasonMessage.includes('before initialization') &&
+          !isAppRejection
         )) {
           event.preventDefault();
           event.stopPropagation();
           // Não logar para evitar poluição do console
           return;
         }
+        
+        // Permitir que outras rejeições sejam propagadas
+        return true;
       });
     </script>
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
