@@ -203,9 +203,6 @@
       return false;
     }
     
-    // Permitir que outros erros sejam propagados
-    return true;
-    
     // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
     // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
     if (event.message && (
@@ -229,6 +226,9 @@
       event.stopImmediatePropagation();
       return false;
     }
+    
+    // Permitir que outros erros sejam propagados
+    return true;
     
     // Tratar erro de 'module is not defined' (código CommonJS não transformado)
     if (event.message && event.message.includes('module is not defined')) {
@@ -331,6 +331,26 @@
       event.preventDefault();
       event.stopPropagation();
       return false;
+    }
+    
+    // Capturar Promise rejections do Supabase (apenas se não for erro crítico)
+    // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
+    if (reasonMessage && (
+      reasonMessage.includes('Cannot access') && 
+      reasonMessage.includes('before initialization') &&
+      !isAppRejection
+    )) {
+      // Logar apenas uma vez para debug
+      if (!window._supabaseInitErrorLogged) {
+        console.warn('[Supabase] Promise rejection de inicialização (geralmente se resolve sozinho):', {
+          message: reasonMessage,
+          stack: reasonStack
+        });
+        window._supabaseInitErrorLogged = true;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      return;
     }
     
     // Permitir que outras rejeições sejam propagadas
