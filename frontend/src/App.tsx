@@ -70,9 +70,9 @@ function LoadingFallback() {
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <div className="min-h-screen">
+        <ThemeProvider>
+          <AuthProvider>
+          <div className="min-h-screen relative z-0">
           <div className="pattern-icosahedrons" />
           <BrowserRouter>
             <PageTracker />

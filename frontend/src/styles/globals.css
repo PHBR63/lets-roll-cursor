@@ -176,7 +176,7 @@
     height: 100%;
     opacity: 0.15;
     pointer-events: none;
-    z-index: 0;
+    z-index: -1; /* Garantir que fique atrás de tudo */
     /* SVG melhorado de icosaedro wireframe */
     background-image: 
       url("data:image/svg+xml,%3Csvg width='120' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%23C8BFE7' stroke-width='0.8' fill='none' opacity='0.6'%3E%3Cpath d='M60 10 L75 30 L60 50 L45 30 Z'/%3E%3Cpath d='M60 10 L70 40 L50 40 Z'/%3E%3Cpath d='M75 30 L70 40 L85 50 L75 50 Z'/%3E%3Cpath d='M60 50 L70 40 L85 50 Z'/%3E%3Cpath d='M45 30 L50 40 L35 50 L45 50 Z'/%3E%3Cpath d='M60 50 L50 40 L35 50 Z'/%3E%3Cpath d='M60 50 L70 60 L85 50 L75 50 Z'/%3E%3Cpath d='M60 50 L50 60 L35 50 L45 50 Z'/%3E%3Cpath d='M70 60 L75 70 L60 90 L50 70 Z'/%3E%3Cpath d='M50 60 L45 70 L60 90 L70 70 Z'/%3E%3Cpath d='M60 90 L70 100 L50 100 Z'/%3E%3C/g%3E%3C/svg%3E");
