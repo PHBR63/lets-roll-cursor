@@ -69,99 +69,8 @@
         }
       }
       
-      // ESTRATÉGIA 2: Interceptar navigator.mediaSession usando Proxy
-      // Isso captura QUALQUER acesso ao mediaSession, mesmo antes de ser criado
-      if (typeof navigator !== 'undefined') {
-        try {
-          // Salvar o mediaSession original se existir
-          const originalMediaSession = navigator.mediaSession;
-          
-          // Criar um Proxy para interceptar acesso ao mediaSession
-          let mediaSessionProxy = null;
-          
-          // Interceptar na propriedade navigator.mediaSession
-          Object.defineProperty(navigator, 'mediaSession', {
-            get: function() {
-              const actualMediaSession = originalMediaSession || this._mediaSession;
-              
-              if (!actualMediaSession) {
-                return undefined;
-              }
-              
-              // Se ainda não criamos o proxy, criar agora
-              if (!mediaSessionProxy && actualMediaSession) {
-                // Interceptar setActionHandler diretamente no objeto
-                if (actualMediaSession.setActionHandler) {
-                  try {
-                    const original = actualMediaSession.setActionHandler;
-                    Object.defineProperty(actualMediaSession, 'setActionHandler', {
-                      value: function(action, handler) {
-                        return safeSetActionHandler(action, handler);
-                      },
-                      writable: false,
-                      configurable: false
-                    });
-                  } catch (e) {
-                    actualMediaSession.setActionHandler = function(action, handler) {
-                      return safeSetActionHandler(action, handler);
-                    };
-                  }
-                }
-                
-                // Criar proxy que intercepta setActionHandler
-                mediaSessionProxy = new Proxy(actualMediaSession, {
-                  get: function(target, prop) {
-                    if (prop === 'setActionHandler') {
-                      // Retornar versão segura do setActionHandler
-                      return function(action, handler) {
-                        return safeSetActionHandler(action, handler);
-                      };
-                    }
-                    return target[prop];
-                  },
-                  set: function(target, prop, value) {
-                    if (prop === 'setActionHandler') {
-                      // Bloquear substituição direta
-                      return true;
-                    }
-                    target[prop] = value;
-                    return true;
-                  }
-                });
-              }
-              
-              return mediaSessionProxy || actualMediaSession;
-            },
-            set: function(value) {
-              this._mediaSession = value;
-              // Aplicar wrapper imediatamente quando mediaSession for definido
-              if (value && 'setActionHandler' in value) {
-                const original = value.setActionHandler.bind(value);
-                try {
-                  Object.defineProperty(value, 'setActionHandler', {
-                    value: function(action, handler) {
-                      return safeSetActionHandler(action, handler);
-                    },
-                    writable: false,
-                    configurable: false
-                  });
-                } catch (e) {
-                  // Fallback: substituição direta
-                  value.setActionHandler = function(action, handler) {
-                    return safeSetActionHandler(action, handler);
-                  };
-                }
-              }
-            },
-            configurable: true,
-            enumerable: true
-          });
-        } catch (e) {
-          // Se Proxy falhar, usar fallback
-        }
-      }
-      
-      // ESTRATÉGIA 2: Wrapper direto no setActionHandler
+      // ESTRATÉGIA 2: Wrapper direto no setActionHandler (SEM Proxy)
+      // Proxy causa problemas com propriedades read-only, então usamos apenas wrapper direto
       const wrapMediaSession = () => {
         if ('mediaSession' in navigator && navigator.mediaSession) {
           try {
@@ -287,9 +196,6 @@
           return false;
         }
         
-        // Permitir que outros erros sejam propagados
-        return true;
-        
         // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
         // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
         if (event.message && (
@@ -313,6 +219,9 @@
           event.stopImmediatePropagation();
           return false;
         }
+        
+        // Permitir que outros erros sejam propagados
+        return true;
       }, true);
       
       // Handler para Promise rejections não tratadas
