@@ -245,6 +245,17 @@
           return false;
         }
         
+        // Captura adicional: qualquer erro que contenha 'autoPip' no filename (case-insensitive)
+        if (event.filename && (
+          event.filename.toLowerCase().includes('autopip') ||
+          event.filename.toLowerCase().includes('auto-pip')
+        )) {
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          return false;
+        }
+        
         // Capturar erros de inicialização do Supabase (problema de ordem de carregamento)
         // NOTA: Este erro geralmente se resolve sozinho, então vamos apenas silenciar
         if (event.message && (
