@@ -37,36 +37,67 @@
       
       // Substituir o setActionHandler original por uma versão segura
       // IMPORTANTE: Fazer isso ANTES de qualquer extensão tentar usar
-      if ('mediaSession' in navigator) {
-        try {
-          if ('setActionHandler' in navigator.mediaSession) {
-            const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
-            navigator.mediaSession.setActionHandler = function(action, handler) {
-              safeSetActionHandler(action, handler);
-            };
+      // Usar múltiplas estratégias para garantir interceptação
+      const wrapMediaSession = () => {
+        if ('mediaSession' in navigator && navigator.mediaSession) {
+          try {
+            if ('setActionHandler' in navigator.mediaSession) {
+              const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+              // Usar Object.defineProperty para tornar não configurável
+              Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
+                value: function(action, handler) {
+                  return safeSetActionHandler(action, handler);
+                },
+                writable: false,
+                configurable: false
+              });
+            }
+          } catch (e) {
+            // Se Object.defineProperty falhar, tentar substituição direta
+            try {
+              navigator.mediaSession.setActionHandler = function(action, handler) {
+                return safeSetActionHandler(action, handler);
+              };
+            } catch (e2) {
+              // Ignorar se não conseguir substituir
+            }
           }
-        } catch (e) {
-          // Ignorar se não conseguir substituir
         }
-      }
+      };
+      
+      // Aplicar imediatamente
+      wrapMediaSession();
+      
+      // Aplicar novamente após um pequeno delay (caso mediaSession seja criado depois)
+      setTimeout(wrapMediaSession, 0);
+      setTimeout(wrapMediaSession, 10);
+      setTimeout(wrapMediaSession, 100);
       
       // Interceptar criação de mediaSession se ainda não existir
       if (!navigator.mediaSession) {
-        Object.defineProperty(navigator, 'mediaSession', {
-          get: function() {
-            return this._mediaSession;
-          },
-          set: function(value) {
-            this._mediaSession = value;
-            if (value && 'setActionHandler' in value) {
-              const original = value.setActionHandler.bind(value);
-              value.setActionHandler = function(action, handler) {
-                safeSetActionHandler(action, handler);
-              };
-            }
-          },
-          configurable: true
-        });
+        try {
+          Object.defineProperty(navigator, 'mediaSession', {
+            get: function() {
+              return this._mediaSession;
+            },
+            set: function(value) {
+              this._mediaSession = value;
+              if (value && 'setActionHandler' in value) {
+                const original = value.setActionHandler.bind(value);
+                Object.defineProperty(value, 'setActionHandler', {
+                  value: function(action, handler) {
+                    return safeSetActionHandler(action, handler);
+                  },
+                  writable: false,
+                  configurable: false
+                });
+              }
+            },
+            configurable: true
+          });
+        } catch (e) {
+          // Ignorar se não conseguir definir
+        }
       }
       
       // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
