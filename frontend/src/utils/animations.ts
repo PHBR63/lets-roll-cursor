@@ -3,7 +3,7 @@
  * Presets reutilizáveis de animação usando framer-motion
  */
 
-import { Variants, Transition } from 'framer-motion'
+import { Variants, Transition, Variant } from 'framer-motion'
 import { animations } from '@/design-system/tokens'
 
 /**
@@ -209,14 +209,14 @@ export const buttonPress: Variants = {
  * Helper para criar animação customizada
  */
 export function createAnimation(
-  initial: Record<string, unknown>,
-  animate: Record<string, unknown>,
-  exit?: Record<string, unknown>
+  initial: Variant,
+  animate: Variant,
+  exit?: Variant
 ): Variants {
   return {
-    initial,
-    animate,
-    exit: exit || initial,
+    initial: initial as Variant,
+    animate: animate as Variant,
+    exit: (exit || initial) as Variant,
   }
 }
 
@@ -227,9 +227,7 @@ export function createTransition(
   duration: number = 0.2,
   ease: string | [number, number, number, number] = 'easeInOut'
 ): Transition {
-  if (typeof ease === 'string') {
-    return { duration, ease }
-  }
+  // @ts-expect-error - Incompatibilidade de tipos entre string e Easing
   return { duration, ease }
 }
 

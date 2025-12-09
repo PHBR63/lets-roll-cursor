@@ -22,20 +22,20 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
    */
   const rollFormula = async (formula: string, isPrivate: boolean = false) => {
     if (!campaignId) {
-      toast.error('Erro', 'Você precisa estar em uma campanha para rolar dados')
+      toast.error('Erro', { description: 'Você precisa estar em uma campanha para rolar dados' })
       return
     }
 
     const rollFormula = formula.trim()
     if (!rollFormula) {
-      toast.warning('Aviso', 'Digite uma fórmula de dados')
+      toast.warning('Aviso', { description: 'Digite uma fórmula de dados' })
       return
     }
 
     // Validar fórmula
     const validation = validateDiceFormula(rollFormula)
     if (!validation.valid) {
-      toast.error('Fórmula inválida', validation.error || 'Use formato: 1d20, 2d6+3, etc.')
+      toast.error('Fórmula inválida', { description: validation.error || 'Use formato: 1d20, 2d6+3, etc.' })
       return { error: validation.error }
     }
 
@@ -89,7 +89,7 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Erro ao rolar dados')
-      toast.error('Erro ao rolar dados', err.message || 'Tente novamente.')
+      toast.error('Erro ao rolar dados', { description: err.message || 'Tente novamente.' })
       return { error: err.message || 'Erro desconhecido' }
     } finally {
       setRolling(false)
@@ -158,7 +158,7 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Erro ao rolar teste de perícia')
-      toast.error('Erro ao rolar teste de perícia', err.message || 'Tente novamente.')
+      toast.error('Erro ao rolar teste de perícia', { description: err.message || 'Tente novamente.' })
       return { error: err.message || 'Erro desconhecido' }
     } finally {
       setRolling(false)
@@ -228,7 +228,7 @@ export function useDiceRoll(sessionId?: string, campaignId?: string, characterId
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Erro ao rolar ataque')
-      toast.error('Erro ao rolar ataque', err.message || 'Tente novamente.')
+      toast.error('Erro ao rolar ataque', { description: err.message || 'Tente novamente.' })
       return { error: err.message || 'Erro desconhecido' }
     } finally {
       setRolling(false)

@@ -13,21 +13,30 @@ const Card = React.forwardRef<
     hoverable?: boolean
   }
 >(({ className, hoverable = false, ...props }, ref) => {
-  const Component = hoverable ? motion.div : 'div'
-  const motionProps = hoverable ? {
-    whileHover: { y: -4, scale: 1.01 },
-    transition: transitions.normal,
-  } : {}
+  if (hoverable) {
+    const { onDrag, onDragStart, onDragEnd, onDragEnter, onDragExit, onDragLeave, onDragOver, onAnimationStart, onAnimationEnd, onAnimationIteration, ...restProps } = props
+    return (
+      <motion.div
+        ref={ref}
+        className={cn(
+          "rounded-lg border border-card-secondary bg-card text-card-foreground shadow-sm",
+          "transition-shadow duration-200 hover:shadow-lg hover:shadow-accent/20",
+          className
+        )}
+        whileHover={{ y: -4, scale: 1.01 }}
+        transition={transitions.normal}
+        {...(restProps as any)}
+      />
+    )
+  }
   
   return (
-    <Component
+    <div
       ref={ref}
       className={cn(
         "rounded-lg border border-card-secondary bg-card text-card-foreground shadow-sm",
-        hoverable && "transition-shadow duration-200 hover:shadow-lg hover:shadow-accent/20",
         className
       )}
-      {...motionProps}
       {...props}
     />
   )

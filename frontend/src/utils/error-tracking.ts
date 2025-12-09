@@ -53,7 +53,8 @@ export function initErrorTracking(config: ErrorTrackingConfig = {}) {
   // Inicializar Sentry (se disponível)
   try {
     // Dynamic import para não aumentar bundle se não usar
-    import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
       Sentry.init({
         dsn: sentryDsn,
         environment,
@@ -103,7 +104,8 @@ export function captureError(
   // Se Sentry está inicializado, enviar para Sentry
   if (sentryInitialized && errorTrackingEnabled) {
     try {
-      import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
         Sentry.captureException(errorObj, {
           tags: context?.tags,
           extra: context?.extra,
@@ -134,7 +136,8 @@ export function captureMessage(
 
   if (sentryInitialized && errorTrackingEnabled) {
     try {
-      import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
         Sentry.captureMessage(message, {
           level,
           tags: context?.tags,
@@ -160,7 +163,8 @@ export function addBreadcrumb(
 ) {
   if (sentryInitialized && errorTrackingEnabled) {
     try {
-      import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
         Sentry.addBreadcrumb({
           message,
           category,
@@ -187,7 +191,8 @@ export function setUserContext(user: {
 }) {
   if (sentryInitialized && errorTrackingEnabled) {
     try {
-      import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
         Sentry.setUser(user)
       }).catch(() => {
         // Sentry não disponível
@@ -204,7 +209,8 @@ export function setUserContext(user: {
 export function clearUserContext() {
   if (sentryInitialized && errorTrackingEnabled) {
     try {
-      import('@sentry/react').then((Sentry) => {
+      // @ts-ignore - Sentry pode não estar instalado
+      import('@sentry/react').then((Sentry: any) => {
         Sentry.setUser(null)
       }).catch(() => {
         // Sentry não disponível

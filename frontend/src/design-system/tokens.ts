@@ -310,7 +310,10 @@ export const tokenUtils = {
   /**
    * Obtém sombra
    */
-  shadow: (key: ShadowKey): string => shadows[key],
+  shadow: (key: ShadowKey): string => {
+    const shadowValue = shadows[key]
+    return typeof shadowValue === 'string' ? shadowValue : String(shadowValue)
+  },
 
   /**
    * Obtém duração de animação

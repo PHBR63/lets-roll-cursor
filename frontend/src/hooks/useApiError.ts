@@ -125,7 +125,7 @@ export function useApiError() {
   const handleErrorWithToast = useCallback(
     (error: unknown, customMessage?: string) => {
       const apiError = handleError(error, customMessage)
-      toast.error('Erro', apiError.message)
+      toast.error('Erro', { description: apiError.message })
       return apiError
     },
     [handleError, toast]
@@ -137,7 +137,7 @@ export function useApiError() {
   const handleResponseError = useCallback(
     async (response: Response, customMessage?: string) => {
       const apiError = await handleFetchError(response, customMessage)
-      toast.error('Erro', apiError.message)
+      toast.error('Erro', { description: apiError.message })
       return apiError
     },
     [handleFetchError, toast]

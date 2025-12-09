@@ -9,19 +9,23 @@ export interface DiceRollResult {
   formula?: string
   details?: number[]
   dice?: number[]
+  selectedDice?: number
   skillName?: string
   difficulty?: number
   skillBonus?: number
+  bonus?: number
   success?: boolean
   advantage?: boolean
   disadvantage?: boolean
   targetDefense?: number
+  threatRange?: number
   hit?: boolean
   critical?: boolean
   damage?: {
     total: number
     dice: number[]
   }
+  resistanceType?: 'Fortitude' | 'Reflexos' | 'Vontade'
 }
 
 export interface Character {
