@@ -24,48 +24,96 @@
       'stop'
     ];
     
+    // Função segura para setActionHandler
+    const safeSetActionHandler = (action, handler) => {
+      if (!supportedActions.includes(action)) {
+        return undefined;
+      }
+      try {
+        if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
+          return navigator.mediaSession.setActionHandler(action, handler);
+        }
+      } catch (error) {
+        return undefined;
+      }
+      return undefined;
+    };
+    
+    // ESTRATÉGIA: Interceptar usando Proxy no navigator.mediaSession
+    try {
+      const originalMediaSession = navigator.mediaSession;
+      let mediaSessionProxy = null;
+      
+      Object.defineProperty(navigator, 'mediaSession', {
+        get: function() {
+          const actualMediaSession = originalMediaSession || this._mediaSession;
+          if (!actualMediaSession) return undefined;
+          
+          if (!mediaSessionProxy && actualMediaSession) {
+            mediaSessionProxy = new Proxy(actualMediaSession, {
+              get: function(target, prop) {
+                if (prop === 'setActionHandler') {
+                  return function(action, handler) {
+                    return safeSetActionHandler(action, handler);
+                  };
+                }
+                return target[prop];
+              },
+              set: function(target, prop, value) {
+                if (prop === 'setActionHandler') return true;
+                target[prop] = value;
+                return true;
+              }
+            });
+          }
+          
+          return mediaSessionProxy || actualMediaSession;
+        },
+        set: function(value) {
+          this._mediaSession = value;
+          if (value && 'setActionHandler' in value) {
+            const original = value.setActionHandler.bind(value);
+            try {
+              Object.defineProperty(value, 'setActionHandler', {
+                value: function(action, handler) {
+                  return safeSetActionHandler(action, handler);
+                },
+                writable: false,
+                configurable: false
+              });
+            } catch (e) {
+              value.setActionHandler = function(action, handler) {
+                return safeSetActionHandler(action, handler);
+              };
+            }
+          }
+        },
+        configurable: true,
+        enumerable: true
+      });
+    } catch (e) {
+      // Fallback se Proxy não funcionar
+    }
+    
     // Função para aplicar o wrapper no setActionHandler
-    // Esta função intercepta TODAS as chamadas a setActionHandler, incluindo de extensões
     const wrapMediaSession = () => {
       if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
         const original = navigator.mediaSession.setActionHandler;
         try {
-          // Tentar tornar não configurável para evitar que extensões substituam
           Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
             value: function(action, handler) {
-              // Verificar se a ação é suportada ANTES de tentar chamar o original
-              // Isso previne o erro "The provided value... is not a valid enum value"
-              if (!supportedActions.includes(action)) {
-                // Silently ignore unsupported actions (como enterpictureinpicture)
-                // Não tentar chamar o original para ações não suportadas
-                return undefined;
-              }
-              try {
-                // Apenas chamar o original para ações suportadas
-                return original.call(navigator.mediaSession, action, handler);
-              } catch (e) {
-                // Silently ignore errors during handler execution
-                // Mesmo que a ação seja suportada, pode haver outros erros
-                return undefined;
-              }
+              return safeSetActionHandler(action, handler);
             },
             writable: false,
-            configurable: false // Não configurável para evitar substituição
+            configurable: false
           });
         } catch (e) {
-          // Fallback: substituição direta se Object.defineProperty falhar
           try {
             navigator.mediaSession.setActionHandler = function(action, handler) {
-              // Verificar suporte ANTES de tentar chamar
-              if (!supportedActions.includes(action)) return undefined;
-              try {
-                return original.call(navigator.mediaSession, action, handler);
-              } catch (e) {
-                return undefined;
-              }
+              return safeSetActionHandler(action, handler);
             };
           } catch (e2) {
-            // Se tudo falhar, pelo menos tentar interceptar no nível de erro
+            // Ignorar
           }
         }
       }
@@ -74,27 +122,11 @@
     // Aplicar múltiplas vezes para garantir interceptação
     wrapMediaSession();
     setTimeout(wrapMediaSession, 0);
+    setTimeout(wrapMediaSession, 1);
+    setTimeout(wrapMediaSession, 5);
     setTimeout(wrapMediaSession, 10);
+    setTimeout(wrapMediaSession, 50);
     setTimeout(wrapMediaSession, 100);
-    
-    // Interceptar quando mediaSession for criado
-    if (!navigator.mediaSession) {
-      let mediaSessionProxy = null;
-      Object.defineProperty(navigator, 'mediaSession', {
-        get: function() {
-          if (!mediaSessionProxy && this._mediaSession) {
-            mediaSessionProxy = this._mediaSession;
-            wrapMediaSession();
-          }
-          return mediaSessionProxy || this._mediaSession;
-        },
-        set: function(value) {
-          this._mediaSession = value;
-          wrapMediaSession();
-        },
-        configurable: true
-      });
-    }
   }
 
   // Handler global de erros não capturados

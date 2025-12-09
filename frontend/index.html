@@ -3,13 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <script>
+      // ============================================
+      // INTERCEPTAÇÃO ULTRA-AGRESSIVA DO MEDIASESSION
+      // ============================================
+      // Este código DEVE executar ANTES de qualquer extensão do navegador
+      // (como autoPip.js) tentar usar o MediaSession API
+      
       // Polyfills básicos para compatibilidade (sem require que quebra o app)
       window.global = window;
       window.module = { exports: {} };
       window.exports = window.module.exports;
       window.process = { env: {} };
       
-      // Fix para MediaSession API errors - intercepta ANTES de qualquer código executar
       // Lista de ações suportadas oficialmente pelo MediaSession API
       const SUPPORTED_MEDIA_SESSION_ACTIONS = [
         'play', 'pause', 'seekbackward', 'seekforward', 
@@ -17,95 +22,134 @@
       ];
       
       // Função segura para registrar ações de mídia
-      // IMPORTANTE: Esta função deve interceptar TODAS as tentativas de usar setActionHandler,
-      // incluindo as de extensões do navegador como autoPip.js
+      // Esta função BLOQUEIA ações não suportadas ANTES de tentar registrá-las
       const safeSetActionHandler = (action, handler) => {
         // Verificar se a ação é suportada ANTES de tentar qualquer coisa
-        // enterpictureinpicture e exitpictureinpicture não são suportadas em todos os navegadores
         if (!SUPPORTED_MEDIA_SESSION_ACTIONS.includes(action)) {
           // Silenciosamente ignora ações não suportadas (como enterpictureinpicture)
-          // Não tentar chamar setActionHandler para ações não suportadas
           return undefined;
         }
         
         try {
           if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
-            // Tentar chamar o setActionHandler original apenas para ações suportadas
             return navigator.mediaSession.setActionHandler(action, handler);
           }
         } catch (error) {
-          // Ignora silenciosamente erros de suporte a ações específicas
-          // Isso previne o erro "The provided value... is not a valid enum value"
-          // Não logar para evitar poluição do console
+          // Ignora silenciosamente erros
           return undefined;
         }
         return undefined;
       };
       
-      // Substituir o setActionHandler original por uma versão segura
-      // IMPORTANTE: Fazer isso ANTES de qualquer extensão tentar usar
-      // Usar múltiplas estratégias para garantir interceptação
+      // ESTRATÉGIA 1: Interceptar navigator.mediaSession usando Proxy
+      // Isso captura QUALQUER acesso ao mediaSession, mesmo antes de ser criado
+      if (typeof navigator !== 'undefined') {
+        try {
+          // Salvar o mediaSession original se existir
+          const originalMediaSession = navigator.mediaSession;
+          
+          // Criar um Proxy para interceptar acesso ao mediaSession
+          let mediaSessionProxy = null;
+          
+          // Interceptar na propriedade navigator.mediaSession
+          Object.defineProperty(navigator, 'mediaSession', {
+            get: function() {
+              const actualMediaSession = originalMediaSession || this._mediaSession;
+              
+              if (!actualMediaSession) {
+                return undefined;
+              }
+              
+              // Se ainda não criamos o proxy, criar agora
+              if (!mediaSessionProxy && actualMediaSession) {
+                // Criar proxy que intercepta setActionHandler
+                mediaSessionProxy = new Proxy(actualMediaSession, {
+                  get: function(target, prop) {
+                    if (prop === 'setActionHandler') {
+                      // Retornar versão segura do setActionHandler
+                      return function(action, handler) {
+                        return safeSetActionHandler(action, handler);
+                      };
+                    }
+                    return target[prop];
+                  },
+                  set: function(target, prop, value) {
+                    if (prop === 'setActionHandler') {
+                      // Bloquear substituição direta
+                      return true;
+                    }
+                    target[prop] = value;
+                    return true;
+                  }
+                });
+              }
+              
+              return mediaSessionProxy || actualMediaSession;
+            },
+            set: function(value) {
+              this._mediaSession = value;
+              // Aplicar wrapper imediatamente quando mediaSession for definido
+              if (value && 'setActionHandler' in value) {
+                const original = value.setActionHandler.bind(value);
+                try {
+                  Object.defineProperty(value, 'setActionHandler', {
+                    value: function(action, handler) {
+                      return safeSetActionHandler(action, handler);
+                    },
+                    writable: false,
+                    configurable: false
+                  });
+                } catch (e) {
+                  // Fallback: substituição direta
+                  value.setActionHandler = function(action, handler) {
+                    return safeSetActionHandler(action, handler);
+                  };
+                }
+              }
+            },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (e) {
+          // Se Proxy falhar, usar fallback
+        }
+      }
+      
+      // ESTRATÉGIA 2: Wrapper direto no setActionHandler
       const wrapMediaSession = () => {
         if ('mediaSession' in navigator && navigator.mediaSession) {
           try {
             if ('setActionHandler' in navigator.mediaSession) {
-              const originalSetActionHandler = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
-              // Usar Object.defineProperty para tornar não configurável
-              Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
-                value: function(action, handler) {
-                  return safeSetActionHandler(action, handler);
-                },
-                writable: false,
-                configurable: false
-              });
-            }
-          } catch (e) {
-            // Se Object.defineProperty falhar, tentar substituição direta
-            try {
-              navigator.mediaSession.setActionHandler = function(action, handler) {
-                return safeSetActionHandler(action, handler);
-              };
-            } catch (e2) {
-              // Ignorar se não conseguir substituir
-            }
-          }
-        }
-      };
-      
-      // Aplicar imediatamente
-      wrapMediaSession();
-      
-      // Aplicar novamente após um pequeno delay (caso mediaSession seja criado depois)
-      setTimeout(wrapMediaSession, 0);
-      setTimeout(wrapMediaSession, 10);
-      setTimeout(wrapMediaSession, 100);
-      
-      // Interceptar criação de mediaSession se ainda não existir
-      if (!navigator.mediaSession) {
-        try {
-          Object.defineProperty(navigator, 'mediaSession', {
-            get: function() {
-              return this._mediaSession;
-            },
-            set: function(value) {
-              this._mediaSession = value;
-              if (value && 'setActionHandler' in value) {
-                const original = value.setActionHandler.bind(value);
-                Object.defineProperty(value, 'setActionHandler', {
+              const original = navigator.mediaSession.setActionHandler.bind(navigator.mediaSession);
+              try {
+                Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
                   value: function(action, handler) {
                     return safeSetActionHandler(action, handler);
                   },
                   writable: false,
                   configurable: false
                 });
+              } catch (e) {
+                // Fallback: substituição direta
+                navigator.mediaSession.setActionHandler = function(action, handler) {
+                  return safeSetActionHandler(action, handler);
+                };
               }
-            },
-            configurable: true
-          });
-        } catch (e) {
-          // Ignorar se não conseguir definir
+            }
+          } catch (e) {
+            // Ignorar se não conseguir
+          }
         }
-      }
+      };
+      
+      // Aplicar wrapper imediatamente e repetidamente
+      wrapMediaSession();
+      setTimeout(wrapMediaSession, 0);
+      setTimeout(wrapMediaSession, 1);
+      setTimeout(wrapMediaSession, 5);
+      setTimeout(wrapMediaSession, 10);
+      setTimeout(wrapMediaSession, 50);
+      setTimeout(wrapMediaSession, 100);
       
       // Handler global para capturar erros não tratados (incluindo autoPip.js de extensões)
       // IMPORTANTE: Usar capture phase e ser o primeiro handler
@@ -242,7 +286,7 @@
         }
       });
     </script>
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Favicon removido temporariamente até criar ícone personalizado -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- SEO Meta Tags -->
@@ -266,10 +310,10 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- PWA Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <!-- PWA Icons - Comentados até criar ícones personalizados -->
+    <!-- <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" /> -->
+    <!-- <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" /> -->
+    <!-- <link rel="apple-touch-icon" href="/icon-192.png" /> -->
     
     <!-- PWA Meta Tags -->
     <meta name="mobile-web-app-capable" content="yes" />
