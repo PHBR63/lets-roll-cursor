@@ -119,14 +119,40 @@
       }
     };
     
+    // Interceptar DIRETAMENTE o setActionHandler se já existir
+    if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
+      try {
+        const original = navigator.mediaSession.setActionHandler;
+        try {
+          Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
+            value: function(action, handler) {
+              return safeSetActionHandler(action, handler);
+            },
+            writable: false,
+            configurable: false
+          });
+        } catch (e) {
+          navigator.mediaSession.setActionHandler = function(action, handler) {
+            return safeSetActionHandler(action, handler);
+          };
+        }
+      } catch (e) {
+        // Ignorar
+      }
+    }
+    
     // Aplicar múltiplas vezes para garantir interceptação
     wrapMediaSession();
     setTimeout(wrapMediaSession, 0);
     setTimeout(wrapMediaSession, 1);
+    setTimeout(wrapMediaSession, 2);
     setTimeout(wrapMediaSession, 5);
     setTimeout(wrapMediaSession, 10);
+    setTimeout(wrapMediaSession, 20);
     setTimeout(wrapMediaSession, 50);
     setTimeout(wrapMediaSession, 100);
+    setTimeout(wrapMediaSession, 200);
+    setTimeout(wrapMediaSession, 500);
   }
 
   // Handler global de erros não capturados
@@ -180,6 +206,17 @@
     );
     
     if (isExtensionError || isMediaSessionError || isExtensionFetchError || isMessageChannelError) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      return false;
+    }
+    
+    // Captura adicional: qualquer erro que contenha 'autoPip' no filename (case-insensitive)
+    if (event.filename && (
+      event.filename.toLowerCase().includes('autopip') ||
+      event.filename.toLowerCase().includes('auto-pip')
+    )) {
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
