@@ -54,10 +54,24 @@ const SettingsPage = lazyWithRetry(() => import('./pages/Settings/SettingsPage')
  */
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center relative z-10">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-accent" />
         <p className="text-text-secondary">Carregando...</p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Componente de fallback mínimo para garantir que algo seja renderizado
+ */
+function MinimalFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center relative z-10 bg-background">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-white mb-4">Let's Roll</h1>
+        <p className="text-text-secondary">Carregando aplicação...</p>
       </div>
     </div>
   )
@@ -68,8 +82,13 @@ function LoadingFallback() {
  * Define as rotas da aplicação e envolve com AuthProvider
  */
 function App() {
+  // Log para debug
+  if (typeof window !== 'undefined') {
+    console.log('[App] Componente App renderizando...')
+  }
+  
   return (
-    <ErrorBoundary>
+    <ErrorBoundary fallback={<MinimalFallback />}>
         <ThemeProvider>
           <AuthProvider>
           <div className="min-h-screen relative z-0">

@@ -24,23 +24,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+    
     // Obter sessão inicial
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (!mounted) return
+        
+        if (error) {
+          console.error('[AuthContext] Erro ao obter sessão:', error)
+          setLoading(false)
+          return
+        }
+        
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
+      .catch((error) => {
+        if (!mounted) return
+        console.error('[AuthContext] Erro ao obter sessão (catch):', error)
+        setLoading(false)
+      })
 
     // Escutar mudanças de autenticação
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+    let subscription: { unsubscribe: () => void } | null = null
+    try {
+      const {
+        data: { subscription: sub },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!mounted) return
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
+      subscription = sub
+    } catch (error) {
+      console.error('[AuthContext] Erro ao configurar listener de auth:', error)
       setLoading(false)
-    })
+    }
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      if (subscription) {
+        subscription.unsubscribe()
+      }
+    }
   }, [])
 
   /**
