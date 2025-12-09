@@ -17,22 +17,29 @@
       ];
       
       // Função segura para registrar ações de mídia
+      // IMPORTANTE: Esta função deve interceptar TODAS as tentativas de usar setActionHandler,
+      // incluindo as de extensões do navegador como autoPip.js
       const safeSetActionHandler = (action, handler) => {
+        // Verificar se a ação é suportada ANTES de tentar qualquer coisa
+        // enterpictureinpicture e exitpictureinpicture não são suportadas em todos os navegadores
+        if (!SUPPORTED_MEDIA_SESSION_ACTIONS.includes(action)) {
+          // Silenciosamente ignora ações não suportadas (como enterpictureinpicture)
+          // Não tentar chamar setActionHandler para ações não suportadas
+          return undefined;
+        }
+        
         try {
-          // Verificar se a ação é suportada antes de tentar registrar
-          if (!SUPPORTED_MEDIA_SESSION_ACTIONS.includes(action) && action !== 'enterpictureinpicture') {
-            // Silenciosamente ignora ações não suportadas (como enterpictureinpicture)
-            return;
-          }
-          
           if ('mediaSession' in navigator && 'setActionHandler' in navigator.mediaSession) {
-            navigator.mediaSession.setActionHandler(action, handler);
+            // Tentar chamar o setActionHandler original apenas para ações suportadas
+            return navigator.mediaSession.setActionHandler(action, handler);
           }
         } catch (error) {
           // Ignora silenciosamente erros de suporte a ações específicas
           // Isso previne o erro "The provided value... is not a valid enum value"
           // Não logar para evitar poluição do console
+          return undefined;
         }
+        return undefined;
       };
       
       // Substituir o setActionHandler original por uma versão segura
@@ -109,6 +116,7 @@
           event.filename.includes('moz-extension://') ||
           event.filename.includes('safari-extension://') ||
           event.filename.includes('autoPip.js') ||
+          event.filename.includes('auto-pip') ||
           event.filename.includes('content.ts') ||
           event.filename.includes('snippets.js') ||
           event.filename.includes('extension://')
@@ -165,6 +173,7 @@
       }, true);
       
       // Handler para Promise rejections não tratadas
+      // Intercepta rejeições de Promises relacionadas ao MediaSession
       window.addEventListener('unhandledrejection', function(event) {
         const reason = event.reason;
         const reasonMessage = reason?.message || String(reason || '');
@@ -176,16 +185,26 @@
           reasonStack.includes('moz-extension://') ||
           reasonStack.includes('safari-extension://') ||
           reasonStack.includes('autoPip.js') ||
+          reasonStack.includes('auto-pip') ||
           reasonStack.includes('content.ts') ||
           reasonStack.includes('snippets.js')
         );
         
         // Captura erros de MediaSession
-        const isMediaSessionError = reasonMessage && (
-          reasonMessage.includes('setActionHandler') ||
-          reasonMessage.includes('enterpictureinpicture') ||
-          reasonMessage.includes('MediaSessionAction') ||
-          reasonMessage.includes('MediaSession')
+        // Verificar tanto a mensagem quanto o stack para garantir interceptação completa
+        const isMediaSessionError = (
+          (reasonMessage && (
+            reasonMessage.includes('setActionHandler') ||
+            reasonMessage.includes('enterpictureinpicture') ||
+            reasonMessage.includes('exitpictureinpicture') ||
+            reasonMessage.includes('MediaSessionAction') ||
+            reasonMessage.includes('MediaSession') ||
+            reasonMessage.includes('not a valid enum value')
+          )) ||
+          (reasonStack && (
+            reasonStack.includes('autoPip') ||
+            reasonStack.includes('auto-pip')
+          ))
         );
         
         // Captura erros de fetch de extensões

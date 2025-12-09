@@ -25,6 +25,7 @@
     ];
     
     // Função para aplicar o wrapper no setActionHandler
+    // Esta função intercepta TODAS as chamadas a setActionHandler, incluindo de extensões
     const wrapMediaSession = () => {
       if (navigator.mediaSession && navigator.mediaSession.setActionHandler) {
         const original = navigator.mediaSession.setActionHandler;
@@ -32,14 +33,19 @@
           // Tentar tornar não configurável para evitar que extensões substituam
           Object.defineProperty(navigator.mediaSession, 'setActionHandler', {
             value: function(action, handler) {
+              // Verificar se a ação é suportada ANTES de tentar chamar o original
+              // Isso previne o erro "The provided value... is not a valid enum value"
               if (!supportedActions.includes(action)) {
-                // Silently ignore unsupported actions
+                // Silently ignore unsupported actions (como enterpictureinpicture)
+                // Não tentar chamar o original para ações não suportadas
                 return undefined;
               }
               try {
+                // Apenas chamar o original para ações suportadas
                 return original.call(navigator.mediaSession, action, handler);
               } catch (e) {
                 // Silently ignore errors during handler execution
+                // Mesmo que a ação seja suportada, pode haver outros erros
                 return undefined;
               }
             },
@@ -50,6 +56,7 @@
           // Fallback: substituição direta se Object.defineProperty falhar
           try {
             navigator.mediaSession.setActionHandler = function(action, handler) {
+              // Verificar suporte ANTES de tentar chamar
               if (!supportedActions.includes(action)) return undefined;
               try {
                 return original.call(navigator.mediaSession, action, handler);
@@ -92,6 +99,7 @@
 
   // Handler global de erros não capturados
   // Usar capture phase para interceptar antes de outros handlers
+  // Este handler deve interceptar TODOS os erros relacionados ao MediaSession
   window.addEventListener('error', function(event) {
     // Captura erros de extensões do navegador
     const isExtensionError = event.filename && (
@@ -99,17 +107,27 @@
       event.filename.includes('moz-extension://') ||
       event.filename.includes('safari-extension://') ||
       event.filename.includes('autoPip.js') ||
+      event.filename.includes('auto-pip') ||
       event.filename.includes('content.ts') ||
       event.filename.includes('snippets.js') ||
       event.filename.includes('extension://')
     );
     
     // Ignorar erros de MediaSession (incluindo enterpictureinpicture)
-    const isMediaSessionError = event.message && (
-      event.message.includes('MediaSession') || 
-      event.message.includes('enterpictureinpicture') ||
-      event.message.includes('setActionHandler') ||
-      event.message.includes('MediaSessionAction')
+    // Verificar tanto a mensagem quanto o filename para garantir interceptação completa
+    const isMediaSessionError = (
+      (event.message && (
+        event.message.includes('MediaSession') || 
+        event.message.includes('enterpictureinpicture') ||
+        event.message.includes('exitpictureinpicture') ||
+        event.message.includes('setActionHandler') ||
+        event.message.includes('MediaSessionAction') ||
+        event.message.includes('not a valid enum value')
+      )) ||
+      (event.filename && (
+        event.filename.includes('autoPip') ||
+        event.filename.includes('auto-pip')
+      ))
     );
     
     // Captura erros de fetch de extensões
@@ -195,12 +213,27 @@
       reasonStack.includes('moz-extension://') ||
       reasonStack.includes('safari-extension://') ||
       reasonStack.includes('autoPip.js') ||
+      reasonStack.includes('auto-pip') ||
       reasonStack.includes('content.ts') ||
       reasonStack.includes('snippets.js')
     );
     
     // Ignorar rejeições relacionadas a MediaSession
-    const isMediaSessionError = reasonMessage && reasonMessage.includes('MediaSession');
+    // Verificar tanto a mensagem quanto o stack para garantir interceptação completa
+    const isMediaSessionError = (
+      (reasonMessage && (
+        reasonMessage.includes('MediaSession') ||
+        reasonMessage.includes('setActionHandler') ||
+        reasonMessage.includes('enterpictureinpicture') ||
+        reasonMessage.includes('exitpictureinpicture') ||
+        reasonMessage.includes('MediaSessionAction') ||
+        reasonMessage.includes('not a valid enum value')
+      )) ||
+      (reasonStack && (
+        reasonStack.includes('autoPip') ||
+        reasonStack.includes('auto-pip')
+      ))
+    );
     
     // Captura erros de fetch de extensões
     const isExtensionFetchError = reasonMessage && (
