@@ -4,7 +4,7 @@
 import { supabase } from '../../config/supabase'
 import { logger } from '../../utils/logger'
 import { AppError } from '../../types/common'
-import { Condition, skillRequiresKit, SKILL_KIT_REQUIREMENTS } from '../../types/ordemParanormal'
+import { Condition, skillRequiresKit, SKILL_KIT_REQUIREMENTS, SkillTraining } from '../../types/ordemParanormal'
 import { ordemParanormalService } from '../ordemParanormalService'
 import { deleteCache, getCharacterCacheKey } from '../cache'
 import { characterInventoryService } from './characterInventoryService'

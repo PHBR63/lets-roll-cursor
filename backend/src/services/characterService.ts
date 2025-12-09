@@ -4,7 +4,7 @@
  */
 import { supabase } from '../config/supabase'
 import { ordemParanormalService } from './ordemParanormalService'
-import { CharacterClass } from '../types/ordemParanormal'
+import { CharacterClass, Attributes, SkillTraining } from '../types/ordemParanormal'
 import { logger } from '../utils/logger'
 import { CreateCharacterData, UpdateCharacterData, CharacterFilters } from '../types/character'
 import { AppError } from '../types/common'
@@ -179,19 +179,39 @@ export const characterService = {
       let skills: Record<string, { attribute: string; training: string; bonus: number }> = {}
       
       if (data.skills) {
-        // Converter do formato antigo (value/trained) para o novo (attribute/training/bonus)
+        // Validar perícias fornecidas conforme NEX
         for (const [skillName, skillData] of Object.entries(data.skills)) {
-          if ('value' in skillData && 'trained' in skillData) {
+          let training: SkillTraining
+          const skillDataAny = skillData as any
+          
+          if ('value' in skillDataAny && 'trained' in skillDataAny) {
             // Formato antigo: converter
-            const training = skillData.trained ? 'TRAINED' : 'UNTRAINED'
+            training = skillDataAny.trained ? 'TRAINED' : 'UNTRAINED'
+          } else if ('training' in skillDataAny) {
+            // Já está no formato novo
+            training = skillDataAny.training as SkillTraining
+          } else {
+            training = 'UNTRAINED'
+          }
+
+          // Validar se o treinamento é permitido para o NEX
+          if (!ordemParanormalService.canUseSkillTraining(training, nex)) {
+            throw new Error(
+              `Nível de treinamento ${training} não é permitido para NEX ${nex}% na criação. ` +
+              `COMPETENT requer NEX >= 35% e EXPERT requer NEX >= 70%.`
+            )
+          }
+
+          // Converter para formato novo
+          if ('value' in skillDataAny && 'trained' in skillDataAny) {
             skills[skillName] = {
               attribute: 'INT', // Default, será ajustado pela origem se necessário
               training,
-              bonus: skillData.trained ? 5 : 0,
+              bonus: skillDataAny.trained ? 5 : 0,
             }
           } else {
             // Já está no formato novo
-            skills[skillName] = skillData as any
+            skills[skillName] = skillDataAny
           }
         }
       }
