@@ -2,7 +2,7 @@
  * Serviço centralizado de API com tratamento robusto de erros e retry
  */
 import { supabase } from '@/integrations/supabase/client'
-import { getApiBaseUrl } from '@/utils/env'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 /**
  * Opções para requisições da API
