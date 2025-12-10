@@ -377,12 +377,21 @@
         }
         
         // Capturar Promise rejections do Supabase (apenas se não for erro crítico)
+        // Verificar também no stack trace para garantir detecção completa
         // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
-        if (reasonMessage && (
-          reasonMessage.includes('Cannot access') && 
-          reasonMessage.includes('before initialization') &&
-          !isAppRejection
-        )) {
+        const isSupabaseInitError = (
+          (reasonMessage && (
+            reasonMessage.includes('Cannot access') && 
+            reasonMessage.includes('before initialization')
+          )) ||
+          (reasonStack && (
+            reasonStack.includes('supabase') &&
+            reasonStack.includes('Cannot access') &&
+            reasonStack.includes('before initialization')
+          ))
+        );
+        
+        if (isSupabaseInitError && !isAppRejection) {
           // Logar apenas uma vez para debug
           if (!window._supabaseInitErrorLogged) {
             console.warn(
