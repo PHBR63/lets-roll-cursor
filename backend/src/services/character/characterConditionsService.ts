@@ -161,7 +161,7 @@ export const characterConditionsService = {
           }
 
           case 'MORRENDO': {
-            // Morrendo: incrementar contador de rodadas de morte
+            // Morrendo: incrementar contador de rodadas de morte (3 turnos iniciados -> morte)
             const dyingTimer = updatedTimers.find(t => t.condition === 'MORRENDO')
             let dyingRounds = dyingTimer?.duration || 0
 
@@ -328,6 +328,105 @@ export const characterConditionsService = {
       const err = error as AppError
       logger.error({ error, characterId: id }, 'Error stopping bleeding')
       throw new Error('Erro ao estancar sangramento: ' + (err.message || 'Erro desconhecido'))
+    }
+  },
+
+  /**
+   * Teste de Medicina (DT 20) para remover Sangrando/Morrendo
+   * - Sucesso: remove SANGRANDO e MORRENDO (nessa ordem), estabiliza (PV permanece como está, podendo ser 0)
+   * - Falha: sem efeito
+   */
+  async performMedicineCheck(
+    id: string,
+    options?: {
+      roll?: number // valor do d20 já rolado (total bruto). Se não vier, rola no servidor.
+      modifier?: number // bônus de perícia (default 0)
+      advantage?: boolean
+      disadvantage?: boolean
+      dc?: number
+    }
+  ) {
+    const dc = options?.dc ?? 20
+    const modifier = options?.modifier ?? 0
+    const advantage = options?.advantage ?? false
+    const disadvantage = options?.disadvantage ?? false
+
+    const rollD20 = () => Math.floor(Math.random() * 20) + 1
+    let d20 = options?.roll
+    if (d20 === undefined || d20 === null) {
+      if (advantage && !disadvantage) {
+        d20 = Math.max(rollD20(), rollD20())
+      } else if (disadvantage && !advantage) {
+        d20 = Math.min(rollD20(), rollD20())
+      } else {
+        d20 = rollD20()
+      }
+    }
+    const total = d20 + modifier
+
+    try {
+      const { data: character, error: fetchError } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const conditions: Condition[] = character.conditions || []
+      const timers = (character.conditionTimers as Array<{ condition: string; duration: number }>) || []
+      const hasBleeding = conditions.includes('SANGRANDO')
+      const hasDying = conditions.includes('MORRENDO')
+
+      if (!hasBleeding && !hasDying) {
+        return { character, success: false, total, dc, changes: ['Nenhuma condição removida'] }
+      }
+
+      const success = total >= dc
+      let updatedConditions = [...conditions]
+      let updatedTimers = [...timers]
+      const changes: string[] = []
+
+      if (success) {
+        if (hasBleeding) {
+          updatedConditions = updatedConditions.filter((c) => c !== 'SANGRANDO')
+          changes.push('Medicina: Sangrando removido')
+        }
+        if (hasDying) {
+          updatedConditions = updatedConditions.filter((c) => c !== 'MORRENDO' && c !== 'INCONSCIENTE')
+          updatedTimers = updatedTimers.filter((t) => t.condition !== 'MORRENDO')
+          changes.push('Medicina: Morrendo removido (estabilizado, PV permanece em 0)')
+        }
+      } else {
+        changes.push('Medicina: Falha (sem efeitos)')
+      }
+
+      const { data, error } = await supabase
+        .from('characters')
+        .update({
+          conditions: updatedConditions,
+          conditionTimers: updatedTimers,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) throw error
+
+      await deleteCache(getCharacterCacheKey({ characterId: id }))
+
+      return {
+        character: data,
+        success,
+        total,
+        dc,
+        changes,
+      }
+    } catch (error: unknown) {
+      const err = error as AppError
+      logger.error({ error }, 'Error performing medicine check')
+      throw new Error('Erro ao realizar teste de Medicina: ' + (err.message || 'Erro desconhecido'))
     }
   },
 }

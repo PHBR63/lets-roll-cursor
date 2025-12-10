@@ -336,6 +336,33 @@ charactersRouter.post('/:id/apply-condition', async (req: Request, res: Response
   }
 })
 
+// Processar turno (condições automáticas: Sangrando/Morrendo, etc.)
+charactersRouter.post('/:id/process-turn', async (req: Request, res: Response) => {
+  try {
+    const result = await characterService.processTurn(req.params.id)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Teste de Medicina (DT 20 por padrão) para estabilizar Sangrando/Morrendo
+charactersRouter.post('/:id/conditions/medicine', async (req: Request, res: Response) => {
+  try {
+    const { roll, modifier, advantage, disadvantage, dc } = req.body || {}
+    const result = await characterService.performMedicineCheck(req.params.id, {
+      roll,
+      modifier,
+      advantage,
+      disadvantage,
+      dc,
+    })
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Remover condição
 charactersRouter.delete('/:id/conditions/:condition', async (req: Request, res: Response) => {
   try {

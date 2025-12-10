@@ -385,6 +385,24 @@ export const campaignService = {
    */
   async deleteCampaign(id: string, userId: string) {
     try {
+      // Verificar se campanha existe
+      const { data: campaign, error: campaignError } = await supabase
+        .from('campaigns')
+        .select('id, created_by')
+        .eq('id', id)
+        .single()
+
+      if (campaignError) {
+        if (campaignError.code === 'PGRST116') {
+          throw new Error('Campanha não encontrada')
+        }
+        throw campaignError
+      }
+
+      if (!campaign) {
+        throw new Error('Campanha não encontrada')
+      }
+
       // Verificar se usuário é mestre
       const { data: participant, error: checkError } = await supabase
         .from('campaign_participants')
@@ -394,19 +412,46 @@ export const campaignService = {
         .eq('role', 'master')
         .single()
 
-      if (checkError || !participant) {
+      if (checkError) {
+        logger.error({ checkError, campaignId: id, userId }, 'Erro ao verificar permissão de mestre')
+        if (checkError.code === 'PGRST116') {
+          throw new Error('Apenas o mestre pode deletar a campanha')
+        }
+        throw checkError
+      }
+
+      if (!participant) {
         throw new Error('Apenas o mestre pode deletar a campanha')
       }
 
-      const { error } = await supabase
+      // Deletar campanha (cascata vai deletar participantes, personagens, etc)
+      const { error: deleteError } = await supabase
         .from('campaigns')
         .delete()
         .eq('id', id)
 
-      if (error) throw error
+      if (deleteError) {
+        logger.error({ deleteError, campaignId: id }, 'Erro ao deletar campanha do banco')
+        throw deleteError
+      }
+
+      // Invalidar cache relacionado
+      await deleteCache(getCampaignCacheKey({ campaignId: id }))
+      await deleteCachePattern('campaigns:*')
+      if (campaign.created_by) {
+        await deleteCache(getCampaignCacheKey({ userId: campaign.created_by }))
+      }
+
+      logger.info({ campaignId: id, userId }, 'Campanha deletada com sucesso')
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error }, 'Error deleting campaign')
+      logger.error({ error, campaignId: id, userId, errorCode: err.code, errorMessage: err.message }, 'Error deleting campaign')
+      
+      // Retornar mensagem mais específica
+      if (err.message?.includes('não encontrada') || err.message?.includes('não pode')) {
+        throw err
+      }
+      
       throw new Error('Erro ao deletar campanha: ' + (err.message || 'Erro desconhecido'))
     }
   },

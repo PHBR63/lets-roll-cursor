@@ -497,6 +497,7 @@ export const characterService = {
   applyCondition: characterConditionsService.applyCondition,
   removeCondition: characterConditionsService.removeCondition,
   processTurn: characterConditionsService.processTurn,
+  performMedicineCheck: characterConditionsService.performMedicineCheck,
   stopBleeding: characterConditionsService.stopBleeding,
 
   // Recursos

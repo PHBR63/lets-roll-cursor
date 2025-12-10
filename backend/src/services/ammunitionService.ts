@@ -7,63 +7,100 @@ import { supabase } from '../config/supabase'
 import { logger } from '../utils/logger'
 import { AppError } from '../types/common'
 
+type AmmoState = 'CHEIO' | 'ESTAVEL' | 'BAIXO' | 'ESGOTADO'
+type AmmoMode = 'A' | 'B'
+
+const STATE_ORDER: AmmoState[] = ['CHEIO', 'ESTAVEL', 'BAIXO', 'ESGOTADO']
+const DEFAULT_ATTACKS_PER_SPEND: Record<string, number> = {
+  pistol: 3,
+  revolver: 2,
+  rifle: 2,
+  shotgun: 1,
+  smg: 2,
+}
+
 export interface AmmunitionState {
+  id?: string
   characterId: string
   sessionId: string
-  ammunition: number // Munição abstrata restante (0-100, onde 100 = totalmente abastecido)
+  weaponId?: string | null
+  state: AmmoState
+  mode: AmmoMode
+  attacksPerSpend?: number | null
+  progress: number
+  reloadToFull: boolean
   lastUpdated: string
+}
+
+interface SpendOptions {
+  mode?: AmmoMode
+  attacksPerSpend?: number | null
+  attacksUsed?: number // apenas modo B: quantos ataques neste gasto
 }
 
 export const ammunitionService = {
   /**
-   * Obtém estado de munição do personagem na sessão
-   * @param characterId - ID do personagem
-   * @param sessionId - ID da sessão
-   * @returns Estado de munição (0-100)
+   * Normaliza registro do banco para o formato esperado
    */
-  async getAmmunitionState(characterId: string, sessionId: string): Promise<AmmunitionState> {
+  normalizeRecord(record: any): AmmunitionState {
+    return {
+      id: record?.id,
+      characterId: record?.character_id,
+      sessionId: record?.session_id,
+      weaponId: record?.weapon_id ?? null,
+      state: (record?.state as AmmoState) || 'CHEIO',
+      mode: (record?.mode as AmmoMode) || 'A',
+      attacksPerSpend: record?.attacks_per_spend ?? null,
+      progress: record?.progress ?? 0,
+      reloadToFull: record?.reload_to_full ?? true,
+      lastUpdated: record?.updated_at,
+    }
+  },
+
+  /**
+   * Obtém estado de munição (cria se não existir)
+   */
+  async getAmmunitionState(
+    characterId: string,
+    sessionId: string,
+    weaponId?: string | null
+  ): Promise<AmmunitionState> {
     try {
       const { data, error } = await supabase
         .from('session_ammunition')
         .select('*')
         .eq('character_id', characterId)
         .eq('session_id', sessionId)
+        .eq('weapon_id', weaponId ?? null)
         .single()
 
       if (error && error.code !== 'PGRST116') {
-        // PGRST116 = não encontrado, é OK
         throw error
       }
 
-      // Se não existe, criar estado inicial (100 = totalmente abastecido)
       if (!data) {
-        return await this.initializeAmmunition(characterId, sessionId)
+        return await this.initializeAmmunition(characterId, sessionId, weaponId ?? null)
       }
 
-      return {
-        characterId: data.character_id,
-        sessionId: data.session_id,
-        ammunition: data.ammunition || 100,
-        lastUpdated: data.updated_at,
-      }
+      return this.normalizeRecord(data)
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error, characterId, sessionId }, 'Error getting ammunition state')
+      logger.error({ error, characterId, sessionId, weaponId }, 'Error getting ammunition state')
       throw new Error('Erro ao obter estado de munição: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
-   * Inicializa estado de munição para personagem na sessão
-   * @param characterId - ID do personagem
-   * @param sessionId - ID da sessão
-   * @param initialAmmo - Munição inicial (padrão: 100 = totalmente abastecido)
-   * @returns Estado de munição criado
+   * Inicializa estado de munição para personagem na sessão/arma
    */
   async initializeAmmunition(
     characterId: string,
     sessionId: string,
-    initialAmmo: number = 100
+    weaponId: string | null = null,
+    initialState: AmmoState = 'CHEIO',
+    mode: AmmoMode = 'A',
+    attacksPerSpend?: number | null,
+    reloadToFull: boolean = true
   ): Promise<AmmunitionState> {
     try {
       const { data, error } = await supabase
@@ -71,7 +108,12 @@ export const ammunitionService = {
         .insert({
           character_id: characterId,
           session_id: sessionId,
-          ammunition: Math.max(0, Math.min(100, initialAmmo)), // Clamp entre 0 e 100
+          weapon_id: weaponId,
+          state: initialState,
+          mode,
+          attacks_per_spend: attacksPerSpend ?? null,
+          progress: 0,
+          reload_to_full: reloadToFull,
           updated_at: new Date().toISOString(),
         })
         .select()
@@ -79,109 +121,128 @@ export const ammunitionService = {
 
       if (error) throw error
 
-      return {
-        characterId: data.character_id,
-        sessionId: data.session_id,
-        ammunition: data.ammunition,
-        lastUpdated: data.updated_at,
-      }
+      return this.normalizeRecord(data)
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error, characterId, sessionId, initialAmmo }, 'Error initializing ammunition')
+      logger.error({ error, characterId, sessionId, weaponId, initialState }, 'Error initializing ammunition')
       throw new Error('Erro ao inicializar munição: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
-   * Gasta munição abstrata (ao usar arma de fogo)
-   * @param characterId - ID do personagem
-   * @param sessionId - ID da sessão
-   * @param amount - Quantidade a gastar (padrão: 1)
-   * @returns Novo estado de munição
+   * Gasta munição (degrada um nível de estado).
+   * - Modo A: 1 gasto por cena (call direto).
+   * - Modo B: usar attacksUsed; acumula progress e degrada quando atingir attacksPerSpend.
    */
   async spendAmmunition(
     characterId: string,
     sessionId: string,
-    amount: number = 1
+    weaponId: string | null = null,
+    options?: SpendOptions
   ): Promise<AmmunitionState> {
     try {
-      const currentState = await this.getAmmunitionState(characterId, sessionId)
-      const newAmmunition = Math.max(0, currentState.ammunition - amount)
+      const current = await this.getAmmunitionState(characterId, sessionId, weaponId)
+
+      // Aplicar override de modo/config se enviados
+      const mode: AmmoMode = options?.mode || current.mode || 'A'
+      const attacksPerSpend =
+        options?.attacksPerSpend ??
+        current.attacksPerSpend ??
+        null
+
+      let progress = current.progress || 0
+      let stateIndex = STATE_ORDER.indexOf(current.state || 'CHEIO')
+
+      if (stateIndex < 0) stateIndex = 0
+      if (stateIndex >= STATE_ORDER.length - 1 && mode === 'A') {
+        return current // já esgotado
+      }
+
+      if (mode === 'A') {
+        // Gasta um nível
+        stateIndex = Math.min(stateIndex + 1, STATE_ORDER.length - 1)
+      } else {
+        // Modo B: acumula ataques e gasta quando chegar no limite
+        const attacksUsed = options?.attacksUsed ?? 1
+        const required = attacksPerSpend || DEFAULT_ATTACKS_PER_SPEND['pistol'] // fallback seguro
+        progress += attacksUsed
+        while (progress >= required && stateIndex < STATE_ORDER.length - 1) {
+          progress -= required
+          stateIndex++
+        }
+      }
+
+      const newState = STATE_ORDER[stateIndex] as AmmoState
 
       const { data, error } = await supabase
         .from('session_ammunition')
         .update({
-          ammunition: newAmmunition,
+          state: newState,
+          mode,
+          attacks_per_spend: attacksPerSpend,
+          progress,
           updated_at: new Date().toISOString(),
         })
         .eq('character_id', characterId)
         .eq('session_id', sessionId)
+        .eq('weapon_id', weaponId ?? null)
         .select()
         .single()
 
       if (error) throw error
 
       logger.info(
-        { characterId, sessionId, oldAmmo: currentState.ammunition, newAmmo: newAmmunition },
+        { characterId, sessionId, weaponId, oldState: current.state, newState, mode, progress },
         'Ammunition spent'
       )
 
-      return {
-        characterId: data.character_id,
-        sessionId: data.session_id,
-        ammunition: data.ammunition,
-        lastUpdated: data.updated_at,
-      }
+      return this.normalizeRecord(data)
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error, characterId, sessionId, amount }, 'Error spending ammunition')
+      logger.error({ error, characterId, sessionId, weaponId, options }, 'Error spending ammunition')
       throw new Error('Erro ao gastar munição: ' + (err.message || 'Erro desconhecido'))
     }
   },
 
   /**
-   * Recarrega munição (ação de recarregar)
-   * @param characterId - ID do personagem
-   * @param sessionId - ID da sessão
-   * @param amount - Quantidade a recarregar (padrão: 50, pode ser ajustado)
-   * @returns Novo estado de munição
+   * Recarrega munição (reseta estado)
    */
   async reloadAmmunition(
     characterId: string,
     sessionId: string,
-    amount: number = 50
+    weaponId: string | null = null,
+    reloadToFull?: boolean
   ): Promise<AmmunitionState> {
     try {
-      const currentState = await this.getAmmunitionState(characterId, sessionId)
-      const newAmmunition = Math.min(100, currentState.ammunition + amount)
+      const current = await this.getAmmunitionState(characterId, sessionId, weaponId)
+      const toFull = reloadToFull ?? current.reloadToFull ?? true
+      const newState: AmmoState = toFull ? 'CHEIO' : 'ESTAVEL'
 
       const { data, error } = await supabase
         .from('session_ammunition')
         .update({
-          ammunition: newAmmunition,
+          state: newState,
+          progress: 0,
+          reload_to_full: toFull,
           updated_at: new Date().toISOString(),
         })
         .eq('character_id', characterId)
         .eq('session_id', sessionId)
+        .eq('weapon_id', weaponId ?? null)
         .select()
         .single()
 
       if (error) throw error
 
       logger.info(
-        { characterId, sessionId, oldAmmo: currentState.ammunition, newAmmo: newAmmunition },
+        { characterId, sessionId, weaponId, oldState: current.state, newState },
         'Ammunition reloaded'
       )
 
-      return {
-        characterId: data.character_id,
-        sessionId: data.session_id,
-        ammunition: data.ammunition,
-        lastUpdated: data.updated_at,
-      }
+      return this.normalizeRecord(data)
     } catch (error: unknown) {
       const err = error as AppError
-      logger.error({ error, characterId, sessionId, amount }, 'Error reloading ammunition')
+      logger.error({ error, characterId, sessionId, weaponId }, 'Error reloading ammunition')
       throw new Error('Erro ao recarregar munição: ' + (err.message || 'Erro desconhecido'))
     }
   },
