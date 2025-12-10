@@ -7,6 +7,63 @@
  */
 (function() {
   'use strict';
+  
+  // ============================================
+  // INTERCEPTAÇÃO DE CONSOLE (SE AINDA NÃO FOI INTERCEPTADO)
+  // ============================================
+  if (!window._consoleIntercepted) {
+    const originalConsoleError = console.error;
+    const originalConsoleWarn = console.warn;
+    
+    // Função para verificar se deve suprimir o erro
+    function shouldSuppressConsoleError(message, args) {
+      const fullMessage = typeof message === 'string' ? message : String(message);
+      const allArgs = args.map(arg => String(arg)).join(' ');
+      const combined = fullMessage + ' ' + allArgs;
+      
+      // Verificar erros do autoPip.js e MediaSession
+      if (combined.includes('autoPip') || 
+          combined.includes('auto-pip') ||
+          (combined.includes('MediaSession') && combined.includes('setActionHandler')) ||
+          combined.includes('enterpictureinpicture') ||
+          (combined.includes('MediaSessionAction') && combined.includes('not a valid enum value'))) {
+        return true;
+      }
+      
+      // Verificar erros do Supabase (apenas se já foi logado uma vez)
+      if ((combined.includes('Cannot access') && combined.includes('before initialization')) &&
+          (combined.includes('supabase') || combined.includes('supabase-vendor'))) {
+        // Se já foi logado, suprimir completamente
+        if (window._supabaseInitErrorLogged) {
+          return true;
+        }
+        // Se não foi logado ainda, permitir o log (será formatado depois)
+        return false;
+      }
+      
+      return false;
+    }
+    
+    // Interceptar console.error
+    console.error = function(...args) {
+      const message = args[0];
+      if (shouldSuppressConsoleError(message, args)) {
+        return; // Não logar
+      }
+      originalConsoleError.apply(console, args);
+    };
+    
+    // Interceptar console.warn (menos agressivo, apenas para Supabase já logado)
+    console.warn = function(...args) {
+      const message = args[0];
+      if (shouldSuppressConsoleError(message, args)) {
+        return; // Não logar
+      }
+      originalConsoleWarn.apply(console, args);
+    };
+    
+    window._consoleIntercepted = true;
+  }
 
   // Tratar erro de MediaSession (pode ser de extensão do navegador como autoPip.js)
   // Aplicar o wrapper ANTES de qualquer outro script tentar usar MediaSession
@@ -91,17 +148,23 @@
     }
     
     // Aplicar múltiplas vezes para garantir interceptação
+    // Mais agressivo: interceptar imediatamente e em múltiplos momentos
     wrapMediaSession();
     setTimeout(wrapMediaSession, 0);
     setTimeout(wrapMediaSession, 1);
     setTimeout(wrapMediaSession, 2);
+    setTimeout(wrapMediaSession, 3);
     setTimeout(wrapMediaSession, 5);
+    setTimeout(wrapMediaSession, 7);
     setTimeout(wrapMediaSession, 10);
+    setTimeout(wrapMediaSession, 15);
     setTimeout(wrapMediaSession, 20);
+    setTimeout(wrapMediaSession, 30);
     setTimeout(wrapMediaSession, 50);
     setTimeout(wrapMediaSession, 100);
     setTimeout(wrapMediaSession, 200);
     setTimeout(wrapMediaSession, 500);
+    setTimeout(wrapMediaSession, 1000);
   }
 
   // Handler global de erros não capturados
@@ -121,11 +184,12 @@
     )) {
       // Logar apenas uma vez para debug, mas não quebrar a aplicação
       if (!window._supabaseInitErrorLogged) {
-        console.warn('[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho):', {
-          message: event.message,
-          filename: event.filename,
-          stack: event.error?.stack
-        });
+        console.warn(
+          '[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho)',
+          '\n  Mensagem:', event.message || 'N/A',
+          '\n  Arquivo:', event.filename || 'N/A',
+          '\n  Stack:', event.error?.stack ? event.error.stack.substring(0, 300) + '...' : 'N/A'
+        );
         window._supabaseInitErrorLogged = true;
       }
       // Prevenir o erro para não quebrar a aplicação
@@ -337,18 +401,28 @@
     }
     
     // Capturar Promise rejections do Supabase (apenas se não for erro crítico)
+    // Verificar também no stack trace para garantir detecção completa
     // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
-    if (reasonMessage && (
-      reasonMessage.includes('Cannot access') && 
-      reasonMessage.includes('before initialization') &&
-      !isAppRejection
-    )) {
+    const isSupabaseInitError = (
+      (reasonMessage && (
+        reasonMessage.includes('Cannot access') && 
+        reasonMessage.includes('before initialization')
+      )) ||
+      (reasonStack && (
+        reasonStack.includes('supabase') &&
+        reasonStack.includes('Cannot access') &&
+        reasonStack.includes('before initialization')
+      ))
+    );
+    
+    if (isSupabaseInitError && !isAppRejection) {
       // Logar apenas uma vez para debug
       if (!window._supabaseInitErrorLogged) {
-        console.warn('[Supabase] Promise rejection de inicialização (geralmente se resolve sozinho):', {
-          message: reasonMessage,
-          stack: reasonStack
-        });
+        console.warn(
+          '[Supabase] Promise rejection de inicialização (geralmente se resolve sozinho)',
+          '\n  Mensagem:', reasonMessage || 'N/A',
+          '\n  Stack:', reasonStack ? reasonStack.substring(0, 300) + '...' : 'N/A'
+        );
         window._supabaseInitErrorLogged = true;
       }
       event.preventDefault();
