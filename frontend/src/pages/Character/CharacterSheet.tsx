@@ -14,7 +14,7 @@ import { ConditionsPanel } from '@/components/character/ConditionsPanel'
 import { Biography } from '@/components/character/Biography'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Trash2 } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
 import { Character, CharacterUpdateData } from '@/types/character'
@@ -28,6 +28,8 @@ import {
 import { SEOHead } from '@/components/common/SEOHead'
 import { getApiBaseUrl } from '@/utils/apiUrl'
 import { DiceRoller } from '@/components/session/DiceRoller/DiceRoller'
+import { DeleteConfirmDialog } from '@/components/common/DeleteConfirmDialog'
+import { useToast } from '@/hooks/useToast'
 
 /**
  * Página da ficha de personagem do sistema Ordem Paranormal
@@ -41,7 +43,10 @@ export function CharacterSheet() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const { handleErrorWithToast, handleResponseError } = useApiError()
+  const toast = useToast()
 
   useEffect(() => {
     if (id) {
@@ -162,6 +167,45 @@ export function CharacterSheet() {
     }
   }
 
+  /**
+   * Handler para deletar personagem
+   */
+  const handleDeleteCharacter = async () => {
+    if (!id || !user || !character) return
+
+    setDeleting(true)
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = getApiBaseUrl()
+      const response = await fetch(`${apiUrl}/api/characters/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        await handleResponseError(response, 'Erro ao deletar personagem')
+        return
+      }
+
+      toast.success('Personagem deletado', `${character.name} foi removido com sucesso.`)
+      
+      // Redirecionar para lista de personagens ou dashboard
+      if (character.campaign_id) {
+        navigate(`/campaign/${character.campaign_id}`)
+      } else {
+        navigate('/characters')
+      }
+    } catch (error) {
+      handleErrorWithToast(error, 'Erro ao deletar personagem')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading || loadingCharacter) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -202,100 +246,125 @@ export function CharacterSheet() {
         noindex={true}
       />
       <Navbar />
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="page-container py-6 lg:py-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="text-primary hover:text-primary/80"
+              className="text-primary hover:text-primary/80 w-full sm:w-auto justify-center"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Voltar
             </Button>
-            <h1 className="text-3xl md:text-4xl font-bold text-white">
-              {characterName}
-            </h1>
+            <h1 className="text-title leading-tight">{characterName}</h1>
           </div>
-          {saving && (
-            <div className="text-sm text-muted-foreground">Salvando...</div>
-          )}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            {saving && (
+              <div className="text-sm text-text-secondary">Salvando...</div>
+            )}
+            {character && character.user_id === user?.id && (
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteDialog(true)}
+                className="border-destructive/50 text-destructive hover:bg-destructive/10 w-full sm:w-auto justify-center"
+                title="Deletar personagem"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Deletar
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Layout 2 colunas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Coluna Esquerda */}
-          <div className="space-y-6">
+        {/* Layout responsivo em colunas */}
+        <div className="section-grid lg:gap-6 xl:grid-cols-3">
+          {/* Coluna Esquerda (informações principais) */}
+          <div className="space-y-4 sm:space-y-5 min-w-0 xl:col-span-2">
             {/* Vitals Panel */}
-            <VitalsPanel
-              character={character}
-              onUpdateResource={handleUpdateResource}
-            />
+            <div className="min-w-0">
+              <VitalsPanel
+                character={character}
+                onUpdateResource={handleUpdateResource}
+              />
+            </div>
 
             {/* Attributes Grid */}
-            <AttributesGrid
-              character={character}
-              onUpdate={saveCharacter}
-            />
+            <div className="section-card p-4 sm:p-5 min-w-0">
+              <AttributesGrid
+                character={character}
+                onUpdate={saveCharacter}
+              />
+            </div>
 
             {/* Personal Data */}
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="personal-data">
-                <AccordionTrigger>Dados Pessoais</AccordionTrigger>
-                <AccordionContent>
-                  <PersonalData
-                    character={character}
-                    onUpdate={saveCharacter}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="section-card p-4 sm:p-5 min-w-0">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="personal-data">
+                  <AccordionTrigger>Dados Pessoais</AccordionTrigger>
+                  <AccordionContent>
+                    <PersonalData
+                      character={character}
+                      onUpdate={saveCharacter}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
 
             {/* Inventory */}
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="inventory">
-                <AccordionTrigger>Inventário</AccordionTrigger>
-                <AccordionContent>
-                  <InventoryPanel
-                    character={character}
-                    onUpdate={loadCharacter}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="section-card p-4 sm:p-5 min-w-0 overflow-x-auto">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="inventory">
+                  <AccordionTrigger>Inventário</AccordionTrigger>
+                  <AccordionContent>
+                    <InventoryPanel
+                      character={character}
+                      onUpdate={loadCharacter}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
 
             {/* Biography */}
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="biography">
-                <AccordionTrigger>Biografia</AccordionTrigger>
-                <AccordionContent>
-                  <Biography
-                    character={character}
-                    onUpdate={saveCharacter}
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+            <div className="section-card p-4 sm:p-5 min-w-0">
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="biography">
+                  <AccordionTrigger>Biografia</AccordionTrigger>
+                  <AccordionContent>
+                    <Biography
+                      character={character}
+                      onUpdate={saveCharacter}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
           </div>
 
           {/* Coluna Direita */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-5 min-w-0">
             {/* Skills Grid */}
-            <SkillsGrid
-              character={character}
-              onUpdate={saveCharacter}
-            />
+            <div className="section-card p-4 sm:p-5 min-w-0 overflow-x-auto">
+              <SkillsGrid
+                character={character}
+                onUpdate={saveCharacter}
+              />
+            </div>
 
             {/* Conditions */}
-            <ConditionsPanel
-              character={character}
-              onUpdate={loadCharacter}
-            />
+            <div className="section-card p-4 sm:p-5 min-w-0">
+              <ConditionsPanel
+                character={character}
+                onUpdate={loadCharacter}
+              />
+            </div>
 
             {/* Rolagem de Dados */}
-            <div className="bg-card rounded-lg p-6 border border-card-secondary">
-              <h2 className="text-xl font-bold text-white mb-4">Rolagem de Dados</h2>
+            <div className="section-card p-4 sm:p-5 min-w-0">
+              <h2 className="text-subtitle mb-4">Rolagem de Dados</h2>
               <DiceRoller
                 sessionId={undefined}
                 campaignId={character.campaign_id || undefined}
@@ -307,6 +376,19 @@ export function CharacterSheet() {
         </div>
       </div>
       <Footer />
+
+      {/* Dialog de confirmação de exclusão */}
+      {character && (
+        <DeleteConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDeleteCharacter}
+          title="Deletar Personagem"
+          description={`Tem certeza que deseja deletar o personagem "${character.name}"? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.`}
+          confirmLabel="Deletar Personagem"
+          loading={deleting}
+        />
+      )}
     </div>
   )
 }

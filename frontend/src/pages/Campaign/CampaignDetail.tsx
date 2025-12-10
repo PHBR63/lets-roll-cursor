@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/context/AuthContext'
 import { EmptyState, NotFoundState } from '@/components/common/EmptyState'
 import { Users } from 'lucide-react'
-import { ChevronRight, Edit, Settings } from 'lucide-react'
+import { ChevronRight, Edit, Settings, Trash2 } from 'lucide-react'
 import { useApiError } from '@/hooks/useApiError'
 import { OptimizedImage } from '@/components/common/OptimizedImage'
 import { useRetry } from '@/hooks/useRetry'
@@ -22,6 +22,7 @@ import { SEOHead } from '@/components/common/SEOHead'
 import { getApiBaseUrl } from '@/utils/apiUrl'
 import { DiceRoller } from '@/components/session/DiceRoller/DiceRoller'
 import { CampaignMoments } from '@/components/campaign/CampaignMoments'
+import { DeleteConfirmDialog } from '@/components/common/DeleteConfirmDialog'
 
 /**
  * Página de detalhes da campanha
@@ -36,6 +37,8 @@ export function CampaignDetail() {
   const [loading, setLoading] = useState(true)
   const [showInviteModal, setShowInviteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [isMaster, setIsMaster] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { handleErrorWithToast, handleResponseError } = useApiError()
@@ -128,6 +131,39 @@ export function CampaignDetail() {
    */
   const handleEnterSession = () => {
     navigate(`/session/${id}`)
+  }
+
+  /**
+   * Handler para deletar campanha
+   */
+  const handleDeleteCampaign = async () => {
+    if (!id || !user) return
+
+    setDeleting(true)
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = getApiBaseUrl()
+      const response = await fetch(`${apiUrl}/api/campaigns/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        await handleResponseError(response, 'Erro ao deletar campanha')
+        return
+      }
+
+      // Redirecionar para dashboard após deletar
+      navigate('/dashboard')
+    } catch (error) {
+      handleErrorWithToast(error, 'Erro ao deletar campanha')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading || loadingCampaign) {
@@ -252,6 +288,14 @@ export function CampaignDetail() {
                     <Settings className="w-4 h-4 mr-2" />
                     Painel do Mestre
                   </Button>
+                  <Button
+                    onClick={() => setShowDeleteDialog(true)}
+                    variant="outline"
+                    className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Deletar Campanha
+                  </Button>
                 </div>
               </div>
             )}
@@ -352,6 +396,17 @@ export function CampaignDetail() {
             setShowEditModal(false)
             loadCampaign()
           }}
+        />
+      )}
+      {showDeleteDialog && campaign && (
+        <DeleteConfirmDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          onConfirm={handleDeleteCampaign}
+          title="Deletar Campanha"
+          description={`Tem certeza que deseja deletar a campanha "${campaign.name}"? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.`}
+          confirmLabel="Deletar Campanha"
+          loading={deleting}
         />
       )}
     </div>

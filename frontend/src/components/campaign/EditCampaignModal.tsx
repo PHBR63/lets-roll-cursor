@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Upload, X } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { Campaign } from '@/types/campaign'
+import { getApiBaseUrl } from '@/utils/apiUrl'
 
 interface EditCampaignModalProps {
   open: boolean
@@ -97,7 +98,7 @@ export function EditCampaignModal({
       const { data: session } = await supabase.auth.getSession()
       if (!session.session) return
 
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+      const apiUrl = getApiBaseUrl()
       
       // Preparar FormData se houver imagem
       const formData = new FormData()

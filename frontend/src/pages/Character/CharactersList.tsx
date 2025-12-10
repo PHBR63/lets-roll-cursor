@@ -5,7 +5,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/common/EmptyState'
-import { User, Plus, ArrowRight } from 'lucide-react'
+import { User, Plus, ArrowRight, Trash2, Edit } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Character } from '@/types/character'
@@ -15,6 +15,8 @@ import { useApiError } from '@/hooks/useApiError'
 import { useCreateCharacterModal } from '@/hooks/useCreateCharacterModal'
 import { CreateCharacterModal } from '@/components/character/CreateCharacterModal'
 import { SEOHead } from '@/components/common/SEOHead'
+import { DeleteConfirmDialog } from '@/components/common/DeleteConfirmDialog'
+import { useToast } from '@/hooks/useToast'
 
 /**
  * Página de listagem de todos os personagens do usuário
@@ -25,7 +27,11 @@ export function CharactersList() {
   const [characters, setCharacters] = useState<Character[]>([])
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [characterToDelete, setCharacterToDelete] = useState<Character | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const { handleErrorWithToast, handleResponseError } = useApiError()
+  const toast = useToast()
   
   // Hook compartilhado para modal de criação de personagem
   const createCharacterModal = useCreateCharacterModal(campaigns)
@@ -108,6 +114,49 @@ export function CharactersList() {
     }
   }
 
+  /**
+   * Handler para deletar personagem
+   */
+  const handleDeleteCharacter = async () => {
+    if (!characterToDelete || !user) return
+
+    setDeleting(true)
+    try {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session.session) return
+
+      const apiUrl = getApiBaseUrl()
+      const response = await fetch(`${apiUrl}/api/characters/${characterToDelete.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
+        await handleResponseError(response, 'Erro ao deletar personagem')
+        return
+      }
+
+      toast.success('Personagem deletado', `${characterToDelete.name} foi removido com sucesso.`)
+      setCharacterToDelete(null)
+      loadCharacters()
+    } catch (error) {
+      handleErrorWithToast(error, 'Erro ao deletar personagem')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  /**
+   * Abre dialog de confirmação de exclusão
+   */
+  const openDeleteDialog = (character: Character, e: React.MouseEvent) => {
+    e.stopPropagation() // Prevenir navegação ao clicar no botão
+    setCharacterToDelete(character)
+    setDeleteDialogOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -157,11 +206,13 @@ export function CharactersList() {
             {characters.map((character) => (
               <div
                 key={character.id}
-                onClick={() => navigate(`/character/${character.id}`)}
-                className="bg-card border border-card-secondary rounded-lg p-6 cursor-pointer hover:border-accent transition-all hover:shadow-lg hover:shadow-accent/20"
+                className="bg-card border border-card-secondary rounded-lg p-6 hover:border-accent transition-all hover:shadow-lg hover:shadow-accent/20"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => navigate(`/character/${character.id}`)}
+                  >
                     <h3 className="text-white font-bold text-xl mb-2">
                       {character.name}
                     </h3>
@@ -171,11 +222,36 @@ export function CharactersList() {
                       </p>
                     )}
                   </div>
-                  <ArrowRight className="w-5 h-5 text-text-secondary flex-shrink-0" />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/character/${character.id}`)
+                      }}
+                      className="h-8 w-8 p-0 text-text-secondary hover:text-white hover:bg-accent/20"
+                      title="Ver detalhes"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={(e) => openDeleteDialog(character, e)}
+                      className="h-8 w-8 p-0 text-destructive hover:bg-destructive/20"
+                      title="Deletar personagem"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-3 mb-4">
+                <div
+                  className="grid grid-cols-3 gap-3 mb-4 cursor-pointer"
+                  onClick={() => navigate(`/character/${character.id}`)}
+                >
                   {character.stats?.pv && (
                     <div className="bg-card-secondary rounded p-2">
                       <div className="text-xs text-text-secondary mb-1">PV</div>
@@ -203,7 +279,10 @@ export function CharactersList() {
                 </div>
 
                 {/* Informações Adicionais */}
-                <div className="space-y-1 text-sm">
+                <div
+                  className="space-y-1 text-sm cursor-pointer"
+                  onClick={() => navigate(`/character/${character.id}`)}
+                >
                   {character.stats?.nex && (
                     <p className="text-text-secondary">
                       <span className="text-white font-medium">NEX:</span> {character.stats.nex}%
@@ -255,6 +334,19 @@ export function CharactersList() {
         onSelectCampaign={createCharacterModal.handleSelectCampaign}
         onCreateCampaign={createCharacterModal.handleCreateCampaign}
       />
+
+      {/* Dialog de confirmação de exclusão */}
+      {characterToDelete && (
+        <DeleteConfirmDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={handleDeleteCharacter}
+          title="Deletar Personagem"
+          description={`Tem certeza que deseja deletar o personagem "${characterToDelete.name}"? Esta ação não pode ser desfeita e todos os dados relacionados serão perdidos.`}
+          confirmLabel="Deletar Personagem"
+          loading={deleting}
+        />
+      )}
 
       <Footer />
     </div>

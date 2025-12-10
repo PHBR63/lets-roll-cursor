@@ -156,6 +156,34 @@
   }
 }
 
+@layer components {
+  /* Contêiner padrão (mobile-first) */
+  .page-container {
+    @apply w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Cartão padrão de seção */
+  .section-card {
+    @apply bg-card border border-card-secondary rounded-lg shadow-sm;
+  }
+
+  /* Grid padrão com gaps responsivos */
+  .section-grid {
+    @apply grid gap-4 sm:gap-5;
+  }
+
+  /* Tipografia responsiva */
+  .text-title {
+    @apply text-2xl sm:text-3xl lg:text-4xl font-bold text-white;
+  }
+  .text-subtitle {
+    @apply text-lg sm:text-xl font-semibold text-white;
+  }
+  .text-body {
+    @apply text-sm sm:text-base text-text-secondary;
+  }
+}
+
 @layer utilities {
   /* Esconder scrollbar */
   .scrollbar-hide {
@@ -324,6 +352,14 @@
     100% {
       background-position: 200% center;
     }
+  }
+
+  /* Imagens fluidas */
+  .img-fluid,
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 }
 
