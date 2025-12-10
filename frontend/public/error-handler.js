@@ -109,16 +109,43 @@
   // Este handler deve interceptar TODOS os erros relacionados ao MediaSession
   // IMPORTANTE: Não suprimir erros críticos da aplicação
   window.addEventListener('error', function(event) {
-    // Verificar se é um erro crítico da aplicação (não de extensão)
+    // PRIMEIRO: Verificar se é erro do Supabase (deve ser suprimido ANTES de verificar erro crítico)
+    // Este erro pode ser causado por ordem de carregamento ou minificação e geralmente se resolve sozinho
+    if (event.message && (
+      event.message.includes('Cannot access') && 
+      event.message.includes('before initialization') &&
+      (event.filename && (
+        event.filename.includes('supabase') ||
+        event.filename.includes('supabase-vendor')
+      ))
+    )) {
+      // Logar apenas uma vez para debug, mas não quebrar a aplicação
+      if (!window._supabaseInitErrorLogged) {
+        console.warn('[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho):', {
+          message: event.message,
+          filename: event.filename,
+          stack: event.error?.stack
+        });
+        window._supabaseInitErrorLogged = true;
+      }
+      // Prevenir o erro para não quebrar a aplicação
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      return false;
+    }
+    
+    // Verificar se é um erro crítico da aplicação (não de extensão, não de Supabase vendor)
     const isAppError = event.filename && (
       event.filename.includes('/src/') ||
-      event.filename.includes('/assets/') ||
+      (event.filename.includes('/assets/') && !event.filename.includes('supabase-vendor')) ||
       event.filename.includes('main.tsx') ||
       event.filename.includes('App.tsx') ||
       (!event.filename.includes('chrome-extension://') &&
        !event.filename.includes('moz-extension://') &&
        !event.filename.includes('safari-extension://') &&
-       !event.filename.includes('extension://'))
+       !event.filename.includes('extension://') &&
+       !event.filename.includes('supabase-vendor'))
     );
     
     // Se for erro crítico da aplicação, NÃO suprimir
@@ -197,30 +224,6 @@
       event.filename.toLowerCase().includes('autopip') ||
       event.filename.toLowerCase().includes('auto-pip')
     )) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
-      return false;
-    }
-    
-    // Tratar erro de inicialização do Supabase (pode ser problema de ordem de carregamento)
-    // NOTA: Este erro geralmente se resolve sozinho, mas vamos logar para debug
-    if (event.message && (
-      event.message.includes('Cannot access') && 
-      event.message.includes('before initialization') &&
-      (event.filename && event.filename.includes('supabase'))
-    )) {
-      // Este erro pode ser causado por ordem de carregamento ou minificação
-      // Logar apenas uma vez para debug, mas não quebrar a aplicação
-      if (!window._supabaseInitErrorLogged) {
-        console.warn('[Supabase] Erro de inicialização detectado (geralmente se resolve sozinho):', {
-          message: event.message,
-          filename: event.filename,
-          stack: event.error?.stack
-        });
-        window._supabaseInitErrorLogged = true;
-      }
-      // Prevenir o erro para não quebrar a aplicação
       event.preventDefault();
       event.stopPropagation();
       event.stopImmediatePropagation();
