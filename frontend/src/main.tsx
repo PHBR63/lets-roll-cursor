@@ -4,6 +4,12 @@ import App from './App.tsx'
 import './styles/globals.css'
 import { initAnalytics } from './utils/analytics'
 import { validateEnvOrThrow } from './utils/envValidation'
+// Importar checkSupabase para disponibilizar no window (apenas em desenvolvimento)
+if (import.meta.env.DEV) {
+  import('./utils/checkSupabase').catch(() => {
+    // Ignorar erro se não conseguir importar
+  })
+}
 
 /**
  * Função para mostrar erro visual na tela
