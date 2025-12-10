@@ -22,43 +22,6 @@ const getRealIP = (req: Request): string => {
 }
 
 /**
- * Handler customizado para rate limit exceeded
- * Adiciona logs detalhados e headers Retry-After
- */
-const rateLimitHandler = (req: Request, res: Response, options: { windowMs: number; max: number; message: string }) => {
-  const ip = getRealIP(req)
-  const retryAfter = Math.ceil(options.windowMs / 1000) // Segundos até resetar
-  
-  // Log detalhado do rate limit
-  logger.warn({
-    ip,
-    url: req.url,
-    method: req.method,
-    userAgent: req.headers['user-agent'],
-    userId: (req as any).user?.id,
-    limit: options.max,
-    windowMs: options.windowMs,
-    retryAfter,
-  }, 'Rate limit exceeded')
-
-  // Adicionar headers padrão
-  res.set({
-    'Retry-After': retryAfter.toString(),
-    'X-RateLimit-Limit': options.max.toString(),
-    'X-RateLimit-Remaining': '0',
-    'X-RateLimit-Reset': new Date(Date.now() + options.windowMs).toISOString(),
-  })
-
-  res.status(429).json({
-    error: 'Too Many Requests',
-    message: options.message,
-    retryAfter,
-    limit: options.max,
-    windowMs: options.windowMs,
-  })
-}
-
-/**
  * Rate limiter geral: 100 requisições por 15 minutos
  */
 export const generalLimiter = rateLimit({
@@ -67,21 +30,35 @@ export const generalLimiter = rateLimit({
   message: 'Muitas requisições deste IP, tente novamente em 15 minutos.',
   standardHeaders: true,
   legacyHeaders: false,
-  // Usar função personalizada para obter IP real, ignorando validação do trust proxy
+  // Usar função personalizada para obter IP real
   keyGenerator: (req) => getRealIP(req),
   validate: {
     trustProxy: false, // Desabilitar validação do trust proxy
   },
-  handler: rateLimitHandler,
-  // Log quando rate limit está próximo
-  onLimitReached: (req: Request, res: Response, options: { windowMs: number; max: number }) => {
+  handler: (req: Request, res: Response) => {
     const ip = getRealIP(req)
-    logger.info({
+    const retryAfter = Math.ceil((15 * 60 * 1000) / 1000) // 15 min em segundos
+
+    logger.warn({
       ip,
       url: req.url,
       method: req.method,
-      limit: options.max,
-    }, 'Rate limit reached')
+      userAgent: req.headers['user-agent'],
+      limit: 100,
+      retryAfter,
+    }, 'Rate limit exceeded')
+
+    res.set({
+      'Retry-After': retryAfter.toString(),
+      'X-RateLimit-Limit': '100',
+      'X-RateLimit-Remaining': '0',
+    })
+
+    res.status(429).json({
+      error: 'Too Many Requests',
+      message: 'Muitas requisições deste IP, tente novamente em 15 minutos.',
+      retryAfter,
+    })
   },
 })
 
@@ -97,18 +74,31 @@ export const authLimiter = rateLimit({
   skipSuccessfulRequests: true, // Não contar requisições bem-sucedidas
   keyGenerator: (req) => getRealIP(req),
   validate: {
-    trustProxy: false, // Desabilitar validação do trust proxy
+    trustProxy: false,
   },
-  handler: rateLimitHandler,
-  onLimitReached: (req: Request, res: Response, options: { windowMs: number; max: number }) => {
+  handler: (req: Request, res: Response) => {
     const ip = getRealIP(req)
+    const retryAfter = Math.ceil((15 * 60 * 1000) / 1000)
+
     logger.warn({
       ip,
       url: req.url,
       method: req.method,
-      limit: options.max,
+      limit: 5,
       type: 'auth',
-    }, 'Auth rate limit reached - possível tentativa de brute force')
+    }, 'Auth rate limit exceeded - possível tentativa de brute force')
+
+    res.set({
+      'Retry-After': retryAfter.toString(),
+      'X-RateLimit-Limit': '5',
+      'X-RateLimit-Remaining': '0',
+    })
+
+    res.status(429).json({
+      error: 'Too Many Requests',
+      message: 'Muitas tentativas de autenticação, tente novamente em 15 minutos.',
+      retryAfter,
+    })
   },
 })
 
@@ -123,18 +113,30 @@ export const createLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => getRealIP(req),
   validate: {
-    trustProxy: false, // Desabilitar validação do trust proxy
+    trustProxy: false,
   },
-  handler: rateLimitHandler,
-  onLimitReached: (req: Request, res: Response, options: { windowMs: number; max: number }) => {
+  handler: (req: Request, res: Response) => {
     const ip = getRealIP(req)
+    const retryAfter = Math.ceil((15 * 60 * 1000) / 1000)
+
     logger.info({
       ip,
       url: req.url,
       method: req.method,
-      limit: options.max,
+      limit: 20,
       type: 'create',
-    }, 'Create rate limit reached')
+    }, 'Create rate limit exceeded')
+
+    res.set({
+      'Retry-After': retryAfter.toString(),
+      'X-RateLimit-Limit': '20',
+      'X-RateLimit-Remaining': '0',
+    })
+
+    res.status(429).json({
+      error: 'Too Many Requests',
+      message: 'Muitas criações de recursos, tente novamente em 15 minutos.',
+      retryAfter,
+    })
   },
 })
-

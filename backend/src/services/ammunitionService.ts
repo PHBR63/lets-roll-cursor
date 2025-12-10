@@ -251,7 +251,7 @@ export const ammunitionService = {
    * Define munição manualmente (para ajustes do mestre)
    * @param characterId - ID do personagem
    * @param sessionId - ID da sessão
-   * @param amount - Nova quantidade de munição (0-100)
+   * @param amount - Nova quantidade de munição (0-100) - mapeia para estado
    * @returns Novo estado de munição
    */
   async setAmmunition(
@@ -262,17 +262,31 @@ export const ammunitionService = {
     try {
       const clampedAmount = Math.max(0, Math.min(100, amount))
 
+      // Mapeia o valor numérico para um estado
+      let state: AmmoState = 'CHEIO'
+      if (clampedAmount <= 0) {
+        state = 'ESGOTADO'
+      } else if (clampedAmount <= 25) {
+        state = 'BAIXO'
+      } else if (clampedAmount <= 75) {
+        state = 'ESTAVEL'
+      }
+
       const { data, error } = await supabase
         .from('session_ammunition')
         .upsert(
           {
             character_id: characterId,
             session_id: sessionId,
-            ammunition: clampedAmount,
+            weapon_id: null,
+            state,
+            mode: 'A',
+            progress: 0,
+            reload_to_full: true,
             updated_at: new Date().toISOString(),
           },
           {
-            onConflict: 'character_id,session_id',
+            onConflict: 'character_id,session_id,weapon_id',
           }
         )
         .select()
@@ -280,12 +294,7 @@ export const ammunitionService = {
 
       if (error) throw error
 
-      return {
-        characterId: data.character_id,
-        sessionId: data.session_id,
-        ammunition: data.ammunition,
-        lastUpdated: data.updated_at,
-      }
+      return this.normalizeRecord(data)
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error, characterId, sessionId, amount }, 'Error setting ammunition')
