@@ -10,6 +10,7 @@ export type ApiErrorType =
   | 'forbidden'
   | 'not_found'
   | 'validation'
+  | 'rate_limit'
   | 'server'
   | 'unknown'
 
@@ -20,6 +21,7 @@ export interface ApiError {
   type: ApiErrorType
   message: string
   status?: number
+  retryAfter?: number
   originalError?: Error
 }
 
@@ -38,6 +40,7 @@ export function useApiError() {
     if (status === 401) return 'unauthorized'
     if (status === 403) return 'forbidden'
     if (status === 404) return 'not_found'
+    if (status === 429) return 'rate_limit'
     if (status >= 400 && status < 500) return 'validation'
     if (status >= 500) return 'server'
     return 'unknown'
@@ -46,7 +49,7 @@ export function useApiError() {
   /**
    * Traduz tipo de erro para mensagem amigável
    */
-  const getErrorMessage = useCallback((type: ApiErrorType, customMessage?: string): string => {
+  const getErrorMessage = useCallback((type: ApiErrorType, customMessage?: string, retryAfter?: number): string => {
     if (customMessage) return customMessage
 
     const messages: Record<ApiErrorType, string> = {
@@ -55,6 +58,9 @@ export function useApiError() {
       forbidden: 'Você não tem permissão para realizar esta ação.',
       not_found: 'Item não encontrado.',
       validation: 'Dados inválidos. Verifique os campos e tente novamente.',
+      rate_limit: retryAfter 
+        ? `Muitas requisições. Tente novamente em ${Math.ceil(retryAfter / 60)} minuto(s).`
+        : 'Muitas requisições. Tente novamente em alguns minutos.',
       server: 'Erro no servidor. Tente novamente mais tarde.',
       unknown: 'Ocorreu um erro inesperado. Tente novamente.',
     }
@@ -69,21 +75,32 @@ export function useApiError() {
     async (response: Response, customMessage?: string): Promise<ApiError> => {
       const type = getErrorType(response.status)
       let message = customMessage
+      let retryAfter: number | undefined
 
-      // Tentar extrair mensagem do corpo da resposta
-      if (!message) {
+      // Tentar extrair mensagem e retryAfter do corpo da resposta
+      if (!message || type === 'rate_limit') {
         try {
           const data = await response.json()
-          message = data.error || data.message || getErrorMessage(type)
+          message = data.error || data.message || getErrorMessage(type, undefined, data.retryAfter)
+          retryAfter = data.retryAfter || parseInt(response.headers.get('Retry-After') || '0', 10) || undefined
         } catch {
-          message = getErrorMessage(type)
+          // Se não conseguir parsear JSON, tentar pegar Retry-After do header
+          retryAfter = parseInt(response.headers.get('Retry-After') || '0', 10) || undefined
+          message = getErrorMessage(type, customMessage, retryAfter)
         }
+      }
+
+      // Se for rate limit e não tiver retryAfter, calcular baseado no padrão (15 minutos)
+      if (type === 'rate_limit' && !retryAfter) {
+        retryAfter = 900 // 15 minutos padrão
+        message = getErrorMessage(type, customMessage, retryAfter)
       }
 
       return {
         type,
         message: message || 'Erro desconhecido',
         status: response.status,
+        retryAfter,
       }
     },
     [getErrorType, getErrorMessage]
