@@ -19,42 +19,45 @@ const __dirname = dirname(__filename)
 
 // Carregar variáveis de ambiente do arquivo .env
 function loadEnv() {
-  const envPath = join(process.cwd(), '.env')
-  const envLocalPath = join(process.cwd(), '.env.local')
+  // Procurar em múltiplos locais
+  const searchPaths = [
+    join(process.cwd(), '.env.local'),      // frontend/.env.local (prioridade)
+    join(process.cwd(), '.env'),             // frontend/.env
+    join(process.cwd(), '..', '.env.local'), // raiz/.env.local
+    join(process.cwd(), '..', '.env'),       // raiz/.env
+  ]
   
   let envVars: Record<string, string> = {}
+  const foundFiles: string[] = []
   
-  // Tentar carregar .env.local primeiro (tem prioridade)
-  try {
-    const envLocal = readFileSync(envLocalPath, 'utf-8')
-    envLocal.split('\n').forEach(line => {
-      const match = line.match(/^VITE_SUPABASE_(URL|ANON_KEY)=(.*)$/)
-      if (match) {
-        envVars[`VITE_SUPABASE_${match[1]}`] = match[2].trim()
-      }
-    })
-  } catch (e) {
-    // .env.local não existe, continuar
+  // Tentar carregar de cada arquivo (primeiro encontrado tem prioridade)
+  for (const envPath of searchPaths) {
+    try {
+      const env = readFileSync(envPath, 'utf-8')
+      foundFiles.push(envPath)
+      env.split('\n').forEach(line => {
+        // Ignorar comentários e linhas vazias
+        const trimmed = line.trim()
+        if (trimmed && !trimmed.startsWith('#')) {
+          const match = line.match(/^VITE_SUPABASE_(URL|ANON_KEY)=(.*)$/)
+          if (match && !envVars[`VITE_SUPABASE_${match[1]}`]) {
+            envVars[`VITE_SUPABASE_${match[1]}`] = match[2].trim().replace(/^["']|["']$/g, '')
+          }
+        }
+      })
+    } catch (e) {
+      // Arquivo não existe, continuar
+    }
   }
   
-  // Tentar carregar .env
-  try {
-    const env = readFileSync(envPath, 'utf-8')
-    env.split('\n').forEach(line => {
-      const match = line.match(/^VITE_SUPABASE_(URL|ANON_KEY)=(.*)$/)
-      if (match && !envVars[`VITE_SUPABASE_${match[1]}`]) {
-        envVars[`VITE_SUPABASE_${match[1]}`] = match[2].trim()
-      }
-    })
-  } catch (e) {
-    // .env não existe
+  // Verificar variáveis de ambiente do sistema (têm prioridade)
+  const result = {
+    VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL || envVars.VITE_SUPABASE_URL,
+    VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY || envVars.VITE_SUPABASE_ANON_KEY,
+    _foundFiles: foundFiles,
   }
   
-  // Também verificar variáveis de ambiente do sistema
-  return {
-    VITE_SUPABASE_URL: envVars.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-    VITE_SUPABASE_ANON_KEY: envVars.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY,
-  }
+  return result
 }
 
 async function checkSupabase(): Promise<void> {
@@ -62,23 +65,61 @@ async function checkSupabase(): Promise<void> {
   
   // 1. Verificar variáveis de ambiente
   console.log('1️⃣ Verificando variáveis de ambiente...')
-  const { VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY } = loadEnv()
+  const envResult = loadEnv()
+  const { VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, _foundFiles } = envResult
+  
+  // Mostrar onde procurou
+  if (_foundFiles.length > 0) {
+    console.log(`   Arquivos .env encontrados: ${_foundFiles.length}`)
+    _foundFiles.forEach(file => {
+      console.log(`     ✓ ${file}`)
+    })
+  } else {
+    console.log('   ⚠️  Nenhum arquivo .env encontrado')
+    console.log('   Procurou em:')
+    console.log(`     - ${join(process.cwd(), '.env.local')}`)
+    console.log(`     - ${join(process.cwd(), '.env')}`)
+    console.log(`     - ${join(process.cwd(), '..', '.env.local')}`)
+    console.log(`     - ${join(process.cwd(), '..', '.env')}`)
+  }
+  console.log()
   
   if (!VITE_SUPABASE_URL) {
     console.error('❌ VITE_SUPABASE_URL não encontrada')
-    console.error('   Configure no arquivo .env ou .env.local:')
-    console.error('   VITE_SUPABASE_URL=https://seu-projeto.supabase.co')
+    console.error('\n📝 Como configurar:')
+    console.error('   1. Crie um arquivo .env na pasta frontend/ ou na raiz do projeto')
+    console.error('   2. Adicione a linha:')
+    console.error('      VITE_SUPABASE_URL=https://seu-projeto.supabase.co')
+    console.error('\n💡 Dica: Use .env.local para variáveis locais (não será commitado)')
+    console.error('\n🔍 Onde encontrar a URL:')
+    console.error('   - Acesse: https://supabase.com/dashboard')
+    console.error('   - Vá em: Project Settings > API')
+    console.error('   - Copie a URL do projeto')
     process.exit(1)
   }
   
   if (!VITE_SUPABASE_ANON_KEY) {
     console.error('❌ VITE_SUPABASE_ANON_KEY não encontrada')
-    console.error('   Configure no arquivo .env ou .env.local:')
-    console.error('   VITE_SUPABASE_ANON_KEY=sua_anon_key')
+    console.error('\n📝 Como configurar:')
+    console.error('   1. Crie um arquivo .env na pasta frontend/ ou na raiz do projeto')
+    console.error('   2. Adicione a linha:')
+    console.error('      VITE_SUPABASE_ANON_KEY=sua_anon_key_aqui')
+    console.error('\n💡 Dica: Use .env.local para variáveis locais (não será commitado)')
+    console.error('\n🔍 Onde encontrar a chave:')
+    console.error('   - Acesse: https://supabase.com/dashboard')
+    console.error('   - Vá em: Project Settings > API')
+    console.error('   - Copie a "anon public" key (NÃO a service_role key!)')
+    console.error('\n⚠️  IMPORTANTE: Use apenas a ANON_KEY (chave pública) no frontend!')
+    console.error('   A SERVICE_ROLE_KEY deve ser usada APENAS no backend.')
     process.exit(1)
   }
   
   console.log('✅ Variáveis de ambiente encontradas')
+  if (_foundFiles.length > 0) {
+    console.log(`   Fonte: ${_foundFiles[0]}`)
+  } else {
+    console.log('   Fonte: Variáveis de ambiente do sistema')
+  }
   console.log(`   URL: ${VITE_SUPABASE_URL.substring(0, 30)}...`)
   console.log(`   Key: ${VITE_SUPABASE_ANON_KEY.substring(0, 20)}...\n`)
   
