@@ -35,12 +35,14 @@ function loadEnv() {
     try {
       const env = readFileSync(envPath, 'utf-8')
       foundFiles.push(envPath)
-      env.split('\n').forEach(line => {
+      // Dividir por \n ou \r\n (suporta ambos Windows e Unix)
+      env.split(/\r?\n/).forEach(line => {
         // Ignorar comentários e linhas vazias
         const trimmed = line.trim()
         if (trimmed && !trimmed.startsWith('#')) {
-          const match = line.match(/^VITE_SUPABASE_(URL|ANON_KEY)=(.*)$/)
-          if (match && !envVars[`VITE_SUPABASE_${match[1]}`]) {
+          // Regex mais flexível para capturar o valor após o =
+          const match = trimmed.match(/^VITE_SUPABASE_(URL|ANON_KEY)\s*=\s*(.*)$/)
+          if (match && match[2] && !envVars[`VITE_SUPABASE_${match[1]}`]) {
             envVars[`VITE_SUPABASE_${match[1]}`] = match[2].trim().replace(/^["']|["']$/g, '')
           }
         }
