@@ -49,10 +49,10 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks (sem React para evitar problemas de resolução)
           if (id.includes('node_modules')) {
-            // Supabase - manter em chunk separado mas garantir ordem de carregamento
-            if (id.includes('@supabase')) {
-              return 'supabase-vendor'
-            }
+            // IMPORTANTE: NÃO separar Supabase em chunk isolado
+            // Isso causa problemas de ordem de carregamento (ReferenceError: Cannot access 'oe' before initialization)
+            // O Supabase deve ficar junto com outros vendors para garantir ordem correta
+            
             // Radix UI components
             if (id.includes('@radix-ui')) {
               return 'ui-vendor'
@@ -77,7 +77,8 @@ export default defineConfig({
             if (id.includes('clsx') || id.includes('tailwind-merge') || id.includes('class-variance-authority')) {
               return 'utils-vendor'
             }
-            // Other node_modules
+            // Todos os outros node_modules (incluindo Supabase) vão para 'vendor'
+            // Isso garante ordem correta de carregamento e evita erros de inicialização
             return 'vendor'
           }
         },
@@ -85,8 +86,7 @@ export default defineConfig({
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
-        // Garantir ordem de carregamento - Supabase deve ser carregado antes de outros vendors
-        // Isso ajuda a evitar erros de "Cannot access before initialization"
+        // Formato ES modules para melhor tree-shaking e compatibilidade
         format: 'es',
       },
     },
