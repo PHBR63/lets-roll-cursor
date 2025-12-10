@@ -31,7 +31,7 @@ export function useToast() {
      * Exibe toast de sucesso
      */
     success: (title: string, options?: ToastOptions) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = options?.icon || <CheckCircle2 className="w-5 h-5 text-green-500" />
       sonnerToast.success(title, {
         description: options?.description,
@@ -46,7 +46,7 @@ export function useToast() {
      * Exibe toast de erro
      */
     error: (title: string, options?: ToastOptions) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = options?.icon || <XCircle className="w-5 h-5 text-red-500" />
       sonnerToast.error(title, {
         description: options?.description,
@@ -61,7 +61,7 @@ export function useToast() {
      * Exibe toast de informação
      */
     info: (title: string, options?: ToastOptions) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = options?.icon || <Info className="w-5 h-5 text-blue-500" />
       sonnerToast.info(title, {
         description: options?.description,
@@ -76,7 +76,7 @@ export function useToast() {
      * Exibe toast de aviso
      */
     warning: (title: string, options?: ToastOptions) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = options?.icon || <AlertTriangle className="w-5 h-5 text-yellow-500" />
       sonnerToast.warning(title, {
         description: options?.description,
@@ -91,7 +91,7 @@ export function useToast() {
      * Exibe toast de loading
      */
     loading: (title: string, options?: ToastOptions) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = <Loader2 className="w-5 h-5 animate-spin text-accent" />
       return sonnerToast.loading(title, {
         description: options?.description,
@@ -107,7 +107,7 @@ export function useToast() {
       onUndo: () => void,
       options?: Omit<ToastOptions, 'action' | 'cancel'>
     ) => {
-      // @ts-expect-error - Incompatibilidade de tipos entre React e lucide-react
+      // @ts-ignore - Incompatibilidade de tipos entre React e lucide-react
       const icon = options?.icon || <CheckCircle2 className="w-5 h-5 text-green-500" />
       sonnerToast.success(title, {
         description: options?.description,
