@@ -36,7 +36,7 @@ export function Dashboard() {
   const [loadingCharacters, setLoadingCharacters] = useState(false)
   const cache = useCache<Campaign[]>({ ttl: 2 * 60 * 1000 }) // Cache de 2 minutos
   const { handleErrorWithToast, handleResponseError } = useApiError()
-  
+
   // Hook compartilhado para modal de criação de personagem
   const createCharacterModal = useCreateCharacterModal(participatingCampaigns)
 
@@ -47,7 +47,7 @@ export function Dashboard() {
     if (!user) return []
 
     const cacheKey = `campaigns:${user.id}`
-    
+
     // Tentar obter do cache primeiro
     const cached = cache.get(cacheKey)
     if (cached) {
@@ -68,7 +68,7 @@ export function Dashboard() {
     }
 
     const apiUrl = getApiBaseUrl()
-    
+
     try {
       const response = await fetch(`${apiUrl}/api/campaigns`, {
         headers: {
@@ -348,15 +348,13 @@ export function Dashboard() {
               Meus Personagens
             </h2>
             <div className="flex items-center gap-2">
-              {createCharacterModal.hasAvailableCampaigns && (
-                <Button
-                  onClick={createCharacterModal.openModal}
-                  className="bg-accent hover:bg-accent/90"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Criar Personagem
-                </Button>
-              )}
+              <Button
+                onClick={createCharacterModal.openModal}
+                className="bg-accent hover:bg-accent/90"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Criar Personagem
+              </Button>
               <Button
                 onClick={() => navigate('/characters')}
                 variant="ghost"
@@ -409,22 +407,11 @@ export function Dashboard() {
             <EmptyState
               icon={<User className="w-8 h-8 text-text-secondary" />}
               title="Nenhum personagem criado"
-              description={
-                createCharacterModal.hasAvailableCampaigns
-                  ? "Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
-                  : "Você ainda não criou nenhum personagem. Para criar um personagem, você precisa estar participando de uma campanha como jogador."
-              }
-              action={
-                createCharacterModal.hasAvailableCampaigns
-                  ? {
-                      label: '+ Criar Personagem',
-                      onClick: createCharacterModal.openModal,
-                    }
-                  : {
-                      label: 'Ver Campanhas',
-                      onClick: () => navigate('/dashboard'),
-                    }
-              }
+              description="Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
+              action={{
+                label: '+ Criar Personagem',
+                onClick: createCharacterModal.openModal,
+              }}
             />
           )}
         </section>

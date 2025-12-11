@@ -32,7 +32,7 @@ export function CharactersList() {
   const [deleting, setDeleting] = useState(false)
   const { handleErrorWithToast, handleResponseError } = useApiError()
   const toast = useToast()
-  
+
   // Hook compartilhado para modal de criação de personagem
   const createCharacterModal = useCreateCharacterModal(campaigns)
 
@@ -306,22 +306,11 @@ export function CharactersList() {
           <EmptyState
             icon={<User className="w-12 h-12 text-text-secondary" />}
             title="Nenhum personagem encontrado"
-            description={
-              createCharacterModal.hasAvailableCampaigns
-                ? "Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
-                : "Você ainda não criou nenhum personagem. Para criar um personagem, você precisa estar participando de uma campanha como jogador."
-            }
-            action={
-              createCharacterModal.hasAvailableCampaigns
-                ? {
-                    label: '+ Criar Personagem',
-                    onClick: createCharacterModal.openModal,
-                  }
-                : {
-                    label: 'Ver Campanhas',
-                    onClick: () => navigate('/dashboard'),
-                  }
-            }
+            description="Você ainda não criou nenhum personagem. Crie um para começar suas aventuras!"
+            action={{
+              label: '+ Criar Personagem',
+              onClick: createCharacterModal.openModal,
+            }}
           />
         )}
       </main>
