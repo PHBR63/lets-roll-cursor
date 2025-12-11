@@ -49,10 +49,10 @@ describe('threatTemplateService', () => {
       // Mock que suporta query builder fluente
       const mockQueryResult = { data: [mockTemplate], error: null }
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        or: jest.fn().mockResolvedValue(mockQueryResult),
+        select: jest.fn<any>().mockReturnThis(),
+        order: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        or: jest.fn<any>().mockResolvedValue(mockQueryResult),
       }
 
       // Configurar eq para retornar a promise no final da cadeia quando chamado com campaign_id
@@ -81,9 +81,9 @@ describe('threatTemplateService', () => {
     it('deve filtrar templates globais', async () => {
       const mockQueryResult = { data: [{ ...mockTemplate, is_global: true }], error: null }
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue(mockQueryResult),
+        select: jest.fn<any>().mockReturnThis(),
+        order: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockResolvedValue(mockQueryResult),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -97,9 +97,9 @@ describe('threatTemplateService', () => {
   describe('getTemplateById', () => {
     it('deve retornar template por ID', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockTemplate,
           error: null,
         }),
@@ -115,9 +115,9 @@ describe('threatTemplateService', () => {
 
     it('deve lançar erro se template não encontrado', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { code: 'PGRST116' },
         }),
@@ -132,9 +132,9 @@ describe('threatTemplateService', () => {
   describe('createTemplate', () => {
     it('deve criar template com sucesso', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: jest.fn<any>().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockTemplate,
           error: null,
         }),
@@ -157,9 +157,9 @@ describe('threatTemplateService', () => {
   describe('createCreatureFromTemplate', () => {
     it('deve criar criatura a partir de template com VD', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockTemplate,
           error: null,
         }),
@@ -183,9 +183,9 @@ describe('threatTemplateService', () => {
 
     it('deve limitar VD entre 1 e 20', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockTemplate,
           error: null,
         }),

@@ -1,15 +1,18 @@
+/**
+ * Testes para ammunitionService (Atualizado)
+ * Cobre gerenciamento de munição abstrata (Ordem Paranormal)
+ */
 import { ammunitionService } from '../ammunitionService'
 import { supabase } from '../../config/supabase'
 import * as cacheModule from '../cache'
 
-// Mock do Supabase
+// Mock do Supabase e Cache
 jest.mock('../../config/supabase', () => ({
   supabase: {
     from: jest.fn(),
   },
 }))
 
-// Mock do cache
 jest.mock('../cache', () => ({
   getCache: jest.fn(),
   setCache: jest.fn(),
@@ -21,271 +24,173 @@ jest.mock('../cache', () => ({
 }))
 
 describe('ammunitionService', () => {
+  const mockCharacterId = 'char-123'
+  const mockSessionId = 'session-123'
+  const mockWeaponId = 'weapon-avt-12'
+
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(cacheModule.deleteCache as jest.Mock).mockResolvedValue(undefined)
-    ;(cacheModule.deleteCachePattern as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.deleteCache as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.deleteCachePattern as jest.Mock).mockResolvedValue(undefined)
   })
 
   describe('getAmmunitionState', () => {
-    it('deve retornar estado de munição existente', async () => {
+    it('deve retornar estado inicial CHEIO se não existir', async () => {
+      // Mock para select retornando null (não encontrado)
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 75 },
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await ammunitionService.getAmmunitionState('session-123', 'char-123')
-
-      expect(result).toBe(75)
-      expect(mockQuery.eq).toHaveBeenCalledWith('session_id', 'session-123')
-      expect(mockQuery.eq).toHaveBeenCalledWith('character_id', 'char-123')
-    })
-
-    it('deve retornar 100 como padrão se não existir', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
-          error: { code: 'PGRST116' }, // No rows found
+          error: { code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-
-      const result = await ammunitionService.getAmmunitionState('session-123', 'char-123')
-
-      expect(result).toBe(100)
-    })
-  })
-
-  describe('initializeAmmunition', () => {
-    it('deve inicializar munição com valor padrão', async () => {
-      const mockUpsert = {
-        upsert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 100 },
+      // Mock para insert (initialize)
+      const mockInsert = {
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'CHEIO',
+            mode: 'A',
+            created_at: new Date().toISOString()
+          },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockUpsert)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockQuery) // Select
+          .mockReturnValueOnce(mockInsert) // Insert (dentro do initialize)
 
-      const result = await ammunitionService.initializeAmmunition('session-123', 'char-123')
+      const result = await ammunitionService.getAmmunitionState(mockCharacterId, mockSessionId)
 
-      expect(result).toBe(100)
-      expect(mockUpsert.upsert).toHaveBeenCalled()
+      expect(result.state).toBe('CHEIO')
+      expect(mockQuery.eq).toHaveBeenCalledWith('character_id', mockCharacterId)
     })
 
-    it('deve inicializar com valor customizado', async () => {
-      const mockUpsert = {
-        upsert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 50 },
+    it('deve retornar estado existente do banco', async () => {
+      const mockQuery = {
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'ESTAVEL',
+            mode: 'A'
+          },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockUpsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await ammunitionService.initializeAmmunition('session-123', 'char-123', 50)
+      const result = await ammunitionService.getAmmunitionState(mockCharacterId, mockSessionId)
 
-      expect(result).toBe(50)
+      expect(result.state).toBe('ESTAVEL')
     })
   })
 
   describe('spendAmmunition', () => {
-    it('deve gastar munição corretamente', async () => {
+    it('deve degradar estado de CHEIO para ESTAVEL', async () => {
+      // 1. Get current state (CHEIO)
       const mockGet = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 100 },
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'CHEIO',
+            mode: 'A',
+            reload_to_full: true
+          },
           error: null,
         }),
       }
 
+      // 2. Update to ESTAVEL
       const mockUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 90 },
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'ESTAVEL',
+            mode: 'A'
+          },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockGet)
-        .mockReturnValueOnce(mockUpdate)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockGet)
+          .mockReturnValueOnce(mockUpdate)
 
-      const result = await ammunitionService.spendAmmunition('session-123', 'char-123', 10)
+      const result = await ammunitionService.spendAmmunition(mockCharacterId, mockSessionId)
 
-      expect(result).toBe(90)
+      expect(result.state).toBe('ESTAVEL')
     })
 
-    it('deve não permitir munição negativa', async () => {
+    it('não deve degradar se já estiver ESGOTADO', async () => {
       const mockGet = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 5 },
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'ESGOTADO',
+            mode: 'A'
+          },
           error: null,
         }),
       }
 
-      const mockUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 0 },
-          error: null,
-        }),
-      }
+        ; (supabase.from as jest.Mock).mockReturnValue(mockGet)
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockGet)
-        .mockReturnValueOnce(mockUpdate)
+      const result = await ammunitionService.spendAmmunition(mockCharacterId, mockSessionId)
 
-      const result = await ammunitionService.spendAmmunition('session-123', 'char-123', 10)
-
-      expect(result).toBe(0)
+      expect(result.state).toBe('ESGOTADO')
     })
   })
 
   describe('reloadAmmunition', () => {
-    it('deve recarregar munição corretamente', async () => {
+    it('deve recarregar para CHEIO', async () => {
       const mockGet = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 50 },
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'BAIXO',
+            reload_to_full: true
+          },
           error: null,
         }),
       }
 
       const mockUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 100 },
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
+          data: {
+            character_id: mockCharacterId,
+            state: 'CHEIO'
+          },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockGet)
-        .mockReturnValueOnce(mockUpdate)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockGet)
+          .mockReturnValueOnce(mockUpdate)
 
-      const result = await ammunitionService.reloadAmmunition('session-123', 'char-123', 50)
+      const result = await ammunitionService.reloadAmmunition(mockCharacterId, mockSessionId)
 
-      expect(result).toBe(100)
-    })
-
-    it('deve não permitir munição acima de 100', async () => {
-      const mockGet = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 80 },
-          error: null,
-        }),
-      }
-
-      const mockUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 100 },
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockGet)
-        .mockReturnValueOnce(mockUpdate)
-
-      const result = await ammunitionService.reloadAmmunition('session-123', 'char-123', 50)
-
-      expect(result).toBe(100)
-    })
-  })
-
-  describe('setAmmunition', () => {
-    it('deve definir munição para valor específico', async () => {
-      const mockUpsert = {
-        upsert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: { ammunition: 75 },
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockUpsert)
-
-      const result = await ammunitionService.setAmmunition('session-123', 'char-123', 75)
-
-      expect(result).toBe(75)
-    })
-
-    it('deve limitar valor entre 0 e 100', async () => {
-      const mockUpsert = {
-        upsert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn()
-          .mockResolvedValueOnce({
-            data: { ammunition: 0 },
-            error: null,
-          })
-          .mockResolvedValueOnce({
-            data: { ammunition: 100 },
-            error: null,
-          }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockUpsert)
-
-      const result1 = await ammunitionService.setAmmunition('session-123', 'char-123', -10)
-      const result2 = await ammunitionService.setAmmunition('session-123', 'char-123', 150)
-
-      expect(result1).toBe(0)
-      expect(result2).toBe(100)
-    })
-  })
-
-  describe('resetSessionAmmunition', () => {
-    it('deve resetar munição de todos os personagens da sessão', async () => {
-      const mockUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockUpdate)
-
-      await ammunitionService.resetSessionAmmunition('session-123')
-
-      expect(mockUpdate.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ammunition: 100,
-        }),
-        expect.anything()
-      )
-      expect(mockUpdate.eq).toHaveBeenCalledWith('session_id', 'session-123')
+      expect(result.state).toBe('CHEIO')
     })
   })
 })
-

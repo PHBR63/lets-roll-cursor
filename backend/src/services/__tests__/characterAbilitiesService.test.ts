@@ -33,11 +33,11 @@ describe('characterAbilitiesService', () => {
       ]
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: mockAbilities, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ data: mockAbilities, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterAbilitiesService.getCharacterAbilities('char-123')
 
@@ -47,11 +47,11 @@ describe('characterAbilitiesService', () => {
 
     it('deve retornar array vazio se não houver habilidades', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ data: [], error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterAbilitiesService.getCharacterAbilities('char-123')
 
@@ -68,12 +68,12 @@ describe('characterAbilitiesService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockAbility, error: null }),
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockAbility, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterAbilitiesService.addAbilityToCharacter('char-123', 'ability-1')
 
@@ -92,8 +92,8 @@ describe('characterAbilitiesService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
         single: jest
           .fn()
           .mockResolvedValueOnce({
@@ -103,7 +103,7 @@ describe('characterAbilitiesService', () => {
           .mockResolvedValueOnce({ data: existingAbility, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterAbilitiesService.addAbilityToCharacter('char-123', 'ability-1')
 
@@ -114,11 +114,12 @@ describe('characterAbilitiesService', () => {
   describe('removeAbilityFromCharacter', () => {
     it('deve remover habilidade do personagem', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ error: null }),
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        then: (jest.fn() as any).mockImplementation((resolve: any) => resolve({ error: null })),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await characterAbilitiesService.removeAbilityFromCharacter('char-123', 'ability-1')
 

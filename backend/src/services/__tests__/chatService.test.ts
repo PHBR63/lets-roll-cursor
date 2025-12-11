@@ -38,16 +38,16 @@ describe('chatService', () => {
   describe('getMessages', () => {
     it('deve retornar mensagens da campanha', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [mockMessage],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await chatService.getMessages('camp-123')
 
@@ -58,16 +58,16 @@ describe('chatService', () => {
 
     it('deve filtrar por sessão se fornecido', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [mockMessage],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await chatService.getMessages('camp-123', 'session-123')
 
@@ -76,16 +76,16 @@ describe('chatService', () => {
 
     it('deve usar limite customizado', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [mockMessage],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await chatService.getMessages('camp-123', undefined, 50)
 
@@ -94,16 +94,16 @@ describe('chatService', () => {
 
     it('deve retornar array vazio se não houver mensagens', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await chatService.getMessages('camp-123')
 
@@ -114,15 +114,15 @@ describe('chatService', () => {
   describe('createMessage', () => {
     it('deve criar mensagem com sucesso', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockMessage,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       const result = await chatService.createMessage({
         campaignId: 'camp-123',
@@ -138,15 +138,15 @@ describe('chatService', () => {
 
     it('deve usar valores padrão para type e channel', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockMessage,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await chatService.createMessage({
         campaignId: 'camp-123',
@@ -164,15 +164,15 @@ describe('chatService', () => {
 
     it('deve permitir type e channel customizados', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockMessage, type: 'narration', channel: 'master' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await chatService.createMessage({
         campaignId: 'camp-123',
@@ -192,15 +192,15 @@ describe('chatService', () => {
 
     it('deve lançar erro se houver falha', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Erro no banco' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await expect(
         chatService.createMessage({
@@ -213,15 +213,15 @@ describe('chatService', () => {
 
     it('deve criar mensagem com characterId', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockMessage, character_id: 'char-123' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await chatService.createMessage({
         campaignId: 'camp-123',
@@ -239,15 +239,15 @@ describe('chatService', () => {
 
     it('deve criar mensagem OOC (out of character)', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockMessage, type: 'ooc' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await chatService.createMessage({
         campaignId: 'camp-123',
@@ -265,15 +265,15 @@ describe('chatService', () => {
 
     it('deve criar mensagem em canal específico', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockMessage, channel: 'combat' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await chatService.createMessage({
         campaignId: 'camp-123',
@@ -291,16 +291,16 @@ describe('chatService', () => {
 
     it('deve ordenar mensagens por data crescente', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [mockMessage],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await chatService.getMessages('camp-123')
 
@@ -309,16 +309,16 @@ describe('chatService', () => {
 
     it('deve lançar erro se busca de mensagens falhar', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(chatService.getMessages('camp-123')).rejects.toThrow('Erro ao buscar mensagens')
     })

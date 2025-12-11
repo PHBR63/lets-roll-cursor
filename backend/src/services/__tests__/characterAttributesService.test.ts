@@ -54,18 +54,18 @@ describe('characterAttributesService', () => {
     it('deve atualizar atributos e recalcular recursos', async () => {
       const newAttributes = { agi: 3, for: 2, int: 1, pre: 2, vig: 3 }
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(30)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(6)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(30)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(6)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
 
       const result = await characterAttributesService.updateAttributes('char-123', newAttributes)
 
@@ -84,19 +84,19 @@ describe('characterAttributesService', () => {
       }
 
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCharacter, skills: newSkills },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateSkillBonus as jest.Mock)
-        .mockReturnValueOnce(10) // COMPETENT
-        .mockReturnValueOnce(5) // TRAINED
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateSkillBonus as jest.Mock)
+          .mockReturnValueOnce(10) // COMPETENT
+          .mockReturnValueOnce(5) // TRAINED
 
       await characterAttributesService.updateSkills('char-123', newSkills as any)
 
@@ -108,31 +108,31 @@ describe('characterAttributesService', () => {
   describe('rollSkillTest', () => {
     it('deve rolar teste de perícia com penalidades', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
-        defense: 0,
-        defenseBase: false,
-        dicePenalty: 0,
-        cannotAct: false,
-        cannotReact: false,
-        cannotMove: false,
-        speedReduction: 1,
-        attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
-        skillPenalties: {},
-      })
-      ;(ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
-        dice: [15],
-        result: 15,
-        bonus: 5,
-        total: 20,
-        advantage: true,
-        disadvantage: false,
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
+          defense: 0,
+          defenseBase: false,
+          dicePenalty: 0,
+          cannotAct: false,
+          cannotReact: false,
+          cannotMove: false,
+          speedReduction: 1,
+          attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
+          skillPenalties: {},
+        })
+        ; (ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
+          dice: [15],
+          result: 15,
+          bonus: 5,
+          total: 20,
+          advantage: true,
+          disadvantage: false,
+        })
 
       const result = await characterAttributesService.rollSkillTest('char-123', 'Luta', 15)
 
@@ -148,12 +148,12 @@ describe('characterAttributesService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: characterWithoutSkill, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: characterWithoutSkill, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(
         characterAttributesService.rollSkillTest('char-123', 'Luta', 15)
@@ -164,32 +164,32 @@ describe('characterAttributesService', () => {
   describe('rollAttack', () => {
     it('deve rolar ataque com penalidades', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
-        defense: 0,
-        defenseBase: false,
-        dicePenalty: 0,
-        cannotAct: false,
-        cannotReact: false,
-        cannotMove: false,
-        speedReduction: 1,
-        attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
-        skillPenalties: {},
-      })
-      ;(ordemParanormalService.rollAttack as jest.Mock).mockReturnValue({
-        dice: [18],
-        result: 18,
-        bonus: 5,
-        total: 23,
-        hit: true,
-        critical: false,
-        targetDefense: 15,
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
+          defense: 0,
+          defenseBase: false,
+          dicePenalty: 0,
+          cannotAct: false,
+          cannotReact: false,
+          cannotMove: false,
+          speedReduction: 1,
+          attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
+          skillPenalties: {},
+        })
+        ; (ordemParanormalService.rollAttack as jest.Mock).mockReturnValue({
+          dice: [18],
+          result: 18,
+          bonus: 5,
+          total: 23,
+          hit: true,
+          critical: false,
+          targetDefense: 15,
+        })
 
       const result = await characterAttributesService.rollAttack('char-123', 'Luta', 15)
 
@@ -205,12 +205,12 @@ describe('characterAttributesService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: characterWithoutSkill, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: characterWithoutSkill, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(
         characterAttributesService.rollAttack('char-123', 'Luta', 15)

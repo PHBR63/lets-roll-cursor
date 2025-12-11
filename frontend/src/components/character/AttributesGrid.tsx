@@ -62,7 +62,7 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
    */
   const handleAttributeChange = (key: string, value: number) => {
     const error = validateAttribute(key, value)
-    
+
     if (error) {
       setAttributeErrors((prev) => ({ ...prev, [key]: error }))
       toast.warning('Valor inválido', error)
@@ -173,83 +173,47 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 animate-in fade-in-50 duration-300">
-      <div className="flex items-center justify-between mb-4">
+    <div className="glass-panel rounded-xl p-6 animate-in fade-in-50 duration-300">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-xl font-bold text-white">Atributos</h2>
-          <div className="text-xs text-muted-foreground mt-1">
-            Defesa calculada: {defense} (10 + AGI)
+          <h2 className="text-xl font-bold text-white tracking-widest uppercase border-b border-accent/30 pb-1">Atributos</h2>
+          <div className="text-xs text-white/50 mt-1 uppercase tracking-wider">
+            Defesa: <span className="text-yellow-400 font-bold text-sm">{defense}</span>
           </div>
         </div>
         {hasChanges && (
-          <Button size="sm" onClick={handleSave} className="gap-2">
+          <Button size="sm" onClick={handleSave} className="gap-2 bg-accent hover:bg-accent/90">
             <Save className="w-4 h-4" />
             Salvar
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="flex flex-wrap justify-around sm:justify-between gap-y-8 gap-x-4 px-2 sm:px-8">
         {Object.entries(attributeLabels).map(([key, info]) => {
           const canRollResistance = ['vig', 'agi', 'pre'].includes(key)
+
           return (
-            <div key={key} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className="text-muted-foreground text-sm">
-                  {info.label} ({info.short})
-                </Label>
-                {canRollResistance && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleRollAttribute(key)}
-                    disabled={rollingAttribute === key}
-                    className="w-8 h-8 p-0 hover:bg-accent/20"
-                    title={`Rolar teste de ${info.label === 'Vigor' ? 'Fortitude' : info.label === 'Agilidade' ? 'Reflexos' : 'Vontade'}`}
-                  >
-                    {rollingAttribute === key ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <span className="text-xs">🎲</span>
-                    )}
-                  </Button>
-                )}
-              </div>
-              <Input
-                type="number"
-                value={localAttributes[key] || 0}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value) || 0
-                  handleAttributeChange(key, value)
-                }}
-                className={`text-center text-lg font-bold ${
-                  attributeErrors[key] ? 'border-red-500' : ''
-                }`}
-                min={-5}
-                max={20}
-                aria-label={`${info.label} (${info.short})`}
-                aria-valuemin={-5}
-                aria-valuemax={20}
-                aria-valuenow={localAttributes[key] || 0}
-                aria-invalid={!!attributeErrors[key]}
-                aria-describedby={attributeErrors[key] ? `${key}-error` : undefined}
-              />
-              {attributeErrors[key] && (
-                <p id={`${key}-error`} className="text-red-500 text-xs animate-in fade-in-50" role="alert">
-                  {attributeErrors[key]}
-                </p>
-              )}
-              <div className="text-xs text-muted-foreground text-center">
-                {localAttributes[key] > 0
-                  ? `+${localAttributes[key]} dados (vantagem)`
-                  : localAttributes[key] < 0
-                  ? `${Math.abs(localAttributes[key])} dados (desvantagem)`
-                  : '1 dado (desvantagem mínima)'}
-              </div>
-            </div>
+            <AttributeDisplay
+              key={key}
+              label={info.label}
+              shortLabel={info.short}
+              value={localAttributes[key] || 0}
+              onChange={(val) => handleAttributeChange(key, val)}
+              onRoll={() => handleRollAttribute(key)}
+              canRoll={canRollResistance}
+              isRolling={rollingAttribute === key}
+            />
           )
         })}
       </div>
+
+      {/* Exibir erros se houver */}
+      {Object.values(attributeErrors).length > 0 && (
+        <div className="mt-6 p-3 bg-red-900/20 border border-red-500/30 rounded text-red-200 text-xs text-center">
+          {Object.values(attributeErrors)[0]}
+        </div>
+      )}
     </div>
   )
 }

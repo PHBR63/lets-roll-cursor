@@ -42,17 +42,17 @@ describe('abilityService', () => {
   describe('getAbilities', () => {
     it('deve buscar habilidades sem filtros', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockAbility],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getAbilities({})
 
@@ -63,17 +63,17 @@ describe('abilityService', () => {
 
     it('deve buscar habilidades por campaignId', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockAbility],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getAbilities({ campaignId: 'camp-123' })
 
@@ -83,17 +83,17 @@ describe('abilityService', () => {
 
     it('deve buscar habilidades globais', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockAbility],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await abilityService.getAbilities({ isGlobal: true })
 
@@ -102,17 +102,17 @@ describe('abilityService', () => {
 
     it('deve aplicar paginação', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockAbility],
           error: null,
           count: 10,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getAbilities({ limit: 10, offset: 20 })
 
@@ -122,16 +122,16 @@ describe('abilityService', () => {
 
     it('deve lançar erro se busca falhar', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.getAbilities({})).rejects.toThrow('Erro ao buscar habilidades')
     })
@@ -140,15 +140,15 @@ describe('abilityService', () => {
   describe('getAbilityById', () => {
     it('deve buscar habilidade por ID', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockAbility,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getAbilityById('ability-123')
 
@@ -158,15 +158,15 @@ describe('abilityService', () => {
 
     it('deve lançar erro se habilidade não encontrada', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.getAbilityById('ability-999')).rejects.toThrow('Erro ao buscar habilidade')
     })
@@ -184,15 +184,15 @@ describe('abilityService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockAbility, ...newAbility },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.createAbility('user-123', newAbility)
 
@@ -207,15 +207,15 @@ describe('abilityService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockAbility,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await abilityService.createAbility('user-123', newAbility)
 
@@ -236,15 +236,15 @@ describe('abilityService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.createAbility('user-123', newAbility)).rejects.toThrow('Erro ao criar habilidade')
     })
@@ -258,16 +258,16 @@ describe('abilityService', () => {
       }
 
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockAbility, ...updateData },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.updateAbility('ability-123', updateData)
 
@@ -277,16 +277,16 @@ describe('abilityService', () => {
 
     it('deve atualizar apenas campos fornecidos', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockAbility,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await abilityService.updateAbility('ability-123', { name: 'Novo Nome' })
 
@@ -300,16 +300,16 @@ describe('abilityService', () => {
 
     it('deve lançar erro se habilidade não encontrada', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.updateAbility('ability-999', { name: 'Novo Nome' })).rejects.toThrow(
         'Erro ao atualizar habilidade'
@@ -320,13 +320,13 @@ describe('abilityService', () => {
   describe('deleteAbility', () => {
     it('deve deletar habilidade existente', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await abilityService.deleteAbility('ability-123')
 
@@ -335,13 +335,13 @@ describe('abilityService', () => {
 
     it('deve lançar erro se deleção falhar', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           error: { message: 'Delete failed' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.deleteAbility('ability-123')).rejects.toThrow('Erro ao deletar habilidade')
     })
@@ -350,15 +350,15 @@ describe('abilityService', () => {
   describe('getCampaignAbilities', () => {
     it('deve retornar habilidades da campanha', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockAbility],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getCampaignAbilities('camp-123')
 
@@ -368,15 +368,15 @@ describe('abilityService', () => {
 
     it('deve retornar array vazio se não houver habilidades', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await abilityService.getCampaignAbilities('camp-123')
 
@@ -387,20 +387,20 @@ describe('abilityService', () => {
   describe('assignAbilityToCharacter', () => {
     it('deve atribuir habilidade a personagem', async () => {
       const mockAbilityQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockAbility,
           error: null,
         }),
       }
 
-      ;(characterService.addAbilityToCharacter as jest.Mock).mockResolvedValue({
-        character: { id: 'char-123' },
-        ability: mockAbility,
-      })
+        ; (characterService.addAbilityToCharacter as any).mockResolvedValue({
+          character: { id: 'char-123' },
+          ability: mockAbility,
+        })
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockAbilityQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockAbilityQuery)
 
       const result = await abilityService.assignAbilityToCharacter('char-123', 'ability-123')
 
@@ -410,15 +410,15 @@ describe('abilityService', () => {
 
     it('deve lançar erro se habilidade não encontrada', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(abilityService.assignAbilityToCharacter('char-123', 'ability-999')).rejects.toThrow(
         'Erro ao atribuir habilidade'

@@ -12,7 +12,7 @@ jest.mock('../../config/supabase', () => ({
 }))
 
 jest.mock('../cache', () => ({
-  getCache: jest.fn().mockResolvedValue(null), // Sem cache para testes
+  getCache: (jest.fn() as any).mockResolvedValue(null), // Sem cache para testes
   setCache: jest.fn(),
   deleteCache: jest.fn(),
   deleteCachePattern: jest.fn(),
@@ -44,8 +44,8 @@ describe('campaignService', () => {
       ]
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: mockParticipants, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ data: mockParticipants, error: null }),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -72,13 +72,13 @@ describe('campaignService', () => {
         // Mock para duas chamadas: campaigns e campaign_participants
         ; (supabase.from as jest.Mock)
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockCampaign, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockCampaign, error: null }),
           })
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockResolvedValue({ data: mockParticipants, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockResolvedValue({ data: mockParticipants, error: null }),
           })
 
       const result = await campaignService.getCampaignById('camp-123')
@@ -100,16 +100,16 @@ describe('campaignService', () => {
 
       // Mock para ensureUserExists
       const userCheckQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { id: 'user-123' }, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: { id: 'user-123' }, error: null }),
       }
 
       // Mock para insert de campanha
       const campaignInsertQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'camp-new', ...newCampaign, created_by: 'user-123' },
           error: null,
         }),
@@ -117,7 +117,7 @@ describe('campaignService', () => {
 
       // Mock para insert de participante
       const participantInsertQuery = {
-        insert: jest.fn().mockResolvedValue({ error: null }),
+        insert: (jest.fn() as any).mockResolvedValue({ error: null }),
       }
 
         ; (supabase.from as jest.Mock)
@@ -140,17 +140,17 @@ describe('campaignService', () => {
 
       // Mock para verificação de mestre
       const masterCheckQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { role: 'master' }, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: { role: 'master' }, error: null }),
       }
 
       // Mock para update
       const updateQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCampaign, name: 'Updated Campaign' },
           error: null,
         }),
@@ -170,9 +170,9 @@ describe('campaignService', () => {
     it('deve deletar campanha se usuário for mestre', async () => {
       // Mock para buscar campanha
       const campaignQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'camp-123', created_by: 'user-123' },
           error: null
         }),
@@ -180,15 +180,15 @@ describe('campaignService', () => {
 
       // Mock para verificar mestre
       const masterCheckQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: { role: 'master' }, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: { role: 'master' }, error: null }),
       }
 
       // Mock para delete
       const deleteQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ error: null }),
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ error: null }),
       }
 
         ; (supabase.from as jest.Mock)

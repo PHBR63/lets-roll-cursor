@@ -101,14 +101,14 @@ describe('rankService', () => {
       ]
 
       const finalQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
       }
-      ;(finalQuery.eq as jest.Mock).mockResolvedValue({
-        data: mockInventory,
-        error: null,
-      })
-      ;(supabase.from as jest.Mock).mockReturnValue(finalQuery)
+        ; (finalQuery.eq as jest.Mock).mockResolvedValue({
+          data: mockInventory,
+          error: null,
+        })
+        ; (supabase.from as jest.Mock).mockReturnValue(finalQuery)
 
       const result = await rankService.countEquippedByCategory('char-123')
 
@@ -131,14 +131,14 @@ describe('rankService', () => {
       ]
 
       const finalQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
       }
-      ;(finalQuery.eq as jest.Mock).mockResolvedValue({
-        data: mockInventory,
-        error: null,
-      })
-      ;(supabase.from as jest.Mock).mockReturnValue(finalQuery)
+        ; (finalQuery.eq as jest.Mock).mockResolvedValue({
+          data: mockInventory,
+          error: null,
+        })
+        ; (supabase.from as jest.Mock).mockReturnValue(finalQuery)
 
       const result = await rankService.countEquippedByCategory('char-123')
 
@@ -150,14 +150,14 @@ describe('rankService', () => {
 
     it('deve retornar zeros se não houver itens equipados', async () => {
       const finalQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
       }
-      ;(finalQuery.eq as jest.Mock).mockResolvedValue({
-        data: [],
-        error: null,
-      })
-      ;(supabase.from as jest.Mock).mockReturnValue(finalQuery)
+        ; (finalQuery.eq as jest.Mock).mockResolvedValue({
+          data: [],
+          error: null,
+        })
+        ; (supabase.from as jest.Mock).mockReturnValue(finalQuery)
 
       const result = await rankService.countEquippedByCategory('char-123')
 
@@ -184,14 +184,14 @@ describe('rankService', () => {
       ]
 
       const finalQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
       }
-      ;(finalQuery.eq as jest.Mock).mockResolvedValue({
-        data: mockInventory,
-        error: null,
-      })
-      ;(supabase.from as jest.Mock).mockReturnValue(finalQuery)
+        ; (finalQuery.eq as jest.Mock).mockResolvedValue({
+          data: mockInventory,
+          error: null,
+        })
+        ; (supabase.from as jest.Mock).mockReturnValue(finalQuery)
 
       const result = await rankService.countEquippedByCategory('char-123')
 
@@ -203,14 +203,14 @@ describe('rankService', () => {
 
     it('deve lançar erro se busca falhar', async () => {
       const finalQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
       }
-      ;(finalQuery.eq as jest.Mock).mockResolvedValue({
-        data: null,
-        error: { message: 'Database error' },
-      })
-      ;(supabase.from as jest.Mock).mockReturnValue(finalQuery)
+        ; (finalQuery.eq as jest.Mock).mockResolvedValue({
+          data: null,
+          error: { message: 'Database error' },
+        })
+        ; (supabase.from as jest.Mock).mockReturnValue(finalQuery)
 
       await expect(rankService.countEquippedByCategory('char-123')).rejects.toThrow('Erro ao contar itens equipados')
     })
@@ -228,36 +228,36 @@ describe('rankService', () => {
       }
 
       const mockCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
       }
 
       const mockItemQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockItem,
           error: null,
         }),
       }
 
       const mockInventoryQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        mockResolvedValue: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        mockResolvedValue: jest.fn<any>().mockResolvedValue({
           data: [],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockCharQuery)
-        .mockReturnValueOnce(mockItemQuery)
-        .mockReturnValueOnce(mockInventoryQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockCharQuery)
+          .mockReturnValueOnce(mockItemQuery)
+          .mockReturnValueOnce(mockInventoryQuery)
 
       // Mock do countEquippedByCategory
       jest.spyOn(rankService, 'countEquippedByCategory').mockResolvedValue({
@@ -283,26 +283,26 @@ describe('rankService', () => {
       }
 
       const mockCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
       }
 
       const mockItemQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockItem,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockCharQuery)
-        .mockReturnValueOnce(mockItemQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockCharQuery)
+          .mockReturnValueOnce(mockItemQuery)
 
       // Mock do countEquippedByCategory - já tem 3 itens categoria I (limite para RECRUTA)
       jest.spyOn(rankService, 'countEquippedByCategory').mockResolvedValue({
@@ -324,15 +324,15 @@ describe('rankService', () => {
       }
 
       const mockCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockCharQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockCharQuery)
 
       const result = await rankService.validateEquipPermission('char-123', 'item-123')
 
@@ -342,15 +342,15 @@ describe('rankService', () => {
 
     it('deve lançar erro se personagem não encontrado', async () => {
       const mockCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockCharQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockCharQuery)
 
       await expect(rankService.validateEquipPermission('char-999', 'item-123')).rejects.toThrow('Erro ao validar permissão')
     })

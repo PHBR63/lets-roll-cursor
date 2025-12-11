@@ -15,7 +15,7 @@ export default [
       sourceType: 'module',
       parser: tsparser,
       parserOptions: {
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
       },
       globals: {
         // Node.js globals

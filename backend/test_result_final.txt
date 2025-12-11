@@ -1,0 +1,163 @@
+
+> letsroll-backend@1.0.0 test
+> jest services/__tests__/characterService.test.ts
+
+FAIL src/services/__tests__/characterService.test.ts
+  characterService - Sistema Ordem Paranormal
+    getCharacters
+      ÔêÜ deve buscar personagens com filtro por campaignId (4 ms)
+      ÔêÜ deve buscar personagens com filtro por userId (1 ms)
+      ÔêÜ deve buscar personagens com filtro de campanha e usu├írio combinados (1 ms)
+      ÔêÜ deve buscar todos os personagens se sem filtros (1 ms)
+      ÔêÜ deve retornar do cache se dispon├¡vel (1 ms)
+      ÔêÜ deve lan├ºar erro se busca falhar (29 ms)
+    createCharacter
+      ÔêÜ deve criar personagem com valores padr├úo (2 ms)
+      ÔêÜ deve validar soma de atributos na cria├º├úo (3 ms)
+      ÔêÜ deve validar m├íximo de atributo na cria├º├úo (1 ms)
+      ÔêÜ deve validar apenas um atributo pode ser 0 (1 ms)
+      ÔêÜ deve aceitar atributos v├ílidos com um zero (1 ms)
+      ÔêÜ deve criar personagem com atributos customizados (1 ms)
+      ÔêÜ deve rejeitar per├¡cia COMPETENT com NEX < 35 (1 ms)
+      ÔêÜ deve lan├ºar erro se cria├º├úo falhar (1 ms)
+      ├ù deve rejeitar per├¡cia EXPERT com NEX < 70 (16 ms)
+      ÔêÜ deve aceitar per├¡cia COMPETENT com NEX >= 35 (1 ms)
+      ÔêÜ deve rejeitar per├¡cia EXPERT com NEX < 70 (1 ms)
+      ÔêÜ deve aceitar per├¡cia EXPERT com NEX >= 70
+      ÔêÜ n├úo deve permitir que o mestre da campanha crie personagem (1 ms)
+      ÔêÜ deve criar personagem sem campanha (standalone) (1 ms)
+      ÔêÜ deve usar NEX padr├úo (5) se n├úo informado (1 ms)
+      ÔêÜ deve continuar cria├º├úo mesmo se falhar ao conceder habilidades (1 ms)
+    getCharacterById
+      ÔêÜ deve buscar personagem por ID (2 ms)
+      ÔêÜ deve retornar do cache se dispon├¡vel (1 ms)
+      ÔêÜ deve lan├ºar erro se personagem n├úo encontrado
+    updateCharacter
+      ÔêÜ deve atualizar campos b├ísicos do personagem (2 ms)
+      ÔêÜ deve usar servi├ºo especializado para atualizar atributos (1 ms)
+      ÔêÜ deve usar servi├ºo especializado para atualizar skills
+      ÔêÜ deve lan├ºar erro se personagem n├úo encontrado (1 ms)
+    deleteCharacter
+      ÔêÜ deve deletar personagem e invalidar cache
+      ÔêÜ deve lan├ºar erro se dele├º├úo falhar (1 ms)
+    updateAttributes
+      ÔêÜ deve atualizar atributos e recalcular recursos
+      ÔêÜ deve lidar com troca de origem (remover/adicionar per├¡cias) (1 ms)
+      ÔêÜ deve falhar se erro ao buscar personagem para atualiza├º├úo (1 ms)
+      ÔêÜ deve atualizar stats e xp diretamente
+    updateSkills
+      ÔêÜ deve atualizar per├¡cias e recalcular b├┤nus (1 ms)
+    applyCondition
+      ÔêÜ deve aplicar condi├º├úo usando ordemParanormalService
+      ÔêÜ deve aplicar condi├º├úo com condi├º├Áes derivadas (1 ms)
+    removeCondition
+      ÔêÜ deve remover condi├º├úo do personagem
+    updateNEX
+      ÔêÜ deve atualizar NEX e recalcular recursos (3 ms)
+      ÔêÜ deve lan├ºar erro se NEX fora do range (4 ms)
+    updatePV
+      ÔêÜ deve atualizar PV como valor absoluto
+      ÔêÜ deve atualizar PV como delta
+      ÔêÜ deve aplicar condi├º├úo Morrendo se PV <= 0
+      ÔêÜ deve remover Morrendo se PV > 0 (1 ms)
+    updateSAN
+      ÔêÜ deve atualizar SAN e aplicar condi├º├Áes se necess├írio
+      ÔêÜ deve aplicar Enlouquecendo se SAN = 0 (1 ms)
+      ÔêÜ deve aplicar Perturbado se SAN <= 25% (1 ms)
+    updatePE
+      ÔêÜ deve atualizar PE como valor absoluto
+      ÔêÜ deve atualizar PE como delta
+    rollSkillTest
+      ÔêÜ deve rolar teste de per├¡cia com penalidades
+      ÔêÜ deve lan├ºar erro se per├¡cia n├úo encontrada (1 ms)
+    rollAttack
+      ÔêÜ deve rolar ataque com penalidades
+    applyDamage
+      ÔêÜ deve aplicar dano f├¡sico reduzindo PV (1 ms)
+      ÔêÜ deve aplicar dano mental reduzindo SAN
+    recoverPE
+      ÔêÜ deve recuperar PE baseado no NEX (1 ms)
+
+  ÔùÅ characterService - Sistema Ordem Paranormal ÔÇ║ createCharacter ÔÇ║ deve rejeitar per├¡cia EXPERT com NEX < 70
+
+    expect(received).rejects.toThrow(expected)
+
+    Expected pattern: /N├¡vel de treinamento EXPERT n├úo ├® permitido/
+    Received message: "Erro ao criar personagem: supabase_1.supabase.from(...).select(...).eq is not a function"
+
+          279 |       const err = error as AppError
+          280 |       logger.error({ error }, 'Error creating character')
+        > 281 |       throw new Error('Erro ao criar personagem: ' + (err.message || 'Erro desconhecido'))
+              |             ^
+          282 |     }
+          283 |   },
+          284 |
+
+      at Object.createCharacter (src/services/characterService.ts:281:13)
+      at Object.<anonymous> (src/services/__tests__/characterService.test.ts:393:26)
+      at Object.toThrow (../node_modules/expect/build/index.js:2155:20)
+      at Object.<anonymous> (src/services/__tests__/characterService.test.ts:403:17)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 55 passed, 56 total
+Snapshots:   0 total
+Time:        2.42 s, estimated 3 s
+Ran all test suites matching services/__tests__/characterService.test.ts.
+[2025-12-11 12:32:58.766 -0300] [34mDEBUG[39m: [36mCache hit para personagens[39m
+    [35mcacheKey[39m: "characters:campaign:camp-123"
+[2025-12-11 12:32:58.767 -0300] [31mERROR[39m: [36mError fetching characters[39m
+    error: {
+      "message": "Database error"
+    }
+[2025-12-11 12:32:58.799 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.802 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.803 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.807 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.808 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.809 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.828 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.830 -0300] [31mERROR[39m: [36mError creating character[39m
+    error: {}
+[2025-12-11 12:32:58.833 -0300] [31mERROR[39m: [36mError granting class abilities during character creation[39m
+    [35mcharacterId[39m: "char-123"
+    error: {}
+[2025-12-11 12:32:58.835 -0300] [34mDEBUG[39m: [36mCache hit para personagem[39m
+    [35mcacheKey[39m: "characters:char-123"
+[2025-12-11 12:32:58.836 -0300] [31mERROR[39m: [36mError fetching character[39m
+    error: {
+      "message": "Not found",
+      "code": "PGRST116"
+    }
+[2025-12-11 12:32:58.841 -0300] [31mERROR[39m: [36mError updating character[39m
+    error: {
+      "message": "Not found"
+    }
+[2025-12-11 12:32:58.843 -0300] [31mERROR[39m: [36mError deleting character[39m
+    error: {
+      "message": "Delete failed"
+    }
+[2025-12-11 12:32:58.845 -0300] [31mERROR[39m: [36mError updating character[39m
+    error: {
+      "message": "DB Error fetching"
+    }
+[2025-12-11 12:32:58.848 -0300] [31mERROR[39m: [36mError granting class abilities during NEX update[39m
+    [35mcharacterId[39m: "char-123"
+    error: {}
+[2025-12-11 12:32:58.851 -0300] [31mERROR[39m: [36mError updating NEX[39m
+    error: {}
+[2025-12-11 12:32:58.854 -0300] [31mERROR[39m: [36mError updating NEX[39m
+    error: {}
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path K:\LETS\ANT\lets-roll-cursor\backend
+npm error workspace letsroll-backend@1.0.0
+npm error location K:\LETS\ANT\lets-roll-cursor\backend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c jest services/__tests__/characterService.test.ts

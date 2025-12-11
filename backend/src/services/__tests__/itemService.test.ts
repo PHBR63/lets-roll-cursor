@@ -34,15 +34,15 @@ describe('itemService', () => {
   describe('getItems', () => {
     it('deve buscar itens sem filtros', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        or: jest.fn<any>().mockReturnThis(),
+        range: jest.fn<any>().mockResolvedValue({
           data: [mockItem],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await itemService.getItems({})
 
@@ -52,15 +52,15 @@ describe('itemService', () => {
 
     it('deve buscar itens por campaignId', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        range: jest.fn<any>().mockResolvedValue({
           data: [mockItem],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await itemService.getItems({ campaignId: 'camp-123' })
 
@@ -70,15 +70,15 @@ describe('itemService', () => {
 
     it('deve buscar itens globais', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        range: jest.fn<any>().mockResolvedValue({
           data: [mockItem],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await itemService.getItems({ isGlobal: true })
 
@@ -87,15 +87,15 @@ describe('itemService', () => {
 
     it('deve aplicar paginação', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        or: jest.fn<any>().mockReturnThis(),
+        range: jest.fn<any>().mockResolvedValue({
           data: [mockItem],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await itemService.getItems({ limit: 10, offset: 20 })
 
@@ -104,15 +104,15 @@ describe('itemService', () => {
 
     it('deve lançar erro se busca falhar', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        or: jest.fn<any>().mockReturnThis(),
+        range: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(itemService.getItems({})).rejects.toThrow('Erro ao buscar itens')
     })
@@ -121,15 +121,15 @@ describe('itemService', () => {
   describe('getItemById', () => {
     it('deve buscar item por ID', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: mockItem,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await itemService.getItemById('item-123')
 
@@ -139,15 +139,15 @@ describe('itemService', () => {
 
     it('deve lançar erro se item não encontrado', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(itemService.getItemById('item-999')).rejects.toThrow('Erro ao buscar item')
     })
@@ -165,15 +165,15 @@ describe('itemService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: jest.fn<any>().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: { ...mockItem, ...newItem },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await itemService.createItem(newItem)
 
@@ -190,15 +190,15 @@ describe('itemService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: jest.fn<any>().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(itemService.createItem('user-123', newItem)).rejects.toThrow('Erro ao criar item')
     })
@@ -212,16 +212,16 @@ describe('itemService', () => {
       }
 
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: { ...mockItem, ...updateData },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await itemService.updateItem('item-123', updateData)
 
@@ -231,16 +231,16 @@ describe('itemService', () => {
 
     it('deve lançar erro se item não encontrado', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockReturnThis(),
+        select: jest.fn<any>().mockReturnThis(),
+        single: jest.fn<any>().mockResolvedValue({
           data: null,
           error: { message: 'Not found' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(itemService.updateItem('item-999', { name: 'Novo Nome' })).rejects.toThrow(
         'Erro ao atualizar item'
@@ -251,13 +251,13 @@ describe('itemService', () => {
   describe('deleteItem', () => {
     it('deve deletar item existente', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockResolvedValue({
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await itemService.deleteItem('item-123')
 
@@ -266,13 +266,13 @@ describe('itemService', () => {
 
     it('deve lançar erro se deleção falhar', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: jest.fn<any>().mockReturnThis(),
+        eq: jest.fn<any>().mockResolvedValue({
           error: { message: 'Delete failed' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(itemService.deleteItem('item-123')).rejects.toThrow('Erro ao deletar item')
     })

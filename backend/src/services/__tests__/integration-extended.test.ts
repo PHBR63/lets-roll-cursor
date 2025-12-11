@@ -41,15 +41,26 @@ describe('Testes de Integração Estendidos', () => {
       }
 
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce({ // campaigns
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: { id: 'camp-123' }, error: null } as any),
+          })
+          .mockReturnValueOnce({ // campaign_participants
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: { role: 'player' }, error: null } as any),
+          })
+          .mockReturnValueOnce(mockInsert)
 
       jest.spyOn(ordemParanormalService, 'calculateMaxPV').mockReturnValue(28)
       jest.spyOn(ordemParanormalService, 'calculateMaxSAN').mockReturnValue(15)
@@ -68,16 +79,16 @@ describe('Testes de Integração Estendidos', () => {
 
       // 2. Aplicar condição
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCharacter, conditions: [] },
           error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
+        } as any),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const { newConditions } = ordemParanormalService.applyCondition('ABALADO', [])
       expect(newConditions).toContain('ABALADO')
@@ -129,16 +140,16 @@ describe('Testes de Integração Estendidos', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
+        } as any),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       // 1. Recuperar PE
       jest.spyOn(ordemParanormalService, 'calculatePERecovery').mockReturnValue(2)
@@ -247,20 +258,20 @@ describe('Testes de Integração Estendidos', () => {
       }
 
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockRoll,
           error: null,
-        }),
+        } as any),
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        neq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        neq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [mockRoll],
           error: null,
         }),
@@ -270,14 +281,14 @@ describe('Testes de Integração Estendidos', () => {
       mockQuery.eq = jest.fn().mockReturnValue(mockQuery)
       mockQuery.neq = jest.fn().mockReturnValue(mockQuery)
       mockQuery.order = jest.fn().mockReturnValue(mockQuery)
-      mockQuery.limit = jest.fn().mockResolvedValue({
+      mockQuery.limit = (jest.fn() as any).mockResolvedValue({
         data: [mockRoll],
         error: null,
       })
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockInsert) // Para rollDice
-        .mockReturnValueOnce(mockQuery) // Para getRollHistory
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockInsert) // Para rollDice
+          .mockReturnValueOnce(mockQuery) // Para getRollHistory
 
       // 1. Rolagem
       const rollResult = await diceService.rollDice({
@@ -307,16 +318,16 @@ describe('Testes de Integração Estendidos', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
+        } as any),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       jest.spyOn(ordemParanormalService, 'calculateMaxPV').mockReturnValue(30)
       jest.spyOn(ordemParanormalService, 'calculateMaxSAN').mockReturnValue(15)

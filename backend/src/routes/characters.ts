@@ -230,9 +230,73 @@ charactersRouter.delete('/:id/abilities/:abilityId', async (req: Request, res: R
   }
 })
 
+
 // ============================================
 // Rotas do Sistema Ordem Paranormal
 // ============================================
+
+// --- Rituais (Grimório) ---
+
+// Obter rituais do personagem
+charactersRouter.get('/:id/rituals', async (req: Request, res: Response) => {
+  try {
+    const { ritualService } = await import('../services/ritualService')
+    const rituals = await ritualService.getCharacterRituals(req.params.id)
+    res.json(rituals)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Aprender ritual
+charactersRouter.post('/:id/rituals', async (req: Request, res: Response) => {
+  try {
+    const { ritualId } = req.body
+    if (!ritualId) {
+      return res.status(400).json({ error: 'ritualId é obrigatório' })
+    }
+    const { ritualService } = await import('../services/ritualService')
+    const result = await ritualService.learnRitual(req.params.id, ritualId)
+    res.status(201).json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Esquecer ritual
+charactersRouter.delete('/:id/rituals/:ritualId', async (req: Request, res: Response) => {
+  try {
+    const { ritualService } = await import('../services/ritualService')
+    await ritualService.forgetRitual(req.params.id, req.params.ritualId)
+    res.status(204).send()
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Conjurar ritual
+charactersRouter.post('/:id/rituals/:ritualId/conjure', async (req: Request, res: Response) => {
+  try {
+    const { mode, peSpentThisTurn } = req.body
+    const { ritualService } = await import('../services/ritualService')
+
+    // Default mode is NORMAL if not specified
+    const castMode = mode || 'NORMAL'
+
+    const result = await ritualService.conjureRitual(
+      req.params.id,
+      req.params.ritualId,
+      castMode,
+      peSpentThisTurn || 0
+    )
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// --- Perícias e Combate ---
+
 
 // Rolar teste de perícia
 charactersRouter.post('/:id/roll-skill', async (req: Request, res: Response) => {

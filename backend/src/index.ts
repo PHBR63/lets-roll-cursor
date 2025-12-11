@@ -10,6 +10,7 @@ import { creaturesRouter } from './routes/creatures'
 import { threatTemplatesRouter } from './routes/threatTemplates'
 import { originsRouter } from './routes/origins'
 import { itemsRouter } from './routes/items'
+import { ritualsRouter } from './routes/rituals'
 import { abilitiesRouter } from './routes/abilities'
 import { sessionsRouter } from './routes/sessions'
 import { diceRouter } from './routes/dice'
@@ -76,9 +77,9 @@ app.use(
 
 // CORS
 // Permitir múltiplas origens em produção (separadas por vírgula)
-const corsOrigins: string[] = process.env.CORS_ORIGIN 
+const corsOrigins: string[] = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(origin => origin.length > 0)
-  : process.env.NODE_ENV === 'production' 
+  : process.env.NODE_ENV === 'production'
     ? [] // Em produção, se não configurado, não permitir nenhuma origin (segurança)
     : ['http://localhost:5173'] // Em desenvolvimento, permitir localhost
 
@@ -96,27 +97,27 @@ app.use(cors({
     if (!origin) {
       return callback(null, true)
     }
-    
+
     // Verificar se a origin está na lista permitida
     if (corsOrigins.includes(origin)) {
       // Retornar a origin exata (não um valor modificado)
       return callback(null, origin)
     }
-    
+
     // Em desenvolvimento, permitir localhost em qualquer porta
     if (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:')) {
       return callback(null, origin)
     }
-    
+
     // Permitir domínios de preview do Vercel (qualquer domínio que termine com .vercel.app)
     if (origin.endsWith('.vercel.app')) {
       logger.info({ origin, type: 'vercel-preview' }, 'CORS: Origin de preview do Vercel permitida')
       return callback(null, origin)
     }
-    
+
     // Origin não permitida - log detalhado para debug
-    logger.warn({ 
-      origin, 
+    logger.warn({
+      origin,
       allowedOrigins: corsOrigins,
       corsOriginEnv: process.env.CORS_ORIGIN,
       nodeEnv: process.env.NODE_ENV
@@ -147,6 +148,7 @@ app.use('/api/creatures', createLimiter, creaturesRouter)
 app.use('/api/threat-templates', createLimiter, threatTemplatesRouter)
 app.use('/api/origins', createLimiter, originsRouter)
 app.use('/api/items', createLimiter, itemsRouter)
+app.use('/api/rituals', createLimiter, ritualsRouter)
 app.use('/api/abilities', createLimiter, abilitiesRouter)
 app.use('/api/sessions', sessionsRouter)
 app.use('/api/dice', diceRouter)
@@ -177,7 +179,7 @@ app.use(errorHandler)
 async function startServer() {
   console.log('🚀 Iniciando servidor...')
   logger.info('🚀 Iniciando servidor...')
-  
+
   // Inicializar Redis antes de iniciar o servidor (não bloqueia se não configurado)
   console.log('📦 Inicializando Redis...')
   initRedis()
@@ -186,7 +188,7 @@ async function startServer() {
   try {
     console.log('🔌 Verificando conexão com Supabase...')
     const { supabase } = await import('./config/supabase')
-    
+
     // Fazer uma query simples para verificar se a conexão funciona
     const { data, error } = await supabase.from('campaigns').select('count').limit(0)
     if (error && error.code !== 'PGRST116') { // PGRST116 = relation does not exist (esperado se tabela não existe)
@@ -206,7 +208,7 @@ async function startServer() {
   // SEMPRE inicia o servidor, mesmo se houver problemas com Supabase
   console.log(`🌐 Iniciando servidor na porta ${PORT}...`)
   logger.info(`Iniciando servidor na porta ${PORT}...`)
-  
+
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`✅ Server running on port ${PORT}`)
     console.log(`✅ Health check available at http://0.0.0.0:${PORT}/health`)

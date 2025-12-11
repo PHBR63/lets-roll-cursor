@@ -46,11 +46,11 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
     nex,
     stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
       ? {
-          pv: stats.pv,
-          san: stats.san,
-          pe: stats.pe,
-          nex: stats.nex,
-        }
+        pv: stats.pv,
+        san: stats.san,
+        pe: stats.pe,
+        nex: stats.nex,
+      }
       : undefined
   )
 
@@ -62,14 +62,14 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
   const validatedStats = validateStats(
     stats && stats.pv && stats.san && stats.pe && stats.nex !== undefined
       ? {
-          pv: stats.pv,
-          san: stats.san,
-          pe: stats.pe,
-          nex: stats.nex,
-        }
+        pv: stats.pv,
+        san: stats.san,
+        pe: stats.pe,
+        nex: stats.nex,
+      }
       : undefined
   )
-  
+
   const pv = validatedStats.pv
   const san = validatedStats.san
   const pe = validatedStats.pe
@@ -89,7 +89,7 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
     const current = resource === 'pv' ? pv.current : resource === 'san' ? san.current : pe.current
     const max = resource === 'pv' ? pv.max : resource === 'san' ? san.max : pe.max
     const newValue = current + delta
-    
+
     // Validação especial para PE: verificar limite por turno ao gastar
     if (resource === 'pe' && delta < 0) {
       const peCost = Math.abs(delta)
@@ -101,7 +101,7 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
         return
       }
     }
-    
+
     // Valida limites
     if (newValue < 0) {
       toast.error('Valor inválido', `${resource.toUpperCase()} não pode ser menor que 0`)
@@ -111,234 +111,153 @@ export function VitalsPanel({ character, onUpdateResource }: VitalsPanelProps) {
       toast.error('Valor inválido', `${resource.toUpperCase()} não pode exceder o máximo (${max})`)
       return
     }
-    
+
     onUpdateResource(resource, delta, true)
   }
 
   return (
-    <div className="bg-card rounded-lg p-6 space-y-6 animate-in fade-in-50 duration-300 relative overflow-hidden">
+    <div className="glass-panel rounded-xl p-6 space-y-8 animate-in fade-in-50 duration-300 relative overflow-hidden">
       {/* Aura de Insanidade */}
       <InsanityAura character={character} mode="container" />
-      
-      <h2 className="text-xl font-bold text-white relative z-10">Recursos</h2>
 
-      {/* PV - Pontos de Vida */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label className="text-red-400 font-semibold">Pontos de Vida (PV)</Label>
-          <span className="text-white text-sm">
-            {pv.current} / {pv.max}
+      {/* Vida (PV) */}
+      <div className="relative z-10 space-y-1">
+        <div className="flex justify-between items-end px-1">
+          <Label className="text-red-400 font-bold tracking-wider uppercase text-xs">Vida</Label>
+          <span className="text-white text-sm font-medium tracking-wide">
+            {pv.current} <span className="text-white/40">/</span> {pv.max}
           </span>
         </div>
-        <AnimatedProgress 
-          value={pv.current} 
-          max={pv.max}
-          color="red"
-          className="h-3"
-          duration={0.6}
-        />
-        <div className="flex gap-2">
+
+        <div className="relative h-4 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+          <div
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-red-900 via-red-600 to-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] transition-all duration-500 ease-out"
+            style={{ width: `${pvPercent}%` }}
+          />
+        </div>
+
+        <div className="flex justify-between items-center pt-1 opacity-0 hover:opacity-100 transition-opacity">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('pv', -1)}
-            className="flex-1"
-            aria-label="Diminuir Pontos de Vida"
+            className="h-6 w-6 rounded-full p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
             disabled={pv.current <= 0}
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-3 h-3" />
           </Button>
-          <Input
-            type="number"
-            value={pv.current}
-              onChange={(e) => {
-                const value = parseInt(e.target.value) || 0
-                if (value < 0) {
-                  alert('PV não pode ser menor que 0')
-                  return
-                }
-                if (value > pv.max) {
-                  alert(`PV não pode exceder o máximo (${pv.max})`)
-                  return
-                }
-                onUpdateResource('pv', value, false)
-              }}
-              className="w-20 text-center"
-              min={0}
-              max={pv.max}
-              aria-label="Pontos de Vida atuais"
-              aria-valuemin={0}
-              aria-valuemax={pv.max}
-              aria-valuenow={pv.current}
-          />
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('pv', 1)}
-            className="flex-1"
-            aria-label="Aumentar Pontos de Vida"
+            className="h-6 w-6 rounded-full p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20"
             disabled={pv.current >= pv.max}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3 h-3" />
           </Button>
         </div>
       </div>
 
-      {/* SAN - Sanidade */}
-      <div className="space-y-2 relative z-10">
-        <div className="flex items-center justify-between">
-          <Label className="text-blue-400 font-semibold">Sanidade (SAN)</Label>
-          <span className="text-white text-sm">
-            {san.current} / {san.max}
+      {/* Sanidade (SAN) */}
+      <div className="relative z-10 space-y-1">
+        <div className="flex justify-between items-end px-1">
+          <Label className="text-blue-400 font-bold tracking-wider uppercase text-xs">Sanidade</Label>
+          <span className="text-white text-sm font-medium tracking-wide">
+            {san.current} <span className="text-white/40">/</span> {san.max}
           </span>
         </div>
-        <AnimatedProgress 
-          value={san.current} 
-          max={san.max}
-          color="blue"
-          className="h-3"
-          duration={0.6}
+
+        <div className="relative h-4 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+          <div
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-900 via-blue-600 to-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-500 ease-out"
+            style={{ width: `${sanPercent}%` }}
+          />
+        </div>
+
+        {/* Indicadores de Sanidade */}
+        <div className="flex justify-center gap-2 mt-2">
+          <InsanityIndicator
+            currentSAN={san.current}
+            maxSAN={san.max}
+            showDescription={false}
+            size="sm"
+          />
+          <InsanityTurnCounter character={character} />
+        </div>
+        <InsanityPermanentEffects
+          character={character}
+          onUpdate={() => { }}
         />
-        {/* Indicador de Estado de Insanidade */}
-        <InsanityIndicator 
-          currentSAN={san.current} 
-          maxSAN={san.max}
-          showDescription={false}
-          size="sm"
-        />
-        {/* Contador de Turnos de Insanidade */}
-        <InsanityTurnCounter character={character} />
-        {/* Consequências Permanentes */}
-        <InsanityPermanentEffects 
-          character={character} 
-          onUpdate={(updated) => {
-            // Atualizar personagem quando efeitos permanentes mudarem
-            // Isso será tratado pelo componente pai
-          }}
-        />
-        <div className="flex gap-2">
+
+        <div className="flex justify-between items-center pt-1 opacity-0 hover:opacity-100 transition-opacity">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('san', -1)}
-            className="flex-1"
-            aria-label="Diminuir Sanidade"
+            className="h-6 w-6 rounded-full p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
             disabled={san.current <= 0}
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-3 h-3" />
           </Button>
-          <Input
-            type="number"
-            value={san.current}
-              onChange={(e) => {
-                const value = parseInt(e.target.value) || 0
-                if (value < 0) {
-                  alert('SAN não pode ser menor que 0')
-                  return
-                }
-                if (value > san.max) {
-                  alert(`SAN não pode exceder o máximo (${san.max})`)
-                  return
-                }
-                onUpdateResource('san', value, false)
-              }}
-              className="w-20 text-center"
-              min={0}
-              max={san.max}
-              aria-label="Sanidade atual"
-              aria-valuemin={0}
-              aria-valuemax={san.max}
-              aria-valuenow={san.current}
-          />
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('san', 1)}
-            className="flex-1"
-            aria-label="Aumentar Sanidade"
+            className="h-6 w-6 rounded-full p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20"
             disabled={san.current >= san.max}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3 h-3" />
           </Button>
         </div>
       </div>
 
-      {/* PE - Pontos de Esforço */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
+      {/* Esforço (PE) */}
+      <div className="relative z-10 space-y-1">
+        <div className="flex justify-between items-end px-1">
           <div className="flex items-center gap-2">
-            <Label className="text-green-400 font-semibold">Pontos de Esforço (PE)</Label>
-            <Badge variant="outline" className="text-xs">
-              Limite/Turno: {peTurnLimit}
-            </Badge>
+            <Label className="text-yellow-400 font-bold tracking-wider uppercase text-xs">Esforço</Label>
+            <span className="text-[10px] text-white/40 uppercase tracking-widest">
+              LIM: {peTurnLimit}
+            </span>
           </div>
-          <span className="text-white text-sm">
-            {pe.current} / {pe.max}
+          <span className="text-white text-sm font-medium tracking-wide">
+            {pe.current} <span className="text-white/40">/</span> {pe.max}
           </span>
         </div>
-        <AnimatedProgress 
-          value={pe.current} 
-          max={pe.max}
-          color="green"
-          className="h-3"
-          duration={0.6}
-        />
-        <div className="flex gap-2">
+
+        <div className="relative h-4 w-full bg-black/40 rounded-full overflow-hidden border border-white/5">
+          <div
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-yellow-900 via-yellow-600 to-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] transition-all duration-500 ease-out"
+            style={{ width: `${pePercent}%` }}
+          />
+        </div>
+
+        <div className="flex justify-between items-center pt-1 opacity-0 hover:opacity-100 transition-opacity">
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('pe', -1)}
-            className="flex-1"
-            aria-label="Diminuir Pontos de Esforço"
+            className="h-6 w-6 rounded-full p-0 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20"
             disabled={pe.current <= 0}
           >
-            <Minus className="w-4 h-4" />
+            <Minus className="w-3 h-3" />
           </Button>
-          <Input
-            type="number"
-            value={pe.current}
-              onChange={(e) => {
-                const value = parseInt(e.target.value) || 0
-                if (value < 0) {
-                  alert('PE não pode ser menor que 0')
-                  return
-                }
-                if (value > pe.max) {
-                  alert(`PE não pode exceder o máximo (${pe.max})`)
-                  return
-                }
-                onUpdateResource('pe', value, false)
-              }}
-              className="w-20 text-center"
-              min={0}
-              max={pe.max}
-              aria-label="Pontos de Esforço atuais"
-              aria-valuemin={0}
-              aria-valuemax={pe.max}
-              aria-valuenow={pe.current}
-          />
           <Button
             size="sm"
-            variant="outline"
+            variant="ghost"
             onClick={() => handleResourceChange('pe', 1)}
-            className="flex-1"
-            aria-label="Aumentar Pontos de Esforço"
+            className="h-6 w-6 rounded-full p-0 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20"
             disabled={pe.current >= pe.max}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3 h-3" />
           </Button>
         </div>
       </div>
 
-      {/* NEX e Defesa */}
-      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
-        <div>
-          <Label className="text-purple-400 font-semibold">NEX</Label>
-          <div className="text-2xl font-bold text-white mt-1">{nex}%</div>
-        </div>
-        <div>
-          <Label className="text-yellow-400 font-semibold">Defesa</Label>
-          <div className="text-2xl font-bold text-white mt-1">{defense}</div>
+      {/* NEX Badge */}
+      <div className="absolute top-2 right-2">
+        <div className="bg-black/60 backdrop-blur border border-purple-500/30 rounded px-2 py-0.5 text-xs text-purple-300 font-bold tracking-wider">
+          {nex}% NEX
         </div>
       </div>
     </div>

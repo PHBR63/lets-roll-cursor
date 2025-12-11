@@ -212,13 +212,13 @@ export const ALL_SKILLS: Record<string, { attribute: SkillAttribute; requiresTra
   Crime: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: true, requiresKit: true },
   Pontaria: { attribute: 'AGI', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
   Prestidigitação: { attribute: 'AGI', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
-  
+
   // Força
   Luta: { attribute: 'FOR', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
-  
+
   // Vigor
   Fortitude: { attribute: 'VIG', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
-  
+
   // Presença
   Intuição: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
   Percepção: { attribute: 'PRE', requiresTraining: false, hasCargoPenalty: false, requiresKit: false },
@@ -229,7 +229,7 @@ export const ALL_SKILLS: Record<string, { attribute: SkillAttribute; requiresTra
   Religião: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
   Artes: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
   Adestramento: { attribute: 'PRE', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
-  
+
   // Intelecto
   Ocultismo: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
   Ciências: { attribute: 'INT', requiresTraining: true, hasCargoPenalty: false, requiresKit: false },
@@ -339,4 +339,45 @@ export const ALL_CONDITIONS: Condition[] = [
   'FASCINADO',
   'INDEFESO',
 ]
+
+/**
+ * Tipos para Sistema de Rituais (Grimório)
+ */
+
+export type RitualElement = ParanormalElement
+export type RitualCircle = 1 | 2 | 3 | 4
+export type RitualExecution = 'PADRAO' | 'COMPLETA' | 'MOVIMENTO' | 'LIVRE' | 'REACAO'
+export type RitualRange = 'PESSOAL' | 'TOQUE' | 'CURTO' | 'MEDIO' | 'LONGO' | 'ILIMITADO'
+
+export interface RitualCostConfig {
+  basePe: number
+  discipleExtraPe?: number // Custo extra para Discente (total = base + extra)
+  trueExtraPe?: number // Custo extra para Verdadeiro (total = base + extra)
+}
+
+export interface Ritual {
+  id: string
+  name: string
+  element: RitualElement
+  circle: RitualCircle
+  execution: RitualExecution
+  range: RitualRange
+  target: string
+  duration: string
+  description: string
+  cost: RitualCostConfig
+  resistance?: 'FORTITUDE' | 'REFLEXOS' | 'VONTADE' | 'NINGUEM'
+  requiredAffinityForTrue?: RitualElement | RitualElement[]
+}
+
+/**
+ * Rituais aprendidos pelo personagem
+ */
+export interface CharacterRitual {
+  character_id: string
+  ritual_id: string
+  mode_unlocked: 'NORMAL' | 'DISCIPLE' | 'TRUE'
+  created_at?: string
+  ritual?: Ritual // Join opcional
+}
 

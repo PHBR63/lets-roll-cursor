@@ -34,8 +34,8 @@ describe('characterInventoryService', () => {
       ]
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: mockInventory, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ data: mockInventory, error: null }),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -48,8 +48,8 @@ describe('characterInventoryService', () => {
 
     it('deve retornar array vazio se não houver itens', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: [], error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({ data: [], error: null }),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -70,27 +70,27 @@ describe('characterInventoryService', () => {
         ; (supabase.from as jest.Mock)
           // 1. Buscar personagem
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
           })
           // 2. Buscar item
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockItem, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockItem, error: null }),
           })
           // 3. Verificar se item já existe (PGRST116 = não existe)
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: null, error: { code: 'PGRST116' } }),
           })
           // 4. Inserir novo item
           .mockReturnValueOnce({
-            insert: jest.fn().mockReturnThis(),
-            select: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockNewInventoryItem, error: null }),
+            insert: (jest.fn() as any).mockReturnThis(),
+            select: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockNewInventoryItem, error: null }),
           })
 
       const result = await characterInventoryService.addItemToCharacter('char-123', 'item-1', 1)
@@ -108,28 +108,28 @@ describe('characterInventoryService', () => {
         ; (supabase.from as jest.Mock)
           // 1. Buscar personagem
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
           })
           // 2. Buscar item
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: mockItem, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: mockItem, error: null }),
           })
           // 3. Verificar se item já existe (retorna existente)
           .mockReturnValueOnce({
-            select: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: existingItem, error: null }),
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: existingItem, error: null }),
           })
           // 4. Atualizar quantidade
           .mockReturnValueOnce({
-            update: jest.fn().mockReturnThis(),
-            eq: jest.fn().mockReturnThis(),
-            select: jest.fn().mockReturnThis(),
-            single: jest.fn().mockResolvedValue({ data: updatedItem, error: null }),
+            update: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            select: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({ data: updatedItem, error: null }),
           })
 
       const result = await characterInventoryService.addItemToCharacter('char-123', 'item-1', 3)
@@ -141,15 +141,15 @@ describe('characterInventoryService', () => {
   describe('removeItemFromCharacter', () => {
     it('deve remover item do inventário', async () => {
       const mockQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
       }
 
       // Configurar para retornar o mockQuery e resolver sem erro no último eq
       mockQuery.eq.mockImplementation(() => {
         return {
           ...mockQuery,
-          eq: jest.fn().mockResolvedValue({ error: null }),
+          eq: (jest.fn() as any).mockResolvedValue({ error: null }),
         }
       })
 
@@ -164,10 +164,10 @@ describe('characterInventoryService', () => {
   describe('equipItem', () => {
     it('deve equipar item', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'inv-1', equipped: true },
           error: null,
         }),
@@ -183,10 +183,10 @@ describe('characterInventoryService', () => {
 
     it('deve desequipar item', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'inv-1', equipped: false },
           error: null,
         }),

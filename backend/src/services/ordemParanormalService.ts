@@ -13,6 +13,7 @@ import {
   getNewlyUnlockedAbilities as getNewlyUnlockedClassAbilities,
   ClassAbility,
 } from '../types/classAbilities'
+import { Ritual, RitualCostConfig, RitualCircle, CharacterRitual, ParanormalElement } from '../types/ordemParanormal'
 
 /**
  * Serviço para cálculos e mecânicas do sistema Ordem Paranormal RPG
@@ -167,7 +168,7 @@ export const ordemParanormalService = {
   getMaxPETurn(nex: number): number {
     // Encontrar a entrada mais próxima (maior ou igual) na tabela
     const limits = ordemParanormalService.PE_TURN_LIMITS
-    
+
     // Se NEX for menor que o mínimo, retornar limite mínimo
     if (nex < limits[0].nex) {
       return limits[0].maxPE
@@ -195,7 +196,7 @@ export const ordemParanormalService = {
    * @returns Resultado da rolagem
    */
   rollAttributeTest(
-    attributeValue: number, 
+    attributeValue: number,
     skillBonus: number = 0,
     advantageDice: number = 0
   ): {
@@ -227,7 +228,7 @@ export const ordemParanormalService = {
 
     // Aplicar vantagem/desvantagem de dados
     diceCount = Math.max(0, diceCount + advantageDice)
-    
+
     // Se penalidade reduzir dados a zero ou menos, aplicar regra do atributo 0
     if (diceCount <= 0) {
       diceCount = 2
@@ -294,10 +295,10 @@ export const ordemParanormalService = {
     selectedDice: number
   } {
     const rollResult = this.rollAttributeTest(attributeValue, skillBonus, advantageDice)
-    
+
     // Acerto Crítico: quando o dado escolhido (sem bônus) >= Margem de Ameaça
     const critical = rollResult.selectedDice >= threatRange
-    
+
     // Ataque acerta se: resultado total >= defesa OU foi crítico
     const hit = rollResult.total >= targetDefense || critical
 
@@ -357,10 +358,10 @@ export const ordemParanormalService = {
 
     // Calcular total dos dados
     const diceTotal = dice.reduce((sum, d) => sum + d, 0)
-    
+
     // Adicionar atributo apenas em corpo-a-corpo (não multiplicado no crítico)
     const attributeBonus = isMelee ? attributeValue : 0
-    
+
     // Bônus de perícia (ex: Tiro Certeiro +5) - NÃO é multiplicado no crítico
     // Total = (dados rolados) + (bônus numéricos)
     const total = diceTotal + attributeBonus + skillBonus
@@ -400,7 +401,7 @@ export const ordemParanormalService = {
   } {
     // Teste de resistência usa apenas o atributo (sem bônus de perícia)
     const rollResult = this.rollAttributeTest(attributeValue, 0, advantageDice)
-    
+
     // Sucesso se resultado >= dificuldade
     const success = rollResult.total >= difficulty
 
@@ -861,46 +862,127 @@ export const ordemParanormalService = {
    * @param ritualCost - Custo do ritual em PE
    * @returns Resultado do teste de custo
    */
+  /**
+   * Rola teste de custo de ritual (secreto)
+   * DT = 20 + custo do ritual (Regra Padrão)
+   * @param characterData - Dados do personagem
+   * @param ritualCost - Custo do ritual em PE
+   * @returns Resultado do teste de custo e consequências
+   */
   rollRitualCostTest(
-    characterData: {
-      attributes: { int: number }
-      skills: { Ocultismo: { attribute: string; training: string; bonus: number } }
-    },
+    characterData: any,
     ritualCost: number
   ): {
     success: boolean
+    criticalFailure: boolean
     rollResult: number
     dt: number
-    criticalFailure: boolean
     dice: number[]
     attributeValue: number
     skillBonus: number
   } {
-    // DT = 10 + custo do ritual
-    const dt = 10 + ritualCost
+    // DT do Custo do Paranormal: 20 + custo em PE
+    const dt = 20 + ritualCost
 
-    // Rolar teste de Ocultismo (INT + bônus)
-    const intValue = characterData.attributes.int || 0
-    const ocultismoBonus = characterData.skills.Ocultismo?.bonus || 0
+    // Dados para o teste (Ocultismo usa INT)
+    // Suportar tanto o formato simplificado quanto o objeto completo de personagem
+    let intValue = 1
+    let ocultismoBonus = 0
 
-    const rollResult = this.rollAttributeTest(intValue, ocultismoBonus)
+    if (characterData.attributes?.int) {
+      intValue = characterData.attributes.int
+    }
 
-    // Sucesso se total >= DT
-    const success = rollResult.total >= dt
+    if (characterData.skills?.Ocultismo) {
+      const skill = characterData.skills.Ocultismo
+      if (typeof skill.bonus === 'number') {
+        ocultismoBonus = skill.bonus
+      } else if (skill.training) {
+        ocultismoBonus = this.calculateSkillBonus(skill.training)
+      }
+    } else if (characterData.skills?.ocultismo) {
+      // Fallback para minúsculo
+      const skill = characterData.skills.ocultismo
+      if (typeof skill.bonus === 'number') {
+        ocultismoBonus = skill.bonus
+      }
+    }
 
-    // Falha crítica se resultado natural (sem bônus) = 1
-    const criticalFailure = rollResult.result === 1 && !success
+    // Rolar teste
+    const roll = this.rollAttributeTest(intValue, ocultismoBonus)
+
+    // Sucesso: total >= DT
+    // Falha Crítica: dado escolhido (natural) é 1 e falhou no teste
+    const success = roll.total >= dt
+    const isCriticalFailure = roll.selectedDice === 1 && !success
 
     return {
       success,
-      rollResult: rollResult.total,
+      criticalFailure: isCriticalFailure,
+      rollResult: roll.total,
       dt,
-      criticalFailure,
-      dice: rollResult.dice,
+      dice: roll.dice,
       attributeValue: intValue,
-      skillBonus: ocultismoBonus,
+      skillBonus: ocultismoBonus
     }
   },
+
+  /**
+   * Calcula o custo de PE para conjurar um ritual
+   * @param ritual - O ritual a ser conjurado
+   * @param mode - O modo de conjuração (NORMAL, DISCIPLE, TRUE)
+   * @returns Custo em PE
+   */
+  calculateRitualCost(ritual: Ritual, mode: 'NORMAL' | 'DISCIPLE' | 'TRUE' = 'NORMAL'): number {
+    let cost = ritual.cost.basePe
+
+    if (mode === 'DISCIPLE') {
+      cost += ritual.cost.discipleExtraPe || 0
+    } else if (mode === 'TRUE') {
+      cost += ritual.cost.trueExtraPe || 0
+    }
+
+    return cost
+  },
+
+  /**
+   * Valida se o personagem pode conjurar o ritual no modo desejado
+   * @param character - Dados do personagem
+   * @param ritual - Dados do ritual
+   * @param mode - Modo de conjuração
+   * @returns Object com success boolean e mensagem de erro se houver
+   */
+  validateRitualCasting(
+    character: any,
+    ritual: Ritual,
+    mode: 'NORMAL' | 'DISCIPLE' | 'TRUE'
+  ): { success: boolean; error?: string } {
+    // 2. Validar Círculo vs NEX
+    // Círculo 1: NEX 1% (todos)
+    // Círculo 2: NEX 25% (operador)
+    // Círculo 3: NEX 55% (agente especial)
+    // Círculo 4: NEX 85% (oficial de operações)
+    const nex = character.stats?.nex || character.nex || 5
+    const requiredNex = [0, 0, 25, 55, 85] // Circle 0 doesn't exist, Circle 1 requires 0 NEX (technically 5% for Ocultista to learn)
+
+    if (nex < requiredNex[ritual.circle]) {
+      return { success: false, error: `NEX insuficiente (${nex}%) para conjurar rituais de ${ritual.circle}º Círculo (Requer ${requiredNex[ritual.circle]}%).` }
+    }
+
+    // 3. Validar Afinidade para modo Verdadeiro
+    if (mode === 'TRUE') {
+      const affinity = character.affinity as ParanormalElement | null
+      const required = ritual.requiredAffinityForTrue || ritual.element
+
+      const hasAffinity = Array.isArray(required)
+        ? required.includes(affinity as any)
+        : affinity === required
+
+      if (!hasAffinity) {
+        return { success: false, error: `Modo Verdadeiro exige afinidade com ${Array.isArray(required) ? required.join(' ou ') : required}.` }
+      }
+    }
+
+    return { success: true }
+  }
 }
-
-

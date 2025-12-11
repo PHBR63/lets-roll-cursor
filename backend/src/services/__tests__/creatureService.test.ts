@@ -54,23 +54,23 @@ describe('creatureService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(cacheModule.getCache as jest.Mock).mockResolvedValue(null)
-    ;(cacheModule.setCache as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.getCache as jest.Mock).mockResolvedValue(null)
+      ; (cacheModule.setCache as jest.Mock).mockResolvedValue(undefined)
   })
 
   describe('getCreatures', () => {
     it('deve buscar criaturas sem filtros', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockResolvedValue({
           data: [mockCreature],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await creatureService.getCreatures({})
 
@@ -81,16 +81,16 @@ describe('creatureService', () => {
 
     it('deve buscar criaturas por campaignId', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockResolvedValue({
           data: [mockCreature],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await creatureService.getCreatures({ campaignId: 'camp-123' })
 
@@ -100,16 +100,16 @@ describe('creatureService', () => {
 
     it('deve buscar criaturas globais', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockResolvedValue({
           data: [mockCreature],
           error: null,
           count: 1,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await creatureService.getCreatures({ isGlobal: true })
 
@@ -124,7 +124,7 @@ describe('creatureService', () => {
         offset: 0,
         hasMore: false,
       }
-      ;(cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
+        ; (cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
 
       const result = await creatureService.getCreatures({})
 
@@ -134,16 +134,16 @@ describe('creatureService', () => {
 
     it('deve aplicar paginação', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockResolvedValue({
           data: [mockCreature],
           error: null,
           count: 10,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await creatureService.getCreatures({ limit: 10, offset: 20 })
 
@@ -153,15 +153,15 @@ describe('creatureService', () => {
 
     it('deve lançar erro se busca falhar', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        or: jest.fn().mockReturnThis(),
-        range: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        or: (jest.fn() as any).mockReturnThis(),
+        range: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(creatureService.getCreatures({})).rejects.toThrow('Erro ao buscar criaturas')
     })
@@ -170,15 +170,15 @@ describe('creatureService', () => {
   describe('getCreatureById', () => {
     it('deve buscar criatura por ID', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCreature,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await creatureService.getCreatureById('creature-123')
 
@@ -188,15 +188,15 @@ describe('creatureService', () => {
 
     it('deve lançar erro se criatura não encontrada', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(creatureService.getCreatureById('creature-999')).rejects.toThrow(
         'Erro ao buscar criatura'
@@ -216,17 +216,17 @@ describe('creatureService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCreature, ...newCreature },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      const result = await creatureService.createCreature(newCreature)
+      const result = await creatureService.createCreature('user-123', newCreature)
 
       expect(mockQuery.insert).toHaveBeenCalled()
       expect(cacheModule.deleteCachePattern).toHaveBeenCalled()
@@ -242,17 +242,17 @@ describe('creatureService', () => {
       }
 
       const mockQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      await expect(creatureService.createCreature(newCreature)).rejects.toThrow('Erro ao criar criatura')
+      await expect(creatureService.createCreature('user-123', newCreature)).rejects.toThrow('Erro ao criar criatura')
     })
   })
 
@@ -264,16 +264,16 @@ describe('creatureService', () => {
       }
 
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCreature, ...updateData },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await creatureService.updateCreature('creature-123', updateData)
 
@@ -284,16 +284,16 @@ describe('creatureService', () => {
 
     it('deve lançar erro se criatura não encontrada', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(creatureService.updateCreature('creature-999', { name: 'Novo Nome' })).rejects.toThrow(
         'Erro ao atualizar criatura'
@@ -304,24 +304,24 @@ describe('creatureService', () => {
   describe('deleteCreature', () => {
     it('deve deletar criatura existente', async () => {
       const mockSelectQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { campaign_id: 'camp-123' },
           error: null,
         }),
       }
 
       const mockDeleteQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockSelectQuery)
-        .mockReturnValueOnce(mockDeleteQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockSelectQuery)
+          .mockReturnValueOnce(mockDeleteQuery)
 
       await creatureService.deleteCreature('creature-123')
 
@@ -332,24 +332,24 @@ describe('creatureService', () => {
 
     it('deve lançar erro se deleção falhar', async () => {
       const mockSelectQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { campaign_id: 'camp-123' },
           error: null,
         }),
       }
 
       const mockDeleteQuery = {
-        delete: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        delete: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           error: { message: 'Delete failed' },
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockSelectQuery)
-        .mockReturnValueOnce(mockDeleteQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockSelectQuery)
+          .mockReturnValueOnce(mockDeleteQuery)
 
       await expect(creatureService.deleteCreature('creature-123')).rejects.toThrow('Erro ao deletar criatura')
     })

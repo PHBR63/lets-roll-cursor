@@ -36,15 +36,15 @@ describe('Testes de Integração', () => {
       }
 
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       // Mock dos cálculos
       jest.spyOn(ordemParanormalService, 'calculateMaxPV').mockReturnValue(28)
@@ -83,16 +83,16 @@ describe('Testes de Integração', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       jest.spyOn(ordemParanormalService, 'calculateMaxPV').mockReturnValue(30)
       jest.spyOn(ordemParanormalService, 'calculateMaxSAN').mockReturnValue(15)
@@ -113,9 +113,9 @@ describe('Testes de Integração', () => {
   describe('Rolagem de Dados e Histórico', () => {
     it('deve rolar dados e salvar no histórico', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             id: 'roll-123',
             formula: '1d20',
@@ -128,11 +128,11 @@ describe('Testes de Integração', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        neq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        neq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockResolvedValue({
           data: [
             {
               id: 'roll-123',
@@ -144,9 +144,9 @@ describe('Testes de Integração', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockInsert) // Para rollDice
-        .mockReturnValueOnce(mockQuery) // Para getRollHistory
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockInsert) // Para rollDice
+          .mockReturnValueOnce(mockQuery) // Para getRollHistory
 
       // Rolagem
       const rollResult = await diceService.rollDice({
@@ -179,16 +179,16 @@ describe('Testes de Integração', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
         }),
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       // Aplicar condição
       const { newConditions, effects } = ordemParanormalService.applyCondition('ABALADO', [])

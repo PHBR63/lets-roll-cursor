@@ -1,426 +1,149 @@
-/**
- * Testes para ritualService
- * Cobre conjuração de rituais, validação de PE e testes de custo
- */
-import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import { ritualService } from '../ritualService'
 import { supabase } from '../../config/supabase'
 import { ordemParanormalService } from '../ordemParanormalService'
 import { characterResourcesService } from '../character/characterResourcesService'
 
-// Mock do Supabase
+// Mock dependencies
 jest.mock('../../config/supabase', () => ({
   supabase: {
     from: jest.fn(),
-  },
+    rpc: jest.fn()
+  }
 }))
 
-// Mock do ordemParanormalService
 jest.mock('../ordemParanormalService', () => ({
   ordemParanormalService: {
-    rollRitualCostTest: jest.fn(),
-    calculateSkillBonus: jest.fn(),
-    getMaxPETurn: jest.fn(),
-  },
+    calculateRitualCost: jest.fn(),
+    validateRitualCasting: jest.fn(),
+    rollRitualCostTest: jest.fn()
+  }
 }))
 
-// Mock do characterResourcesService
 jest.mock('../character/characterResourcesService', () => ({
   characterResourcesService: {
     spendPE: jest.fn(),
-    updateSAN: jest.fn(),
-  },
+    checkTurnLimit: jest.fn().mockReturnValue({ allowed: true })
+  }
+}))
+
+jest.mock('../../utils/cache', () => ({
+  deleteCache: jest.fn(),
+  getCharacterCacheKey: jest.fn()
 }))
 
 describe('ritualService', () => {
+  const mockRitual = {
+    id: 'ritual-1',
+    name: 'Decadência',
+    element: 'MORTE',
+    circle: 1,
+    cost: { basePe: 1, discipleExtraPe: 2, trueExtraPe: 5 },
+    execution: 'PADRAO',
+    range: 'CURTO',
+    target: '1 ser',
+    duration: 'instantânea',
+    description: 'Teste'
+  }
+
   const mockCharacter = {
-    id: 'char-123',
-    name: 'Test Character',
+    id: 'char-1',
+    name: 'Char',
     class: 'OCULTISTA',
-    attributes: {
-      agi: 1,
-      for: 1,
-      int: 3,
-      pre: 2,
-      vig: 1,
-    },
     stats: {
-      pv: { current: 15, max: 15 },
-      san: { current: 20, max: 20 },
-      pe: { current: 10, max: 10 },
       nex: 10,
+      pe: { current: 5, max: 10 },
+      san: { current: 20, max: 20 },
+      pv: { current: 15, max: 15 }
     },
     skills: {
-      Ocultismo: {
-        attribute: 'INT',
-        training: 'TRAINED',
-        bonus: 5,
-      },
-    },
-    conditions: [],
+      Ocultismo: { training: 'TRAINED', bonus: 5 }
+    }
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+      ; (supabase.from as jest.Mock).mockImplementation((table) => {
+        if (table === 'characters') {
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null })
+          }
+        }
+        if (table === 'rituals') {
+          // Mock for getRitualById inside conjureRitual
+          return {
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({ data: mockRitual, error: null })
+          }
+        }
+        return {
+          select: jest.fn().mockReturnThis(),
+          eq: jest.fn().mockReturnThis(),
+          insert: jest.fn().mockResolvedValue({ error: null }),
+          delete: jest.fn().mockResolvedValue({ error: null })
+        }
+      })
   })
 
-  describe('conjureRitualWithCost', () => {
-    it('deve conjurar ritual com sucesso quando teste passa', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: mockCharacter,
-          error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: mockCharacter,
-      })
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
+  describe('conjureRitual', () => {
+    it('should successfully conjure a ritual', async () => {
+      // Setup mocks
+      (ordemParanormalService.validateRitualCasting as jest.Mock).mockReturnValue({ allowed: true });
+      (ordemParanormalService.calculateRitualCost as jest.Mock).mockReturnValue(1);
+      (characterResourcesService.spendPE as jest.Mock).mockResolvedValue(mockCharacter);
+      (ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
         success: true,
         rollResult: 20,
         dt: 15,
         criticalFailure: false,
-      })
+        sanLoss: 0,
+        sanMaxLoss: 0,
+        dice: [20]
+      });
 
-      const result = await ritualService.conjureRitualWithCost('char-123', 3, 0)
+      const result = await ritualService.conjureRitual('char-1', 'ritual-1', 'NORMAL', 0);
 
-      expect(characterResourcesService.spendPE).toHaveBeenCalledWith('char-123', 3, 0)
-      expect(ordemParanormalService.rollRitualCostTest).toHaveBeenCalled()
-      expect(result.success).toBe(true)
-      expect(result.sanLoss).toBe(0)
-    })
+      expect(result.success).toBe(true);
+      expect(result.cost).toBe(1);
+      expect(characterResourcesService.spendPE).toHaveBeenCalledWith('char-1', 1);
+    });
 
-    it('deve falhar se PE insuficiente', async () => {
-      const characterLowPE = {
-        ...mockCharacter,
-        stats: {
-          ...mockCharacter.stats,
-          pe: { current: 2, max: 10 },
-        },
-      }
+    it('should fail if casting validation fails', async () => {
+      (ordemParanormalService.validateRitualCasting as jest.Mock).mockReturnValue({
+        allowed: false,
+        message: 'NEX insuficiente'
+      });
+      (ordemParanormalService.calculateRitualCost as jest.Mock).mockReturnValue(1);
 
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterLowPE,
-          error: null,
-        }),
-      }
+      await expect(ritualService.conjureRitual('char-1', 'ritual-1', 'NORMAL', 0))
+        .rejects.toThrow('NEX insuficiente');
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      expect(characterResourcesService.spendPE).not.toHaveBeenCalled();
+    });
 
-      await expect(ritualService.conjureRitualWithCost('char-123', 5, 0)).rejects.toThrow(
-        'PE insuficiente'
-      )
-    })
+    it('should handle critical failure in cost test', async () => {
+      (ordemParanormalService.validateRitualCasting as jest.Mock).mockReturnValue({ allowed: true });
+      (ordemParanormalService.calculateRitualCost as jest.Mock).mockReturnValue(1);
+      (characterResourcesService.spendPE as jest.Mock).mockResolvedValue(mockCharacter);
 
-    it('deve aplicar perda de SAN quando teste falha', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: mockCharacter,
-          error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: mockCharacter,
-      })
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
-        success: false,
-        rollResult: 10,
-        dt: 15,
-        criticalFailure: false,
-      })
-      ;(characterResourcesService.updateSAN as jest.Mock).mockResolvedValue({
-        character: {
-          ...mockCharacter,
-          stats: {
-            ...mockCharacter.stats,
-            san: { current: 17, max: 20 },
-          },
-        },
-      })
-
-      const result = await ritualService.conjureRitualWithCost('char-123', 3, 0)
-
-      expect(characterResourcesService.updateSAN).toHaveBeenCalledWith('char-123', -3, true)
-      expect(result.success).toBe(false)
-      expect(result.sanLoss).toBe(3)
-    })
-
-    it('deve aplicar perda permanente de SAN máxima em falha crítica', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn()
-          .mockResolvedValueOnce({
-            data: mockCharacter,
-            error: null,
-          })
-          .mockResolvedValueOnce({
-            data: {
-              ...mockCharacter,
-              stats: {
-                ...mockCharacter.stats,
-                san: { current: 17, max: 19 },
-              },
-            },
-            error: null,
-          }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: mockCharacter,
-      })
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
+      const failResult = {
         success: false,
         rollResult: 1,
         dt: 15,
         criticalFailure: true,
-      })
-      ;(characterResourcesService.updateSAN as jest.Mock).mockResolvedValue({
-        character: {
-          ...mockCharacter,
-          stats: {
-            ...mockCharacter.stats,
-            san: { current: 17, max: 20 },
-          },
-        },
-      })
+        sanLoss: 2,
+        sanMaxLoss: 1,
+        dice: [1]
+      };
+      (ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue(failResult);
 
-      const result = await ritualService.conjureRitualWithCost('char-123', 3, 0)
+      const result = await ritualService.conjureRitual('char-1', 'ritual-1', 'NORMAL', 0);
 
-      expect(result.sanLoss).toBe(3)
-      expect(result.sanMaxLoss).toBe(1)
-      expect(mockQuery.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          stats: expect.objectContaining({
-            san: expect.objectContaining({
-              max: 19,
-            }),
-          }),
-        })
-      )
-    })
-
-    it('deve validar limite de PE por turno antes de gastar PE', async () => {
-      const characterLowNEX = {
-        ...mockCharacter,
-        stats: {
-          ...mockCharacter.stats,
-          nex: 5, // NEX 5% = limite de 1 PE por turno
-        },
-      }
-
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterLowNEX,
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(1) // Limite de 1 PE para NEX 5
-
-      // Tentar conjurar ritual de 2 PE quando já gastou 0 PE e o limite é 1
-      await expect(ritualService.conjureRitualWithCost('char-123', 2, 0)).rejects.toThrow(
-        'Limite de 1 PE por turno excedido'
-      )
-
-      // Verificar que getMaxPETurn foi chamado
-      expect(ordemParanormalService.getMaxPETurn).toHaveBeenCalledWith(5)
-      // Verificar que spendPE NÃO foi chamado (validação ocorre antes)
-      expect(characterResourcesService.spendPE).not.toHaveBeenCalled()
-    })
-
-    it('deve permitir conjuração dentro do limite de PE por turno', async () => {
-      const characterHighNEX = {
-        ...mockCharacter,
-        stats: {
-          ...mockCharacter.stats,
-          nex: 20, // NEX 20% = limite de 3 PE por turno
-        },
-      }
-
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterHighNEX,
-          error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(3) // Limite de 3 PE para NEX 20
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: characterHighNEX,
-      })
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
-        success: true,
-        rollResult: 20,
-        dt: 15,
-        criticalFailure: false,
-      })
-
-      // Conjurar ritual de 2 PE quando já gastou 1 PE (total: 3, dentro do limite)
-      const result = await ritualService.conjureRitualWithCost('char-123', 2, 1)
-
-      expect(ordemParanormalService.getMaxPETurn).toHaveBeenCalledWith(20)
-      expect(characterResourcesService.spendPE).toHaveBeenCalledWith('char-123', 2)
-      expect(result.success).toBe(true)
-    })
-
-    it('deve rejeitar quando peSpentThisTurn + ritualCost excede o limite', async () => {
-      const characterMidNEX = {
-        ...mockCharacter,
-        stats: {
-          ...mockCharacter.stats,
-          nex: 10, // NEX 10% = limite de 2 PE por turno
-        },
-      }
-
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterMidNEX,
-          error: null,
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.getMaxPETurn as jest.Mock).mockReturnValue(2) // Limite de 2 PE para NEX 10
-
-      // Tentar conjurar ritual de 2 PE quando já gastou 1 PE (total: 3, excede limite de 2)
-      await expect(ritualService.conjureRitualWithCost('char-123', 2, 1)).rejects.toThrow(
-        'Limite de 2 PE por turno excedido'
-      )
-
-      expect(characterResourcesService.spendPE).not.toHaveBeenCalled()
-    })
-
-    it('deve calcular bônus de Ocultismo corretamente', async () => {
-      const characterWithOcultismo = {
-        ...mockCharacter,
-        skills: {
-          Ocultismo: {
-            attribute: 'INT',
-            training: 'COMPETENT',
-            bonus: 10,
-          },
-        },
-      }
-
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterWithOcultismo,
-          error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: characterWithOcultismo,
-      })
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
-        success: true,
-        rollResult: 25,
-        dt: 15,
-        criticalFailure: false,
-      })
-
-      await ritualService.conjureRitualWithCost('char-123', 3, 0)
-
-      expect(ordemParanormalService.rollRitualCostTest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skills: expect.objectContaining({
-            Ocultismo: expect.objectContaining({
-              bonus: 10,
-            }),
-          }),
-        }),
-        3
-      )
-    })
-
-    it('deve usar bônus padrão se Ocultismo não encontrado', async () => {
-      const characterWithoutOcultismo = {
-        ...mockCharacter,
-        skills: {},
-      }
-
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: characterWithoutOcultismo,
-          error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(characterResourcesService.spendPE as jest.Mock).mockResolvedValue({
-        character: characterWithoutOcultismo,
-      })
-      ;(ordemParanormalService.calculateSkillBonus as jest.Mock).mockReturnValue(0)
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
-        success: true,
-        rollResult: 15,
-        dt: 15,
-        criticalFailure: false,
-      })
-
-      await ritualService.conjureRitualWithCost('char-123', 3, 0)
-
-      expect(ordemParanormalService.rollRitualCostTest).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skills: expect.objectContaining({
-            Ocultismo: expect.objectContaining({
-              training: 'UNTRAINED',
-              bonus: 0,
-            }),
-          }),
-        }),
-        3
-      )
-    })
-
-    it('deve lançar erro se personagem não encontrado', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
-          data: null,
-          error: { message: 'Not found', code: 'PGRST116' },
-        }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-
-      await expect(ritualService.conjureRitualWithCost('char-999', 3, 0)).rejects.toThrow(
-        'Erro ao conjurar ritual'
-      )
-    })
-  })
-})
-
+      expect(result.success).toBe(false);
+      expect(result.roll.criticalFailure).toBe(true);
+      expect(result.sanLoss).toBeGreaterThan(0);
+    });
+  });
+});

@@ -17,12 +17,12 @@ import { supabase } from '../../config/supabase'
 // Mock do characterConditionsService
 jest.mock('../character/characterConditionsService', () => ({
   characterConditionsService: {
-    applyCondition: jest.fn().mockResolvedValue({
+    applyCondition: (jest.fn() as any).mockResolvedValue({
       character: { id: 'char-123', conditions: ['ABALADO'] },
-    }),
-    removeCondition: jest.fn().mockResolvedValue({
+    } as any),
+    removeCondition: (jest.fn() as any).mockResolvedValue({
       character: { id: 'char-123', conditions: [] },
-    }),
+    } as any),
   },
 }))
 
@@ -93,20 +93,20 @@ describe('Testes de Integração End-to-End', () => {
     it('deve criar personagem, equipar item, conjurar ritual e verificar sobrecarga', async () => {
       // 1. Criar personagem
       const mockCreateQuery = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
+        } as any),
       }
 
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(15)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(10)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(11)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(15)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(10)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(11)
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockCreateQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockCreateQuery)
 
       const character = await characterService.createCharacter('user-123', {
         name: 'Test Character',
@@ -120,56 +120,56 @@ describe('Testes de Integração End-to-End', () => {
 
       // 2. Adicionar item ao inventário
       const mockItemQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockItem,
           error: null,
-        }),
+        } as any),
       }
 
       const mockInventoryQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           data: [],
           error: null,
-        }),
+        } as any),
       }
 
       const mockInsertInventory = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'ci-123', character_id: 'char-123', item_id: 'item-123', quantity: 1 },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockItemQuery)
-        .mockReturnValueOnce(mockInventoryQuery)
-        .mockReturnValueOnce(mockInsertInventory)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockItemQuery)
+          .mockReturnValueOnce(mockInventoryQuery)
+          .mockReturnValueOnce(mockInsertInventory)
 
-      ;(ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(10)
-      ;(ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(10)
+        ; (ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(false)
 
       await characterInventoryService.addItemToCharacter('char-123', 'item-123', 1)
 
       // 3. Conjurar ritual
       const mockRitualCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
+        } as any),
       }
 
       const mockRitualUpdate = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             ...mockCharacter,
             stats: {
@@ -178,21 +178,21 @@ describe('Testes de Integração End-to-End', () => {
             },
           },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockRitualCharQuery)
-        .mockReturnValueOnce(mockRitualUpdate)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockRitualCharQuery)
+          .mockReturnValueOnce(mockRitualUpdate)
 
-      ;(ordemParanormalService.calculatePETurnLimit as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.validatePETurnLimit as jest.Mock).mockReturnValue(true)
-      ;(ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
-        success: true,
-        rollResult: 20,
-        dt: 15,
-        criticalFailure: false,
-      })
+        ; (ordemParanormalService.calculatePETurnLimit as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.validatePETurnLimit as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.rollRitualCostTest as jest.Mock).mockReturnValue({
+          success: true,
+          rollResult: 20,
+          dt: 15,
+          criticalFailure: false,
+        })
 
       const ritualResult = await ritualService.conjureRitualWithCost('char-123', 3, 0)
 
@@ -200,35 +200,35 @@ describe('Testes de Integração End-to-End', () => {
 
       // 4. Verificar sobrecarga após adicionar mais itens
       const mockOverloadCharQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             ...mockCharacter,
             attributes: { ...mockCharacter.attributes, for: 2 },
           },
           error: null,
-        }),
+        } as any),
       }
 
       const mockOverloadInventory = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           data: [
             { item: { weight: 2.5 }, quantity: 1 },
             { item: { weight: 3.0 }, quantity: 1 },
             { item: { weight: 4.0 }, quantity: 1 },
           ],
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockOverloadCharQuery)
-        .mockReturnValueOnce(mockOverloadInventory)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockOverloadCharQuery)
+          .mockReturnValueOnce(mockOverloadInventory)
 
-      ;(ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(10)
-      ;(ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(10)
+        ; (ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(true)
 
       const overloadResult = await characterInventoryService.checkOverload('char-123')
 
@@ -241,9 +241,9 @@ describe('Testes de Integração End-to-End', () => {
     it('deve criar sessão, enviar mensagem e criar momento', async () => {
       // 1. Criar sessão
       const mockSessionInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             id: 'session-123',
             campaign_id: 'camp-123',
@@ -252,10 +252,10 @@ describe('Testes de Integração End-to-End', () => {
             ended_at: null,
           },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockSessionInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockSessionInsert)
 
       const session = await sessionService.createSession('camp-123', {
         name: 'Sessão de Teste',
@@ -265,9 +265,9 @@ describe('Testes de Integração End-to-End', () => {
 
       // 2. Enviar mensagem no chat
       const mockMessageInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             id: 'msg-123',
             campaign_id: 'camp-123',
@@ -278,10 +278,10 @@ describe('Testes de Integração End-to-End', () => {
             channel: 'general',
           },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockMessageInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockMessageInsert)
 
       const message = await chatService.createMessage({
         campaignId: 'camp-123',
@@ -295,18 +295,18 @@ describe('Testes de Integração End-to-End', () => {
 
       // 3. Criar momento da sessão
       const mockParticipantQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { id: 'participant-123' },
           error: null,
-        }),
+        } as any),
       }
 
       const mockMomentInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             id: 'moment-123',
             campaign_id: 'camp-123',
@@ -316,12 +316,12 @@ describe('Testes de Integração End-to-End', () => {
             created_by: 'user-123',
           },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockParticipantQuery)
-        .mockReturnValueOnce(mockMomentInsert)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockParticipantQuery)
+          .mockReturnValueOnce(mockMomentInsert)
 
       const { momentService } = await import('../momentService')
       const moment = await momentService.createMoment('user-123', {
@@ -345,17 +345,17 @@ describe('Testes de Integração End-to-End', () => {
 
       // 1. Tentar gastar PE além do limite
       const mockPEQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: characterWithRank,
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockPEQuery)
-      ;(ordemParanormalService.calculatePETurnLimit as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.validatePETurnLimit as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockPEQuery)
+        ; (ordemParanormalService.calculatePETurnLimit as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.validatePETurnLimit as jest.Mock).mockReturnValue(false)
 
       await expect(
         characterResourcesService.spendPE('char-123', 5)
@@ -363,37 +363,37 @@ describe('Testes de Integração End-to-End', () => {
 
       // 2. Tentar equipar item além do limite de categoria
       const mockCategoryItemQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockItem, category: 'III' },
           error: null,
-        }),
+        } as any),
       }
 
       const mockCategoryInventory = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           data: [
             { item: { category: 'III' }, equipped: true },
             { item: { category: 'III' }, equipped: true },
             { item: { category: 'III' }, equipped: true },
           ],
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce({
-          select: jest.fn().mockReturnThis(),
-          eq: jest.fn().mockReturnThis(),
-          single: jest.fn().mockResolvedValue({
-            data: characterWithRank,
-            error: null,
-          }),
-        })
-        .mockReturnValueOnce(mockCategoryItemQuery)
-        .mockReturnValueOnce(mockCategoryInventory)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce({
+            select: (jest.fn() as any).mockReturnThis(),
+            eq: (jest.fn() as any).mockReturnThis(),
+            single: (jest.fn() as any).mockResolvedValue({
+              data: characterWithRank,
+              error: null,
+            } as any),
+          })
+          .mockReturnValueOnce(mockCategoryItemQuery)
+          .mockReturnValueOnce(mockCategoryInventory)
 
       await expect(
         characterInventoryService.addItemToCharacter('char-123', 'item-123', 1, true)
@@ -401,34 +401,34 @@ describe('Testes de Integração End-to-End', () => {
 
       // 3. Verificar sobrecarga
       const mockOverloadQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             ...characterWithRank,
             attributes: { ...characterWithRank.attributes, for: 1 },
           },
           error: null,
-        }),
+        } as any),
       }
 
       const mockOverloadInventory = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockResolvedValue({
           data: [
             { item: { weight: 3.0 }, quantity: 1 },
             { item: { weight: 3.0 }, quantity: 1 },
           ],
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockOverloadQuery)
-        .mockReturnValueOnce(mockOverloadInventory)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockOverloadQuery)
+          .mockReturnValueOnce(mockOverloadInventory)
 
-      ;(ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(5)
-      ;(ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.calculateMaxCarryCapacity as jest.Mock).mockReturnValue(5)
+        ; (ordemParanormalService.isOverloaded as jest.Mock).mockReturnValue(true)
 
       const overloadResult = await characterInventoryService.checkOverload('char-123')
 
@@ -440,45 +440,45 @@ describe('Testes de Integração End-to-End', () => {
     it('deve aplicar condição, calcular penalidades e rolar teste de perícia', async () => {
       // 1. Aplicar condição
       const mockConditionQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockCharacter,
           error: null,
-        }),
-        update: jest.fn().mockReturnThis(),
+        } as any),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
       const mockUpdateQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockCharacter, conditions: ['ABALADO'] },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockConditionQuery)
-        .mockReturnValueOnce(mockUpdateQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockConditionQuery)
+          .mockReturnValueOnce(mockUpdateQuery)
 
       const conditionResult = await characterConditionsService.applyCondition('char-123', 'ABALADO')
 
       expect(conditionResult).toBeDefined()
 
-      // 2. Calcular penalidades (mock já configurado)
-      ;(ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
-        defense: 0,
-        defenseBase: false,
-        dicePenalty: -1,
-        cannotAct: false,
-        cannotReact: false,
-        cannotMove: false,
-        speedReduction: 1,
-        attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
-        skillPenalties: {},
-      })
+        // 2. Calcular penalidades (mock já configurado)
+        ; (ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
+          defense: 0,
+          defenseBase: false,
+          dicePenalty: -1,
+          cannotAct: false,
+          cannotReact: false,
+          cannotMove: false,
+          speedReduction: 1,
+          attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
+          skillPenalties: {},
+        })
 
       const penalties = ordemParanormalService.calculateConditionPenalties(['ABALADO'])
 
@@ -489,25 +489,25 @@ describe('Testes de Integração End-to-End', () => {
       const mockSkillQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        single: (jest.fn() as any).mockResolvedValue({
           data: {
             ...mockCharacter,
             conditions: ['ABALADO'],
           },
           error: null,
-        }),
+        } as any),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockSkillQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockSkillQuery)
 
-      ;(ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
-        dice: [15],
-        result: 15,
-        bonus: 5,
-        total: 20,
-        advantage: true,
-        disadvantage: false,
-      })
+        ; (ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
+          dice: [15],
+          result: 15,
+          bonus: 5,
+          total: 20,
+          advantage: true,
+          disadvantage: false,
+        })
 
       const skillTest = await characterService.rollSkillTest('char-123', 'Ocultismo', 15)
 

@@ -43,12 +43,12 @@ describe('characterConditionsService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
         single: jest.fn()
           .mockResolvedValueOnce({ data: mockCharacter, error: null }) // fetch inicial
           .mockResolvedValueOnce({ data: updatedCharacter, error: null }), // após update
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -79,12 +79,12 @@ describe('characterConditionsService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
         single: jest.fn()
           .mockResolvedValueOnce({ data: mockCharacter, error: null })
           .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -120,12 +120,12 @@ describe('characterConditionsService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
         single: jest.fn()
           .mockResolvedValueOnce({ data: characterWithCondition, error: null })
           .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
@@ -152,12 +152,12 @@ describe('characterConditionsService', () => {
       }
 
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
         single: jest.fn()
           .mockResolvedValueOnce({ data: characterWithCondition, error: null })
           .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
         ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)

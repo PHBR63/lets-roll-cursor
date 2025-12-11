@@ -229,3 +229,43 @@ export const RANK_CATEGORY_PERMISSIONS: Record<Rank, Record<ItemCategory, number
   },
 }
 
+/**
+ * Tipos para Sistema de Rituais (Grimório)
+ */
+
+export type RitualElement = ParanormalElement
+export type RitualCircle = 1 | 2 | 3 | 4
+export type RitualExecution = 'PADRAO' | 'COMPLETA' | 'MOVIMENTO' | 'LIVRE' | 'REACAO'
+export type RitualRange = 'PESSOAL' | 'TOQUE' | 'CURTO' | 'MEDIO' | 'LONGO' | 'ILIMITADO'
+
+export interface RitualCostConfig {
+  basePe: number
+  discipleExtraPe?: number // Custo extra para Discente (total = base + extra)
+  trueExtraPe?: number // Custo extra para Verdadeiro (total = base + extra)
+}
+
+export interface Ritual {
+  id: string
+  name: string
+  element: RitualElement
+  circle: RitualCircle
+  execution: RitualExecution
+  range: RitualRange
+  target: string
+  duration: string
+  description: string
+  cost: RitualCostConfig
+  resistance?: 'FORTITUDE' | 'REFLEXOS' | 'VONTADE' | 'NINGUEM'
+  requiredAffinityForTrue?: RitualElement | RitualElement[]
+}
+
+/**
+ * Rituais aprendidos pelo personagem
+ */
+export interface CharacterRitual {
+  character_id: string
+  ritual_id: string
+  mode_unlocked: 'NORMAL' | 'DISCIPLE' | 'TRUE'
+  created_at?: string
+  ritual?: Ritual // Join opcional
+}

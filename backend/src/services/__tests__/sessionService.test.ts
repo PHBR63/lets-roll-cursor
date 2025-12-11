@@ -25,15 +25,15 @@ describe('sessionService', () => {
   describe('createSession', () => {
     it('deve criar sessão com sucesso', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockSession,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       const result = await sessionService.createSession('camp-123', {
         name: 'Sessão de Teste',
@@ -45,15 +45,15 @@ describe('sessionService', () => {
 
     it('deve usar nome padrão se não fornecido', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockSession, name: 'Sessão 01/01/2024' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await sessionService.createSession('camp-123', {})
 
@@ -66,15 +66,15 @@ describe('sessionService', () => {
 
     it('deve lançar erro se houver falha', async () => {
       const mockInsert = {
-        insert: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        insert: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Erro no banco' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockInsert)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockInsert)
 
       await expect(sessionService.createSession('camp-123', {})).rejects.toThrow()
     })
@@ -83,18 +83,18 @@ describe('sessionService', () => {
   describe('getActiveSession', () => {
     it('deve retornar sessão ativa', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        is: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        is: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockReturnThis(),
+        maybeSingle: (jest.fn() as any).mockResolvedValue({
           data: mockSession,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.getActiveSession('camp-123')
 
@@ -105,18 +105,18 @@ describe('sessionService', () => {
 
     it('deve retornar null se não houver sessão ativa', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        is: jest.fn().mockReturnThis(),
-        order: jest.fn().mockReturnThis(),
-        limit: jest.fn().mockReturnThis(),
-        maybeSingle: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        is: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockReturnThis(),
+        limit: (jest.fn() as any).mockReturnThis(),
+        maybeSingle: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.getActiveSession('camp-123')
 
@@ -127,16 +127,16 @@ describe('sessionService', () => {
   describe('getCampaignSessions', () => {
     it('deve retornar todas as sessões da campanha', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        is: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        is: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockSession],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.getCampaignSessions('camp-123')
 
@@ -145,16 +145,16 @@ describe('sessionService', () => {
 
     it('deve filtrar apenas sessões ativas se solicitado', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        is: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        is: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [mockSession],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await sessionService.getCampaignSessions('camp-123', true)
 
@@ -165,15 +165,15 @@ describe('sessionService', () => {
   describe('getSessionById', () => {
     it('deve retornar sessão por ID', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockSession,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.getSessionById('session-123')
 
@@ -182,15 +182,15 @@ describe('sessionService', () => {
 
     it('deve lançar erro se sessão não encontrada', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found', code: 'PGRST116' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(sessionService.getSessionById('session-999')).rejects.toThrow('Erro ao buscar sessão')
     })
@@ -204,16 +204,16 @@ describe('sessionService', () => {
       }
 
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockSession, ...updateData },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.updateSession('session-123', updateData)
 
@@ -223,16 +223,16 @@ describe('sessionService', () => {
 
     it('deve atualizar apenas campos fornecidos', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: mockSession,
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await sessionService.updateSession('session-123', { notes: 'Novas notas' })
 
@@ -246,16 +246,16 @@ describe('sessionService', () => {
 
     it('deve lançar erro se sessão não encontrada', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(sessionService.updateSession('session-999', { name: 'Novo Nome' })).rejects.toThrow(
         'Erro ao atualizar sessão'
@@ -266,16 +266,16 @@ describe('sessionService', () => {
   describe('endSession', () => {
     it('deve encerrar sessão com sucesso', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: { ...mockSession, ended_at: new Date().toISOString() },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.endSession('session-123')
 
@@ -285,16 +285,16 @@ describe('sessionService', () => {
 
     it('deve lançar erro se sessão não encontrada', async () => {
       const mockQuery = {
-        update: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        select: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({
+        update: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Not found' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(sessionService.endSession('session-999')).rejects.toThrow('Erro ao finalizar sessão')
     })
@@ -303,15 +303,15 @@ describe('sessionService', () => {
   describe('getCampaignSessions', () => {
     it('deve retornar array vazio se não houver sessões', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: [],
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await sessionService.getCampaignSessions('camp-123')
 
@@ -320,15 +320,15 @@ describe('sessionService', () => {
 
     it('deve lançar erro se busca falhar', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        order: (jest.fn() as any).mockResolvedValue({
           data: null,
           error: { message: 'Database error' },
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(sessionService.getCampaignSessions('camp-123')).rejects.toThrow('Erro ao buscar sessões')
     })
