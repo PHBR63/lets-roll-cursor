@@ -92,10 +92,10 @@ describe('characterService - Sistema Ordem Paranormal', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(cacheModule.getCache as jest.Mock).mockResolvedValue(null)
-    ;(cacheModule.setCache as jest.Mock).mockResolvedValue(undefined)
-    ;(cacheModule.deleteCache as jest.Mock).mockResolvedValue(undefined)
-    ;(cacheModule.deleteCachePattern as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.getCache as jest.Mock).mockResolvedValue(null)
+      ; (cacheModule.setCache as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.deleteCache as jest.Mock).mockResolvedValue(undefined)
+      ; (cacheModule.deleteCachePattern as jest.Mock).mockResolvedValue(undefined)
   })
 
   describe('getCharacters', () => {
@@ -109,7 +109,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterService.getCharacters({ campaignId: 'camp-123' })
 
@@ -128,7 +128,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterService.getCharacters({ userId: 'user-123' })
 
@@ -138,7 +138,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
 
     it('deve retornar do cache se disponível', async () => {
       const cachedData = [mockCharacter]
-      ;(cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
+        ; (cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
 
       const result = await characterService.getCharacters({ campaignId: 'camp-123' })
 
@@ -156,7 +156,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(
         characterService.getCharacters({ campaignId: 'camp-123' })
@@ -175,11 +175,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
 
       const result = await characterService.createCharacter('user-123', {
         name: 'New Character',
@@ -235,11 +235,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
 
       const result = await characterService.createCharacter('user-123', {
         name: 'New Character',
@@ -261,11 +261,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(25)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(5)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(25)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(5)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
 
       await characterService.createCharacter('user-123', {
         name: 'New Character',
@@ -288,11 +288,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
 
       await expect(
         characterService.createCharacter('user-123', {
@@ -311,7 +311,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
           attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
           skills: {
             Luta: { attribute: 'FOR', training: 'COMPETENT', bonus: 10 },
-          },
+          } as any,
           nex: 30, // NEX < 35
         })
       ).rejects.toThrow('Nível de treinamento COMPETENT não é permitido para NEX 30%')
@@ -327,11 +327,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
 
       const result = await characterService.createCharacter('user-123', {
         name: 'New Character',
@@ -340,7 +340,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
         skills: {
           Luta: { attribute: 'FOR', training: 'COMPETENT', bonus: 10 },
-        },
+        } as any,
         nex: 35, // NEX >= 35
       })
 
@@ -356,7 +356,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
           attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
           skills: {
             Luta: { attribute: 'FOR', training: 'EXPERT', bonus: 15 },
-          },
+          } as any,
           nex: 50, // NEX < 70
         })
       ).rejects.toThrow('Nível de treinamento EXPERT não é permitido para NEX 50%')
@@ -372,11 +372,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(20)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(12)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(2)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(12)
 
       const result = await characterService.createCharacter('user-123', {
         name: 'New Character',
@@ -385,7 +385,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         attributes: { agi: 2, for: 2, int: 2, pre: 2, vig: 1 },
         skills: {
           Luta: { attribute: 'FOR', training: 'EXPERT', bonus: 15 },
-        },
+        } as any,
         nex: 70, // NEX >= 70
       })
 
@@ -404,7 +404,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterService.getCharacterById('char-123')
 
@@ -416,7 +416,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
 
     it('deve retornar do cache se disponível', async () => {
       const cachedData = { ...mockCharacter, inventory: [], abilities: [] }
-      ;(cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
+        ; (cacheModule.getCache as jest.Mock).mockResolvedValue(cachedData)
 
       const result = await characterService.getCharacterById('char-123')
 
@@ -434,7 +434,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(characterService.getCharacterById('char-999')).rejects.toThrow(
         'Erro ao buscar personagem'
@@ -454,7 +454,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterService.updateCharacter('char-123', {
         name: 'Updated Name',
@@ -491,7 +491,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         .mockResolvedValue(mockCharacter)
 
       await characterService.updateCharacter('char-123', {
-        skills: { Luta: { attribute: 'FOR', training: 'COMPETENT' } },
+        skills: { Luta: { attribute: 'FOR', training: 'COMPETENT' } } as any,
       })
 
       expect(updateSkillsSpy).toHaveBeenCalled()
@@ -508,7 +508,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(
         characterService.updateCharacter('char-999', { name: 'New Name' })
@@ -532,9 +532,9 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         eq: jest.fn().mockResolvedValue({ error: null }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockSelectQuery)
-        .mockReturnValueOnce(mockDeleteQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockSelectQuery)
+          .mockReturnValueOnce(mockDeleteQuery)
 
       await characterService.deleteCharacter('char-123')
 
@@ -558,9 +558,9 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         eq: jest.fn().mockResolvedValue({ error: { message: 'Delete failed' } }),
       }
 
-      ;(supabase.from as jest.Mock)
-        .mockReturnValueOnce(mockSelectQuery)
-        .mockReturnValueOnce(mockDeleteQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(mockSelectQuery)
+          .mockReturnValueOnce(mockDeleteQuery)
 
       await expect(characterService.deleteCharacter('char-123')).rejects.toThrow(
         'Erro ao deletar personagem'
@@ -578,12 +578,12 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(30)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(6)
-      ;(ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(30)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(15)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(6)
+        ; (ordemParanormalService.calculateDefense as jest.Mock).mockReturnValue(13)
 
       const result = await characterService.updateAttributes('char-123', newAttributes)
 
@@ -611,10 +611,10 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateSkillBonus as jest.Mock)
-        .mockReturnValueOnce(10) // COMPETENT
-        .mockReturnValueOnce(5) // TRAINED
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateSkillBonus as jest.Mock)
+          .mockReturnValueOnce(10) // COMPETENT
+          .mockReturnValueOnce(5) // TRAINED
 
       await characterService.updateSkills('char-123', newSkills)
 
@@ -632,7 +632,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const mockApplyResult = {
         newConditions: ['ABALADO'],
@@ -643,7 +643,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         },
       }
 
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
 
       const result = await characterService.applyCondition('char-123', 'ABALADO')
 
@@ -664,7 +664,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const mockApplyResult = {
         newConditions: ['MORRENDO', 'INCONSCIENTE'],
@@ -675,7 +675,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         },
       }
 
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
 
       const result = await characterService.applyCondition('char-123', 'MORRENDO')
 
@@ -698,7 +698,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterService.removeCondition('char-123', 'ABALADO')
 
@@ -719,11 +719,11 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(35)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(18)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(8)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(35)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(18)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(8)
 
       await characterService.updateNEX('char-123', 10)
 
@@ -752,9 +752,9 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
 
       const result = await characterService.updatePV('char-123', 15, false)
 
@@ -770,9 +770,9 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
 
       await characterService.updatePV('char-123', -5, true)
 
@@ -788,13 +788,13 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(true)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(true)
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue({
-        newConditions: ['MORRENDO', 'INCONSCIENTE'],
-        effects: { message: 'Morrendo', autoConditions: ['INCONSCIENTE'], removeConditions: [] },
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue({
+          newConditions: ['MORRENDO', 'INCONSCIENTE'],
+          effects: { message: 'Morrendo', autoConditions: ['INCONSCIENTE'], removeConditions: [] },
+        })
 
       const result = await characterService.updatePV('char-123', 0, false)
 
@@ -815,9 +815,9 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
 
       await characterService.updatePV('char-123', 10, false)
 
@@ -839,8 +839,8 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
 
       const result = await characterService.updateSAN('char-123', 10, false)
 
@@ -855,8 +855,8 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isInsane as jest.Mock).mockReturnValue(true)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isInsane as jest.Mock).mockReturnValue(true)
 
       await characterService.updateSAN('char-123', 0, false)
 
@@ -883,8 +883,8 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
 
       await characterService.updateSAN('char-123', 3, false)
 
@@ -906,7 +906,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await characterService.updatePE('char-123', 5, false)
 
@@ -921,7 +921,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await characterService.updatePE('char-123', 2, true)
 
@@ -938,26 +938,26 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
-        defense: 0,
-        defenseBase: false,
-        dicePenalty: 0,
-        cannotAct: false,
-        cannotReact: false,
-        cannotMove: false,
-        speedReduction: 1,
-        attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
-        skillPenalties: {},
-      })
-      ;(ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
-        dice: [15],
-        result: 15,
-        bonus: 5,
-        total: 20,
-        advantage: true,
-        disadvantage: false,
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
+          defense: 0,
+          defenseBase: false,
+          dicePenalty: 0,
+          cannotAct: false,
+          cannotReact: false,
+          cannotMove: false,
+          speedReduction: 1,
+          attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
+          skillPenalties: {},
+        })
+        ; (ordemParanormalService.rollAttributeTest as jest.Mock).mockReturnValue({
+          dice: [15],
+          result: 15,
+          bonus: 5,
+          total: 20,
+          advantage: true,
+          disadvantage: false,
+        })
 
       const result = await characterService.rollSkillTest('char-123', 'Luta', 15)
 
@@ -978,7 +978,7 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         single: jest.fn().mockResolvedValue({ data: characterWithoutSkill, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await expect(
         characterService.rollSkillTest('char-123', 'Luta', 15)
@@ -994,27 +994,27 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
-        defense: 0,
-        defenseBase: false,
-        dicePenalty: 0,
-        cannotAct: false,
-        cannotReact: false,
-        cannotMove: false,
-        speedReduction: 1,
-        attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
-        skillPenalties: {},
-      })
-      ;(ordemParanormalService.rollAttack as jest.Mock).mockReturnValue({
-        dice: [18],
-        result: 18,
-        bonus: 5,
-        total: 23,
-        hit: true,
-        critical: false,
-        targetDefense: 15,
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculateConditionPenalties as jest.Mock).mockReturnValue({
+          defense: 0,
+          defenseBase: false,
+          dicePenalty: 0,
+          cannotAct: false,
+          cannotReact: false,
+          cannotMove: false,
+          speedReduction: 1,
+          attributePenalties: { agi: 0, for: 0, int: 0, pre: 0, vig: 0 },
+          skillPenalties: {},
+        })
+        ; (ordemParanormalService.rollAttack as jest.Mock).mockReturnValue({
+          dice: [18],
+          result: 18,
+          bonus: 5,
+          total: 23,
+          hit: true,
+          critical: false,
+          targetDefense: 15,
+        })
 
       const result = await characterService.rollAttack('char-123', 'Luta', 15)
 
@@ -1062,8 +1062,8 @@ describe('characterService - Sistema Ordem Paranormal', () => {
         single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculatePERecovery as jest.Mock).mockReturnValue(2)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculatePERecovery as jest.Mock).mockReturnValue(2)
 
       const updatePESpy = jest.spyOn(characterService, 'updatePE').mockResolvedValue(mockCharacter as any)
 

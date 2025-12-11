@@ -152,7 +152,7 @@ export function CharacterSheet() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.session.access_token}`,
         },
-        body: JSON.stringify({ value, isDelta }),
+        body: JSON.stringify({ [resource]: value, isDelta }),
       })
 
       if (!response.ok) {
@@ -192,7 +192,7 @@ export function CharacterSheet() {
       }
 
       toast.success('Personagem deletado', `${character.name} foi removido com sucesso.`)
-      
+
       // Redirecionar para lista de personagens ou dashboard
       if (character.campaign_id) {
         navigate(`/campaign/${character.campaign_id}`)

@@ -1,5 +1,6 @@
 /**
  * Testes para characterConditionsService
+ * Cobre aplicação e remoção de condições de personagens
  */
 import { characterConditionsService } from '../character/characterConditionsService'
 import { supabase } from '../../config/supabase'
@@ -17,6 +18,11 @@ jest.mock('../ordemParanormalService', () => ({
   },
 }))
 
+jest.mock('../cache', () => ({
+  deleteCache: jest.fn(),
+  getCharacterCacheKey: jest.fn((filters) => `characters:${JSON.stringify(filters)}`),
+}))
+
 describe('characterConditionsService', () => {
   const mockCharacter = {
     id: 'char-123',
@@ -30,14 +36,22 @@ describe('characterConditionsService', () => {
 
   describe('applyCondition', () => {
     it('deve aplicar condição ao personagem', async () => {
+      // Personagem atualizado com a condição
+      const updatedCharacter = {
+        ...mockCharacter,
+        conditions: ['ABALADO'],
+      }
+
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+        single: jest.fn()
+          .mockResolvedValueOnce({ data: mockCharacter, error: null }) // fetch inicial
+          .mockResolvedValueOnce({ data: updatedCharacter, error: null }), // após update
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const mockApplyResult = {
         newConditions: ['ABALADO'],
@@ -48,7 +62,7 @@ describe('characterConditionsService', () => {
         },
       }
 
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
 
       const result = await characterConditionsService.applyCondition('char-123', 'ABALADO')
 
@@ -58,31 +72,33 @@ describe('characterConditionsService', () => {
     })
 
     it('deve aplicar condição com condições derivadas', async () => {
+      // Personagem atualizado com condições derivadas
+      const updatedCharacter = {
+        ...mockCharacter,
+        conditions: ['MORRENDO', 'INCONSCIENTE', 'SANGRANDO'],
+      }
+
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest
-          .fn()
+        single: jest.fn()
           .mockResolvedValueOnce({ data: mockCharacter, error: null })
-          .mockResolvedValueOnce({
-            data: { ...mockCharacter, conditions: ['MORRENDO', 'INCONSCIENTE'] },
-            error: null,
-          }),
+          .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const mockApplyResult = {
-        newConditions: ['MORRENDO', 'INCONSCIENTE'],
+        newConditions: ['MORRENDO', 'INCONSCIENTE', 'SANGRANDO'],
         effects: {
           message: 'Personagem está morrendo!',
-          autoConditions: ['INCONSCIENTE'],
+          autoConditions: ['INCONSCIENTE', 'SANGRANDO'],
           removeConditions: [],
         },
       }
 
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue(mockApplyResult)
 
       const result = await characterConditionsService.applyCondition('char-123', 'MORRENDO')
 
@@ -98,14 +114,21 @@ describe('characterConditionsService', () => {
         conditions: ['ABALADO', 'CEGO'],
       }
 
+      const updatedCharacter = {
+        ...mockCharacter,
+        conditions: ['CEGO'],
+      }
+
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: characterWithCondition, error: null }),
+        single: jest.fn()
+          .mockResolvedValueOnce({ data: characterWithCondition, error: null })
+          .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterConditionsService.removeCondition('char-123', 'ABALADO')
 
@@ -114,6 +137,7 @@ describe('characterConditionsService', () => {
           conditions: ['CEGO'],
         })
       )
+      expect(result.conditions).toEqual(['CEGO'])
     })
 
     it('deve retornar personagem sem condições se remover todas', async () => {
@@ -122,17 +146,21 @@ describe('characterConditionsService', () => {
         conditions: ['ABALADO'],
       }
 
+      const updatedCharacter = {
+        ...mockCharacter,
+        conditions: [],
+      }
+
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
-        single: jest
-          .fn()
+        single: jest.fn()
           .mockResolvedValueOnce({ data: characterWithCondition, error: null })
-          .mockResolvedValueOnce({ data: { ...mockCharacter, conditions: [] }, error: null }),
+          .mockResolvedValueOnce({ data: updatedCharacter, error: null }),
         update: jest.fn().mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await characterConditionsService.removeCondition('char-123', 'ABALADO')
 

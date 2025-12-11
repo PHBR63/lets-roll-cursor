@@ -1,5 +1,6 @@
 /**
  * Testes para campaignService
+ * Cobre operações CRUD de campanhas
  */
 import { campaignService } from '../campaignService'
 import { supabase } from '../../config/supabase'
@@ -11,7 +12,7 @@ jest.mock('../../config/supabase', () => ({
 }))
 
 jest.mock('../cache', () => ({
-  getCache: jest.fn(),
+  getCache: jest.fn().mockResolvedValue(null), // Sem cache para testes
   setCache: jest.fn(),
   deleteCache: jest.fn(),
   deleteCachePattern: jest.fn(),
@@ -23,7 +24,7 @@ describe('campaignService', () => {
     id: 'camp-123',
     name: 'Test Campaign',
     description: 'Test Description',
-    master_id: 'user-123',
+    created_by: 'user-123',
     system_rpg: 'ORDEM_PARANORMAL',
     created_at: '2024-01-01T00:00:00Z',
   }
@@ -32,52 +33,60 @@ describe('campaignService', () => {
     jest.clearAllMocks()
   })
 
-  describe('getCampaigns', () => {
-    it('deve retornar lista de campanhas', async () => {
-      const mockCampaigns = [mockCampaign]
+  describe('getUserCampaigns', () => {
+    it('deve retornar lista de campanhas do usuário via campaign_participants', async () => {
+      // Estrutura real: busca campaign_participants e faz join com campaigns
+      const mockParticipants = [
+        {
+          role: 'master',
+          campaign: mockCampaign,
+        },
+      ]
 
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({ data: mockCampaigns, error: null }),
+        eq: jest.fn().mockResolvedValue({ data: mockParticipants, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       const result = await campaignService.getUserCampaigns('user-123')
 
-      expect(result).toEqual(mockCampaigns)
-    })
+      // Verifica que busca em campaign_participants com user_id
+      expect(supabase.from).toHaveBeenCalledWith('campaign_participants')
+      expect(mockQuery.eq).toHaveBeenCalledWith('user_id', 'user-123')
 
-    it('deve filtrar por master_id', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        order: jest.fn().mockResolvedValue({ data: [mockCampaign], error: null }),
-      }
-
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-
-      await campaignService.getUserCampaigns('user-123')
-
-      expect(mockQuery.eq).toHaveBeenCalledWith('master_id', 'user-123')
+      // Resultado deve ter os dados da campanha + role
+      expect(result).toHaveLength(1)
+      expect((result[0] as any).name).toBe('Test Campaign')
+      expect((result[0] as any).role).toBe('master')
     })
   })
 
   describe('getCampaignById', () => {
-    it('deve retornar campanha por ID', async () => {
-      const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCampaign, error: null }),
-      }
+    it('deve retornar campanha por ID com participants', async () => {
+      const mockParticipants = [
+        { role: 'master', user: { id: 'user-123', username: 'TestUser' } },
+      ]
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        // Mock para duas chamadas: campaigns e campaign_participants
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce({
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockReturnThis(),
+            single: jest.fn().mockResolvedValue({ data: mockCampaign, error: null }),
+          })
+          .mockReturnValueOnce({
+            select: jest.fn().mockReturnThis(),
+            eq: jest.fn().mockResolvedValue({ data: mockParticipants, error: null }),
+          })
 
       const result = await campaignService.getCampaignById('camp-123')
 
-      expect(result).toEqual(mockCampaign)
-      expect(mockQuery.eq).toHaveBeenCalledWith('id', 'camp-123')
+      expect(result.id).toBe('camp-123')
+      expect(result.name).toBe('Test Campaign')
+      expect(result.participants).toBeDefined()
+      expect(Array.isArray(result.participants)).toBe(true)
     })
   })
 
@@ -86,65 +95,110 @@ describe('campaignService', () => {
       const newCampaign = {
         name: 'New Campaign',
         description: 'New Description',
-        system_rpg: 'ORDEM_PARANORMAL',
+        systemRpg: 'ORDEM_PARANORMAL',
       }
 
-      const mockQuery = {
+      // Mock para ensureUserExists
+      const userCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { id: 'user-123' }, error: null }),
+      }
+
+      // Mock para insert de campanha
+      const campaignInsertQuery = {
         insert: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({
-          data: { ...mockCampaign, ...newCampaign },
+          data: { id: 'camp-new', ...newCampaign, created_by: 'user-123' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+      // Mock para insert de participante
+      const participantInsertQuery = {
+        insert: jest.fn().mockResolvedValue({ error: null }),
+      }
+
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(userCheckQuery) // ensureUserExists
+          .mockReturnValueOnce(campaignInsertQuery) // insert campanha
+          .mockReturnValueOnce(participantInsertQuery) // insert participante
 
       const result = await campaignService.createCampaign('user-123', newCampaign)
 
       expect(result).toBeDefined()
-      expect(mockQuery.insert).toHaveBeenCalled()
+      expect(result.id).toBe('camp-new')
     })
   })
 
   describe('updateCampaign', () => {
-    it('deve atualizar campanha', async () => {
+    it('deve atualizar campanha se usuário for mestre', async () => {
       const updateData = {
         name: 'Updated Campaign',
       }
 
-      const mockQuery = {
+      // Mock para verificação de mestre
+      const masterCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { role: 'master' }, error: null }),
+      }
+
+      // Mock para update
+      const updateQuery = {
         update: jest.fn().mockReturnThis(),
         eq: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         single: jest.fn().mockResolvedValue({
-          data: { ...mockCampaign, ...updateData },
+          data: { ...mockCampaign, name: 'Updated Campaign' },
           error: null,
         }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(masterCheckQuery)
+          .mockReturnValueOnce(updateQuery)
 
       const result = await campaignService.updateCampaign('camp-123', 'user-123', updateData)
 
       expect(result.name).toBe('Updated Campaign')
-      expect(mockQuery.update).toHaveBeenCalled()
     })
   })
 
   describe('deleteCampaign', () => {
-    it('deve deletar campanha', async () => {
-      const mockQuery = {
+    it('deve deletar campanha se usuário for mestre', async () => {
+      // Mock para buscar campanha
+      const campaignQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({
+          data: { id: 'camp-123', created_by: 'user-123' },
+          error: null
+        }),
+      }
+
+      // Mock para verificar mestre
+      const masterCheckQuery = {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        single: jest.fn().mockResolvedValue({ data: { role: 'master' }, error: null }),
+      }
+
+      // Mock para delete
+      const deleteQuery = {
         delete: jest.fn().mockReturnThis(),
         eq: jest.fn().mockResolvedValue({ error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock)
+          .mockReturnValueOnce(campaignQuery) // buscar campanha
+          .mockReturnValueOnce(masterCheckQuery) // verificar mestre
+          .mockReturnValueOnce(deleteQuery) // deletar
 
       await campaignService.deleteCampaign('camp-123', 'user-123')
 
-      expect(mockQuery.delete).toHaveBeenCalled()
-      expect(mockQuery.eq).toHaveBeenCalledWith('id', 'camp-123')
+      expect(deleteQuery.delete).toHaveBeenCalled()
     })
   })
 })
