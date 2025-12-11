@@ -53,7 +53,7 @@ export function CreateCharacter() {
   const toast = useToast()
   const { handleErrorWithToast, handleResponseError } = useApiError()
   const [loading, setLoading] = useState(false)
-  
+
   // Estado para atributos (começam em 1)
   const [attributes, setAttributes] = useState({
     agi: 1,
@@ -62,10 +62,10 @@ export function CreateCharacter() {
     pre: 1,
     vig: 1,
   })
-  
+
   // Pool de pontos disponíveis (inicial: 4)
   const [availablePoints, setAvailablePoints] = useState(4)
-  
+
   // Flag para rastrear se já reduziu um atributo para 0
   const [hasReducedAttribute, setHasReducedAttribute] = useState(false)
 
@@ -90,10 +90,10 @@ export function CreateCharacter() {
   })
 
   const selectedOrigin = watch('origin')
-  
+
   // Observar mudanças nos atributos do formulário
   const watchedAttributes = watch(['agi', 'for', 'int', 'pre', 'vig'])
-  
+
   // Sincronizar estado local com formulário
   useEffect(() => {
     setAttributes({
@@ -104,35 +104,35 @@ export function CreateCharacter() {
       vig: watchedAttributes[4] || 1,
     })
   }, [watchedAttributes])
-  
+
   // Calcular soma total dos atributos
   const totalAttributes = useMemo(() => {
     return attributes.agi + attributes.for + attributes.int + attributes.pre + attributes.vig
   }, [attributes])
-  
+
   // Calcular pontos usados (atributos - 5 base)
   const usedPoints = useMemo(() => {
     return totalAttributes - 5
   }, [totalAttributes])
-  
+
   // Validar se distribuição está correta
   const isValidDistribution = useMemo(() => {
     // Soma deve ser 9 (5 base + 4 distribuídos)
     return totalAttributes === 9
   }, [totalAttributes])
-  
+
   // Verificar se algum atributo excede o máximo (3)
   const exceedsMax = useMemo(() => {
     return Object.values(attributes).some(attr => attr > 3)
   }, [attributes])
-  
+
   /**
    * Ajusta atributo e pool de pontos
    */
   const adjustAttribute = (attrName: keyof typeof attributes, delta: number) => {
     const currentValue = attributes[attrName]
     const newValue = currentValue + delta
-    
+
     // Validações
     if (newValue < 0) {
       // Permitir reduzir para 0 apenas uma vez
@@ -144,24 +144,24 @@ export function CreateCharacter() {
       }
       return
     }
-    
+
     if (newValue > 3) {
       return // Máximo 3 na criação
     }
-    
+
     // Se estava em 0 e está aumentando, não precisa mais do bônus
     if (currentValue === 0 && delta > 0 && hasReducedAttribute) {
       setAvailablePoints(prev => prev - 1) // Remove bônus ao sair de 0
       setHasReducedAttribute(false)
     }
-    
+
     // Calcular mudança no pool
     const poolChange = -delta
-    
+
     if (availablePoints + poolChange < 0) {
       return // Não há pontos suficientes
     }
-    
+
     setAttributes(prev => ({ ...prev, [attrName]: newValue }))
     setAvailablePoints(prev => prev + poolChange)
     setValue(attrName, newValue)
@@ -248,7 +248,7 @@ export function CreateCharacter() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title={isStandalone ? "Criar Personagem - Let's Roll" : `Criar Personagem - Campanha | Let's Roll`}
-        description={isStandalone 
+        description={isStandalone
           ? "Crie um novo personagem para testes ou uso futuro. Sistema Ordem Paranormal completo."
           : "Crie um novo personagem para sua campanha de RPG. Sistema Ordem Paranormal completo."
         }
@@ -343,7 +343,7 @@ export function CreateCharacter() {
                     placeholder="Descreva o conceito do seu personagem..."
                     rows={4}
                     maxLength={1000}
-                    className="w-full px-3 py-2 bg-background-secondary border border-card-secondary rounded-md text-white placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 bg-[#2A2A3A] border border-[#8000FF]/20 rounded-md text-white placeholder:text-[#A0A0A0] focus:outline-none focus:ring-2 focus:ring-[#8000FF] focus:border-transparent resize-none"
                   />
                   {errors.narrativeConcept && (
                     <p className="text-red-500 text-sm">{errors.narrativeConcept.message}</p>
@@ -395,7 +395,7 @@ export function CreateCharacter() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Informações de validação */}
                   <div className="bg-card-secondary p-3 rounded-md space-y-1">
                     <p className="text-text-secondary text-sm">
@@ -426,7 +426,7 @@ export function CreateCharacter() {
                       </p>
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {(['agi', 'for', 'int', 'pre', 'vig'] as const).map((attrName) => {
                       const attrLabel = {
@@ -436,11 +436,11 @@ export function CreateCharacter() {
                         pre: 'Presença',
                         vig: 'Vigor',
                       }[attrName]
-                      
+
                       const value = attributes[attrName]
                       const canDecrease = value > 0
                       const canIncrease = value < 3 && availablePoints > 0
-                      
+
                       return (
                         <div key={attrName} className="space-y-2">
                           <Label htmlFor={attrName} className="text-white text-sm">
@@ -506,8 +506,8 @@ export function CreateCharacter() {
                       !isValidDistribution
                         ? 'A soma dos atributos deve ser 9'
                         : exceedsMax
-                        ? 'Nenhum atributo pode exceder 3'
-                        : ''
+                          ? 'Nenhum atributo pode exceder 3'
+                          : ''
                     }
                   >
                     {loading ? (
