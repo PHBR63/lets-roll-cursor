@@ -1,8 +1,11 @@
 
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+// import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Loader2 } from 'lucide-react'
+
+// Cast Loader2 to any to avoid "cannot be used as a JSX component" error
+const Loader2Icon = Loader2 as any
 
 interface AttributeDisplayProps {
     label: string
@@ -54,15 +57,15 @@ export function AttributeDisplay({
                         className="absolute -bottom-2 -right-2 h-6 w-6 rounded-full p-0 bg-accent/20 hover:bg-accent/40 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                         title={`Rolar ${label}`}
                     >
-                        {isRolling ? <Loader2 className="w-3 h-3 animate-spin" /> : '🎲'}
+                        {isRolling ? <Loader2Icon className="w-3 h-3 animate-spin" /> : '🎲'}
                     </Button>
                 )}
             </div>
 
             {/* Label abaixo */}
-            <Label className="text-white font-semibold text-sm tracking-wide uppercase text-center mt-2">
+            <label className="text-white font-semibold text-sm tracking-wide uppercase text-center mt-2 block">
                 {label}
-            </Label>
+            </label>
 
             {/* Dados extras (info) */}
             <div className="text-[10px] text-white/50 text-center uppercase tracking-wider">
