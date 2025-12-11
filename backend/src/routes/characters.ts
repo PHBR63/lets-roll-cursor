@@ -120,12 +120,12 @@ charactersRouter.post(
     } catch (error: unknown) {
       const err = error as AppError
       // Retornar 400 para erros de validação, 500 para erros internos
-      const statusCode = err.message?.includes('inválid') || 
-                        err.message?.includes('não encontrada') || 
-                        err.message?.includes('não participa') ||
-                        err.message?.includes('não pode')
-                        ? 400 
-                        : 500
+      const statusCode = err.message?.includes('inválid') ||
+        err.message?.includes('não encontrada') ||
+        err.message?.includes('não participa') ||
+        err.message?.includes('não pode')
+        ? 400
+        : 500
       res.status(statusCode).json({ error: err.message || 'Erro desconhecido' })
     }
   }
@@ -340,6 +340,16 @@ charactersRouter.post('/:id/apply-condition', async (req: Request, res: Response
 charactersRouter.post('/:id/process-turn', async (req: Request, res: Response) => {
   try {
     const result = await characterService.processTurn(req.params.id)
+    res.json(result)
+  } catch (error: any) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Tentar estancar sangramento (teste de Fortitude DT 15)
+charactersRouter.post('/:id/stop-bleeding', async (req: Request, res: Response) => {
+  try {
+    const result = await characterService.stopBleeding(req.params.id)
     res.json(result)
   } catch (error: any) {
     res.status(500).json({ error: error.message })

@@ -50,17 +50,17 @@ describe('characterResourcesService', () => {
   describe('updateNEX', () => {
     it('deve atualizar NEX e recalcular recursos', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
-      ;(ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(35)
-      ;(ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(18)
-      ;(ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(8)
+        ; (ordemParanormalService.calculateMaxPV as jest.Mock).mockReturnValue(35)
+        ; (ordemParanormalService.calculateMaxSAN as jest.Mock).mockReturnValue(18)
+        ; (ordemParanormalService.calculateMaxPE as jest.Mock).mockReturnValue(8)
 
       await characterResourcesService.updateNEX('char-123', 10)
 
@@ -83,15 +83,15 @@ describe('characterResourcesService', () => {
   describe('updatePV', () => {
     it('deve atualizar PV como valor absoluto', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
 
       const result = await characterResourcesService.updatePV('char-123', 15, false)
 
@@ -101,15 +101,15 @@ describe('characterResourcesService', () => {
 
     it('deve atualizar PV como delta', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(false)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(false)
 
       await characterResourcesService.updatePV('char-123', -5, true)
 
@@ -118,19 +118,19 @@ describe('characterResourcesService', () => {
 
     it('deve aplicar condição Morrendo se PV <= 0', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isDying as jest.Mock).mockReturnValue(true)
-      ;(ordemParanormalService.isInjured as jest.Mock).mockReturnValue(true)
-      ;(ordemParanormalService.applyCondition as jest.Mock).mockReturnValue({
-        newConditions: ['MORRENDO', 'INCONSCIENTE'],
-        effects: { message: 'Morrendo', autoConditions: ['INCONSCIENTE'], removeConditions: [] },
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isDying as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.isInjured as jest.Mock).mockReturnValue(true)
+        ; (ordemParanormalService.applyCondition as jest.Mock).mockReturnValue({
+          newConditions: ['MORRENDO', 'INCONSCIENTE'],
+          effects: { message: 'Morrendo', autoConditions: ['INCONSCIENTE'], removeConditions: [] },
+        })
 
       const result = await characterResourcesService.updatePV('char-123', 0, false)
 
@@ -142,14 +142,14 @@ describe('characterResourcesService', () => {
   describe('updateSAN', () => {
     it('deve atualizar SAN e aplicar condições se necessário', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isInsane as jest.Mock).mockReturnValue(false)
 
       const result = await characterResourcesService.updateSAN('char-123', 10, false)
 
@@ -158,14 +158,14 @@ describe('characterResourcesService', () => {
 
     it('deve aplicar Enlouquecendo se SAN = 0', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.isInsane as jest.Mock).mockReturnValue(true)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.isInsane as jest.Mock).mockReturnValue(true)
 
       await characterResourcesService.updateSAN('char-123', 0, false)
 
@@ -180,13 +180,13 @@ describe('characterResourcesService', () => {
   describe('updatePE', () => {
     it('deve atualizar PE como valor absoluto', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await characterResourcesService.updatePE('char-123', 5, false)
 
@@ -195,13 +195,13 @@ describe('characterResourcesService', () => {
 
     it('deve atualizar PE como delta', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
-        update: jest.fn().mockReturnThis(),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
+        update: (jest.fn() as any).mockReturnThis(),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
 
       await characterResourcesService.updatePE('char-123', 2, true)
 
@@ -246,17 +246,17 @@ describe('characterResourcesService', () => {
   describe('recoverPE', () => {
     it('deve recuperar PE baseado no NEX', async () => {
       const mockQuery = {
-        select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockReturnThis(),
-        single: jest.fn().mockResolvedValue({ data: mockCharacter, error: null }),
+        select: (jest.fn() as any).mockReturnThis(),
+        eq: (jest.fn() as any).mockReturnThis(),
+        single: (jest.fn() as any).mockResolvedValue({ data: mockCharacter, error: null }),
       }
 
-      ;(supabase.from as jest.Mock).mockReturnValue(mockQuery)
-      ;(ordemParanormalService.calculatePERecovery as jest.Mock).mockReturnValue(2)
+        ; (supabase.from as jest.Mock).mockReturnValue(mockQuery)
+        ; (ordemParanormalService.calculatePERecovery as jest.Mock).mockReturnValue(2)
 
       const updatePESpy = jest
         .spyOn(characterResourcesService, 'updatePE')
-        .mockResolvedValue(mockCharacter as any)
+        .mockResolvedValue({ character: mockCharacter } as any)
 
       await characterResourcesService.recoverPE('char-123')
 

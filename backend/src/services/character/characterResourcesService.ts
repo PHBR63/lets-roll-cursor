@@ -313,7 +313,7 @@ export const characterResourcesService = {
       // Invalidar cache
       await deleteCache(getCharacterCacheKey({ characterId: id }))
 
-      return data
+      return { character: data }
     } catch (error: unknown) {
       const err = error as AppError
       logger.error({ error }, 'Error updating PE')

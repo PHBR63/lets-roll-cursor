@@ -71,15 +71,15 @@ export function ApplyDamageModal({
         const endpoint = damageType === 'heal'
           ? `/api/characters/${targetId}/pv`
           : damageType === 'physical'
-          ? `/api/characters/${targetId}/apply-damage`
-          : `/api/characters/${targetId}/apply-damage`
+            ? `/api/characters/${targetId}/apply-damage`
+            : `/api/characters/${targetId}/apply-damage`
 
         const body = damageType === 'heal'
-          ? { value: amount }
+          ? { pv: amount, isDelta: true }
           : {
-              type: damageType === 'physical' ? 'physical' : 'mental',
-              amount: amount,
-            }
+            type: damageType === 'physical' ? 'physical' : 'mental',
+            damage: amount,
+          }
 
         const response = await fetch(`${apiUrl}${endpoint}`, {
           method: damageType === 'heal' ? 'PUT' : 'POST',
@@ -98,7 +98,7 @@ export function ApplyDamageModal({
         // Aplicar dano/cura em criatura
         const stats = currentStats
         const vida = stats.vida || stats.pv || { current: 0, max: 0 }
-        
+
         let newCurrent = vida.current
         if (damageType === 'heal') {
           newCurrent = Math.min(vida.current + amount, vida.max)
