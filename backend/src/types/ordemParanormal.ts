@@ -40,6 +40,18 @@ export interface Skills {
 }
 
 /**
+ * Definição estática de uma perícia (regras do sistema)
+ */
+export interface SkillDefinition {
+  name: string
+  attribute: SkillAttribute
+  trainedOnly: boolean
+  penaltyArmor?: boolean
+  kitItems?: string[]
+}
+
+
+/**
  * Recursos do personagem (PV, SAN, PE, NEX)
  */
 export interface CharacterStats {

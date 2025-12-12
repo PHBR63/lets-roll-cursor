@@ -207,6 +207,7 @@ export const ordemParanormalService = {
     advantage: boolean
     disadvantage: boolean
     selectedDice: number // Dado escolhido (maior ou menor)
+    breakdown: string // Texto explicativo da rolagem
   } {
     let diceCount: number
     let advantage = false

@@ -221,6 +221,168 @@ export const diceService = {
   },
 
   /**
+   * Resolve e processa uma rolagem de perícia completa com autoridade do backend
+   */
+  async resolveSkillRoll(data: {
+    characterId: string
+    skillName: string
+    userId: string
+    campaignId: string
+    sessionId?: string
+    isPrivate?: boolean
+    context?: string // Contexto opcional (ex: "Investigar cena")
+  }) {
+    try {
+      // 1. Buscar dados completos do personagem (incluindo inventário e condições)
+      // Import dinâmico para evitar dependência circular se houver
+      const { characterService } = await import('./characterService')
+      const character = await characterService.getCharacterById(data.characterId)
+
+      const { getSkillDefinition } = await import('../data/skillsCatalog')
+      const { ordemParanormalService } = await import('./ordemParanormalService')
+
+      // 2. Buscar definição da perícia
+      const skillDef = getSkillDefinition(data.skillName)
+      if (!skillDef) {
+        throw new Error(`Perícia '${data.skillName}' não encontrada no sistema.`)
+      }
+
+      // 3. Resolver Atributo Base
+      // Por padrão usa o do catálogo, mas condições podem afetar
+      // TODO: Permitir override se contexto exigir (ex: Luta com AGI) - por enquanto fixo
+      const attributeName = skillDef.attribute
+      const attributes = character.attributes as any
+      let attributeValue = attributes[attributeName.toLowerCase()] || 0
+
+      // 4. Resolver Nível de Treinamento
+      const skills = character.skills as any
+      const charSkill = skills[data.skillName]
+      const training = charSkill ? charSkill.training : 'UNTRAINED'
+
+      // 5. Validar restrição "Treinada Apenas"
+      if (skillDef.trainedOnly && training === 'UNTRAINED') {
+        throw new Error(`A perícia ${data.skillName} exige treinamento (Veterano/Expert/Treinado) para ser utilizada.`)
+      }
+
+      // 6. Calcular Modificadores (Dados e Bônus Fixo)
+      const conditions = character.conditions || []
+      const penalties = ordemParanormalService.calculateConditionPenalties(conditions)
+
+      // Penalidades de Condições nos Dados
+      // Abalado (-1D), Apavorado (-2D), etc.
+      let diceMod = penalties.dicePenalty
+
+      // Penalidades específicas de atributo
+      // Ex: Fraco (-1 FOR, AGI, VIG) -> reduz o valor do atributo diretamente
+      const attrKey = attributeName.toLowerCase() as keyof typeof penalties.attributePenalties
+      const attrPenalty = penalties.attributePenalties[attrKey] || 0
+      attributeValue += attrPenalty
+
+      // Penalidades específicas de perícia (ex: Cego -2D Percepção)
+      if (penalties.skillPenalties[data.skillName]) {
+        diceMod += penalties.skillPenalties[data.skillName]
+      }
+
+      // Penalidade de Armadura (se aplicável)
+      // TODO: Verificar se está usando armadura e aplicar penalidade se a perícia exige (acrobacia, crime, furtividade...)
+      // Por simplificação agora, assumimos 0 ou implementamos checagem de inventário brevemente
+      // if (skillDef.penaltyArmor) { ... check inventory for equipped items with penalty ... }
+
+      // 7. Verificar Kits de Perícia
+      let flatBonus = 0
+      let missingKit = false
+
+      if (skillDef.kitItems && skillDef.kitItems.length > 0) {
+        // Verificar se tem algum dos itens necessários no inventário
+        const inventory = character.inventory || []
+        const hasKit = inventory.some((item: any) =>
+          item && item.name && skillDef.kitItems?.some(kitName => item.name.toLowerCase().includes(kitName.toLowerCase()))
+        )
+
+        if (!hasKit) {
+          flatBonus -= 5 // Penalidade sem kit
+          missingKit = true
+        }
+      }
+
+      // 8. Executar Rolagem (ordemParanormalService)
+      const rollResult = ordemParanormalService.rollSkillTest({
+        attributeValue, // Atributo já penalizado (Fraco/Debilitado afetam o valor base)
+        training,
+        flatBonus,
+        diceMod, // Modificadores de dados extras (Abalado, Cego, etc.)
+        skillName: data.skillName
+      })
+
+      // 9. Montar Breakdown Rico
+      let richBreakdown = `**${data.skillName}**\n`
+
+      // Linha 1: Atributo
+      const attrBase = (attributes[attributeName.toLowerCase()] || 0)
+      const attrFinal = attributeValue
+      richBreakdown += `Atributo (${attributeName}): ${attrBase}`
+      if (attrPenalty !== 0) richBreakdown += ` ${attrPenalty > 0 ? '+' : ''}${attrPenalty} (Condição)`
+      richBreakdown += ` = ${attrFinal}d20\n`
+
+      // Linha 2: Treinamento
+      const trainingBonus = ordemParanormalService.calculateSkillBonus(training)
+      richBreakdown += `Treinamento: ${training} (+${trainingBonus})\n`
+
+      // Linha 3: Outros
+      if (missingKit) richBreakdown += `Kit: Ausente (-5)\n`
+      if (diceMod !== 0) richBreakdown += `Dados Extras: ${diceMod > 0 ? '+' : ''}${diceMod}d20\n`
+
+      richBreakdown += `\nResultado: [${rollResult.dice.join(', ')}] ${rollResult.dice.length > 1 ? `(Escolhe ${rollResult.result})` : ''}`
+      richBreakdown += ` + ${trainingBonus + flatBonus} = **${rollResult.total}**`
+
+      // 10. Salvar no Banco (Dice Rolls)
+      const formula = `${attrFinal}d20 + ${trainingBonus + flatBonus}`
+
+      const { data: rollRecord, error } = await supabase
+        .from('dice_rolls')
+        .insert({
+          campaign_id: data.campaignId,
+          session_id: data.sessionId || null,
+          user_id: data.userId,
+          character_id: data.characterId,
+          formula: formula,
+          result: rollResult.total,
+          details: {
+            rolls: rollResult.dice,
+            result: rollResult.result,
+            trainingBonus,
+            flatBonus,
+            breakdown: richBreakdown, // Breakdown formatado
+            type: 'SKILL',
+            skill: data.skillName,
+            attribute: attributeName,
+            training: training,
+            missingKit: missingKit
+          },
+          is_private: data.isPrivate || false
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return {
+        ...rollRecord,
+        breakdown: richBreakdown, // Retornar para exibição imediata
+        validation: {
+          allowed: true,
+          trainedOnly: skillDef.trainedOnly,
+          missingKit: missingKit
+        }
+      }
+
+    } catch (error: any) {
+      logger.error({ error, ...data }, 'Error calculating skill roll')
+      throw new Error(error.message || 'Erro ao processar rolagem de perícia')
+    }
+  },
+
+  /**
    * Busca histórico de rolagens
    */
   async getRollHistory(sessionId?: string, campaignId?: string, limit: number = 50) {

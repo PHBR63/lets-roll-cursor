@@ -117,13 +117,13 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
       <Dialog open={!!editingAttr} onOpenChange={(open) => !open && setEditingAttr(null)}>
         {/* @ts-expect-error - ReactNode type mismatch */}
         <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-[300px]">
-          {/* @ts-expect-error - ReactNode type mismatch */}
+
           <DialogHeader>
             {/* @ts-expect-error - ReactNode type mismatch */}
             <DialogTitle>Editar {editingAttr?.label}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            {/* @ts-expect-error - ReactNode type mismatch */}
+
             <Input
               type="number"
               value={newValue}
@@ -132,11 +132,10 @@ export function AttributesGrid({ character, onUpdate }: AttributesGridProps) {
               autoFocus
             />
           </div>
-          {/* @ts-expect-error - ReactNode type mismatch */}
+
           <DialogFooter>
-            {/* @ts-expect-error - ReactNode type mismatch */}
             <Button variant="ghost" onClick={() => setEditingAttr(null)}>Cancelar</Button>
-            {/* @ts-expect-error - ReactNode type mismatch */}
+
             <Button onClick={handleSave} className="bg-red-600 hover:bg-red-700">Salvar</Button>
           </DialogFooter>
         </DialogContent>
