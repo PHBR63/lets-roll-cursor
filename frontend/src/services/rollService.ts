@@ -33,6 +33,7 @@ export interface RollResult {
 export const rollService = {
     rollSkill: async (data: SkillRollRequest): Promise<RollResult> => {
         // Usar o novo endpoint específico
-        return api.post('/roll/skill', data)
+        const response = await api.post<RollResult>('/roll/skill', data)
+        return response.data
     }
 }
