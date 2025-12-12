@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express'
 import { authenticateToken } from '../middleware/auth'
 import { diceService } from '../services/diceService'
 import { validate } from '../middleware/validation'
-import { DiceRollSchema } from '../middleware/schemas/diceSchemas'
+import { DiceRollSchema, RollAttributeSchema, RollSkillSchema } from '../middleware/schemas/diceSchemas'
 import { AppError } from '../types/common'
 
 /**
@@ -73,3 +73,55 @@ diceRouter.get('/history', async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+/**
+ * Rola teste de atributo (Ordem Paranormal)
+ */
+diceRouter.post(
+  '/roll/attribute',
+  validate({ body: RollAttributeSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+
+      const result = await diceService.rollAttribute({
+        ...req.body,
+        userId,
+      })
+
+      res.json(result)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
+  }
+)
+
+/**
+ * Rola teste de perícia (Ordem Paranormal)
+ */
+diceRouter.post(
+  '/roll/skill',
+  validate({ body: RollSkillSchema }),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.id
+      if (!userId) {
+        return res.status(401).json({ error: 'Usuário não autenticado' })
+      }
+
+      const result = await diceService.rollSkill({
+        ...req.body,
+        userId,
+      })
+
+      res.json(result)
+    } catch (error: unknown) {
+      const err = error as AppError
+      res.status(500).json({ error: err.message || 'Erro desconhecido' })
+    }
+  }
+)

@@ -1,5 +1,6 @@
 import { supabase } from '../config/supabase'
 import { logger } from '../utils/logger'
+import { SkillTraining } from '../types/ordemParanormal'
 
 /**
  * Serviço para lógica de negócio de rolagem de dados
@@ -74,7 +75,7 @@ export const diceService = {
   }) {
     try {
       // Parse e executa a fórmula
-      const { result, details, rolls } = parseDiceFormula(data.formula)
+      const { result, rolls } = parseDiceFormula(data.formula)
 
       // Salvar no banco
       const { data: rollRecord, error } = await supabase
@@ -88,7 +89,7 @@ export const diceService = {
           result,
           details: {
             rolls,
-            modifier: data.formula.match(/[+-]\d+$/) 
+            modifier: data.formula.match(/[+-]\d+$/)
               ? parseInt(data.formula.match(/[+-]\d+$/)![0], 10)
               : 0,
           },
@@ -107,6 +108,116 @@ export const diceService = {
       logger.error({ error }, 'Error rolling dice')
       throw new Error('Erro ao rolar dados: ' + error.message)
     }
+  },
+
+  /**
+   * Rola um teste de atributo (Ordem Paranormal)
+   */
+  async rollAttribute(data: {
+    attributeValue: number
+    skillBonus?: number
+    advantageDice?: number
+    userId: string
+    campaignId: string
+    sessionId?: string
+    characterId?: string
+    isPrivate?: boolean
+    attributeName: string
+  }) {
+    // 1. Executar lógica do sistema
+    const { ordemParanormalService } = await import('./ordemParanormalService')
+    const rollResult = ordemParanormalService.rollAttributeTest(
+      data.attributeValue,
+      data.skillBonus || 0,
+      data.advantageDice || 0
+    )
+
+    // 2. Salvar no banco
+    const formula = `${data.attributeValue}d20` // Representação simplificada
+
+    // Montar breakdown se não vier do service (o service já retorna, mas vamos garantir)
+    // O service agora retorna 'breakdown' na string
+    const breakdown = (rollResult as any).breakdown || `Rolagem de atributo ${data.attributeName}`
+
+    const { data: rollRecord, error } = await supabase
+      .from('dice_rolls')
+      .insert({
+        campaign_id: data.campaignId,
+        session_id: data.sessionId || null,
+        user_id: data.userId,
+        character_id: data.characterId || null,
+        formula: formula,
+        result: rollResult.total,
+        details: {
+          rolls: rollResult.dice,
+          selected: rollResult.selectedDice,
+          bonus: rollResult.bonus,
+          breakdown: breakdown,
+          type: 'ATTRIBUTE',
+          attribute: data.attributeName,
+        },
+        is_private: data.isPrivate || false,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return rollRecord
+  },
+
+  /**
+   * Rola um teste de perícia (Ordem Paranormal)
+   */
+  async rollSkill(data: {
+    attributeValue: number
+    training: SkillTraining
+    flatBonus?: number
+    diceMod?: number
+    skillName: string
+    userId: string
+    campaignId: string
+    sessionId?: string
+    characterId?: string
+    isPrivate?: boolean
+  }) {
+    // 1. Executar lógica do sistema
+    const { ordemParanormalService } = await import('./ordemParanormalService')
+    const rollResult = ordemParanormalService.rollSkillTest({
+      attributeValue: data.attributeValue,
+      training: data.training,
+      flatBonus: data.flatBonus,
+      diceMod: data.diceMod,
+      skillName: data.skillName,
+    })
+
+    // 2. Salvar no banco
+    const formula = `${data.skillName} (${data.training})`
+
+    const { data: rollRecord, error } = await supabase
+      .from('dice_rolls')
+      .insert({
+        campaign_id: data.campaignId,
+        session_id: data.sessionId || null,
+        user_id: data.userId,
+        character_id: data.characterId || null,
+        formula: formula,
+        result: rollResult.total,
+        details: {
+          rolls: rollResult.dice,
+          result: rollResult.result, // dado escolhido
+          trainingBonus: rollResult.trainingBonus,
+          flatBonus: rollResult.flatBonus,
+          breakdown: rollResult.breakdown,
+          type: 'SKILL',
+          skill: data.skillName,
+        },
+        is_private: data.isPrivate || false,
+      })
+      .select()
+      .single()
+
+    if (error) throw error
+    return rollRecord
   },
 
   /**

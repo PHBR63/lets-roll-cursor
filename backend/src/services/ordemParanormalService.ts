@@ -253,16 +253,109 @@ export const ordemParanormalService = {
     }
 
     // Resultado final = maior/menor dado + bônus de perícia
-    const total = selectedDice + skillBonus
+    const total = selectedDice + skillBonus + (advantage ? 0 : 0) // Explicitando que advantageDice já foi tratado nos dados
+
+    // Breakdown textual para o log
+    const diceExpression = `${diceCount}d20`
+    const keepText = advantage && !disadvantage ? 'maior' : 'menor'
+    const breakdown = `Rolagem: ${diceExpression} (${dice.join(', ')}) → Escolhido: ${selectedDice} (${keepText}) + Bônus: ${skillBonus} = ${total}`
 
     return {
       dice,
-      result: selectedDice, // Valor do dado escolhido (sem bônus)
+      result: selectedDice,
       bonus: skillBonus,
-      total, // Resultado final (dado + bônus)
+      total,
       advantage,
       disadvantage,
-      selectedDice, // Dado escolhido para referência
+      selectedDice,
+      breakdown, // Novo campo
+    }
+  },
+
+  /**
+   * Verifica se o personagem pode usar uma perícia
+   * @param skillName - Nome da perícia
+   * @param training - Nível de treinamento atual
+   * @param characterRank - Patente do personagem (opcional, para validação futura)
+   * @returns Objeto indicando se permitido e razão
+   */
+  canRollSkill(
+    skillName: string,
+    training: SkillTraining
+  ): { allowed: boolean; reason?: string } {
+    // Buscar metadados da perícia (usando a constante do frontend importada ou definida aqui)
+    // Como ALL_SKILLS está no frontend/types, vamos assumir que o backend deve ter acesso ou duplicar
+    // Por enquanto, vamos usar uma verificação local baseada em regras conhecidas ou injetar a config
+
+    // Lista de perícias que exigem treinamento (hardcoded para garantir regra de negócio no backend)
+    const TRAINED_ONLY_SKILLS = [
+      'Pilotagem', 'Crime', 'Prestidigitação', 'Religião', 'Artes', 'Adestramento',
+      'Ocultismo', 'Ciências', 'Tecnologia', 'Medicina', 'Tática', 'Profissão'
+    ]
+
+    const requiresTraining = TRAINED_ONLY_SKILLS.includes(skillName)
+
+    if (requiresTraining && training === 'UNTRAINED') {
+      return {
+        allowed: false,
+        reason: `A perícia ${skillName} exige treinamento para ser usada.`,
+      }
+    }
+
+    return { allowed: true }
+  },
+
+  /**
+   * Rola teste de perícia completo
+   * @param params - Parâmetros da rolagem
+   * @returns Resultado completo com breakdown
+   */
+  rollSkillTest(params: {
+    attributeValue: number
+    training: SkillTraining
+    flatBonus?: number // Bônus fixos (itens, condições, buffs)
+    diceMod?: number // Modificador de dados (+1d, -2d)
+    skillName: string
+  }): {
+    dice: number[]
+    result: number
+    total: number
+    breakdown: string
+    trainingBonus: number
+    flatBonus: number
+  } {
+    const { attributeValue, training, flatBonus = 0, diceMod = 0, skillName } = params
+
+    // 1. Verificar se pode rolar
+    const check = this.canRollSkill(skillName, training)
+    if (!check.allowed) {
+      throw new Error(check.reason || 'Rolagem não permitida')
+    }
+
+    // 2. Calcular bônus de treino
+    const trainingBonus = this.calculateSkillBonus(training)
+
+    // 3. Rolar atributo (d20s)
+    // Passamos 0 como skillBonus aqui porque vamos somar tudo no final para o breakdown ficar claro
+    const attrRoll = this.rollAttributeTest(attributeValue, 0, diceMod)
+
+    // 4. Calcular total final
+    const total = attrRoll.result + trainingBonus + flatBonus
+
+    // 5. Gerar breakdown detalhado
+    const trainingName = training === 'UNTRAINED' ? 'Destreinado' :
+      training === 'TRAINED' ? 'Treinado' :
+        training === 'COMPETENT' ? 'Veterano' : 'Expert'
+
+    const breakdown = `${attrRoll.breakdown} | ${trainingName} (+${trainingBonus}) | Outros (+${flatBonus}) => TOTAL: ${total}`
+
+    return {
+      dice: attrRoll.dice,
+      result: attrRoll.result, // Valor do dado
+      trainingBonus,
+      flatBonus,
+      total,
+      breakdown,
     }
   },
 

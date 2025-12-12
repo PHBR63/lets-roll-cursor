@@ -1,15 +1,26 @@
+
 import { Checkbox } from "@/components/ui/checkbox"
-import { Character } from "@/types/character"
+import { Character, CharacterUpdateData } from "@/types/character"
 import { useState, ElementType } from "react"
 // import { cn } from "@/lib/utils" // Unused
 import { AlertCircle } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface VitalsPanelProps {
   character: Character
   onUpdateResource: (resource: 'pv' | 'san' | 'pe', value: number, isDelta?: boolean) => void
+  onUpdate?: (updates: CharacterUpdateData) => void
 }
 
-export function VitalsPanel({ character }: VitalsPanelProps) {
+export function VitalsPanel({ character, onUpdate }: VitalsPanelProps) {
 
   const AlertCircleIcon = AlertCircle as ElementType
   const CheckboxAny = Checkbox as any
@@ -20,6 +31,10 @@ export function VitalsPanel({ character }: VitalsPanelProps) {
     inconsciente: false,
     morrendo: false
   })
+
+  // NEX Edit state
+  const [editingNex, setEditingNex] = useState(false)
+  const [newNex, setNewNex] = useState('')
 
   // Safely access nested stats
   const pvCurrent = character.stats?.pv?.current ?? character.resources?.pv?.current ?? 0
@@ -37,6 +52,27 @@ export function VitalsPanel({ character }: VitalsPanelProps) {
   const pvPercent = Math.min(100, Math.max(0, (pvCurrent / pvMax) * 100))
   const sanPercent = Math.min(100, Math.max(0, (sanCurrent / sanMax) * 100))
   const pePercent = Math.min(100, Math.max(0, (peCurrent / peMax) * 100))
+
+  const handleEditNex = () => {
+    setNewNex(nex.toString())
+    setEditingNex(true)
+  }
+
+  const handleSaveNex = () => {
+    const num = parseInt(newNex)
+    if (!isNaN(num) && num >= 0 && num <= 99 && onUpdate) {
+      // Create full stats object to preserve structure, updating only NEX
+      // Backend handles max resource recalculation if NEX changes
+      const currentStats = character.stats || {}
+      onUpdate({
+        stats: {
+          ...currentStats,
+          nex: num
+        }
+      })
+    }
+    setEditingNex(false)
+  }
 
   return (
     <div className="space-y-4">
@@ -134,10 +170,10 @@ export function VitalsPanel({ character }: VitalsPanelProps) {
       </div>
 
       {/* NEX Bar */}
-      <div className="space-y-1">
+      <div className="space-y-1 group cursor-pointer" onClick={handleEditNex}>
         <div className="flex items-center justify-between text-white">
-          <h3 className="font-semibold text-sm">NEX</h3>
-          <span className="text-xs text-zinc-400">{nex}%</span>
+          <h3 className="font-semibold text-sm group-hover:text-purple-300 transition-colors">NEX</h3>
+          <span className="text-xs text-zinc-400 group-hover:text-purple-300 transition-colors">{nex}%</span>
         </div>
         <div className="relative h-5 w-full bg-zinc-900/50 rounded-full overflow-hidden border border-white/10">
           <div
@@ -169,6 +205,30 @@ export function VitalsPanel({ character }: VitalsPanelProps) {
           <span className="text-sm font-bold text-white">{10 + (character.attributes?.agi || 0)}</span>
         </div>
       </div>
+
+      {/* Edit NEX Dialog */}
+      <Dialog open={editingNex} onOpenChange={setEditingNex}>
+        <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-[300px]">
+          <DialogHeader>
+            <DialogTitle>Editar NEX (%)</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              type="number"
+              min="0"
+              max="99"
+              value={newNex}
+              onChange={(e) => setNewNex(e.target.value)}
+              className="text-center text-2xl font-bold bg-black/50 border-white/20 h-16"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditingNex(false)}>Cancelar</Button>
+            <Button onClick={handleSaveNex} className="bg-purple-600 hover:bg-purple-700">Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -32,6 +32,7 @@ export function CharacterSheetLeftColumn({ character, onUpdate, onRefresh }: Cha
             <VitalsPanel
                 character={character}
                 onUpdateResource={() => onRefresh()}
+                onUpdate={onUpdate}
             />
 
             {/* Attributes Hex Grid */}

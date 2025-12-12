@@ -145,8 +145,8 @@ export const characterService = {
 
       const characterClass: CharacterClass = (data.class as CharacterClass) || 'COMBATENTE'
       // NEX pode vir de data.nex ou data.stats.nex
-      const nex: number = typeof (data as any).nex === 'number' 
-        ? (data as any).nex 
+      const nex: number = typeof (data as any).nex === 'number'
+        ? (data as any).nex
         : (typeof (data.stats as any)?.nex === 'number' ? (data.stats as any).nex : 5) // NEX inicial padrão
 
       // validatedAttributes já foi criado acima
@@ -177,13 +177,13 @@ export const characterService = {
       // Perícias iniciais (todas destreinadas por padrão)
       // Converter formato de skills se fornecido (value/trained -> attribute/training/bonus)
       let skills: Record<string, { attribute: string; training: string; bonus: number }> = {}
-      
+
       if (data.skills) {
         // Validar perícias fornecidas conforme NEX
         for (const [skillName, skillData] of Object.entries(data.skills)) {
           let training: SkillTraining
           const skillDataAny = skillData as any
-          
+
           if ('value' in skillDataAny && 'trained' in skillDataAny) {
             // Formato antigo: converter
             training = skillDataAny.trained ? 'TRAINED' : 'UNTRAINED'
@@ -405,9 +405,46 @@ export const characterService = {
         return await characterAttributesService.updateSkills(id, data.skills as any)
       }
 
-      // Atualizar stats diretamente se fornecido
+      // Atualizar stats com recálculo se NEX mudar
       if (data.stats !== undefined) {
-        updateData.stats = data.stats
+        let newStats = { ...(data.stats as any) }
+
+        // Verifica se NEX existe e mudou
+        const currentNex = (currentCharacter.stats as any)?.nex || 0
+        const newNex = newStats.nex
+
+        if (newNex !== undefined && newNex !== currentNex) {
+          const characterClass = (data.class as CharacterClass) || (currentCharacter.class as CharacterClass) || 'COMBATENTE'
+
+          // Se atributos estiverem sendo atualizados nesta mesma chamada, use-os. Senão, use os atuais.
+          const attributes = data.attributes || (currentCharacter.attributes as any) || {}
+
+          const vig = attributes.vig || 0
+          const pre = attributes.pre || 0
+
+          // Recalcular máximos
+          const maxPV = ordemParanormalService.calculateMaxPV(characterClass, vig, newNex)
+          const maxSAN = ordemParanormalService.calculateMaxSAN(characterClass, newNex)
+          const maxPE = ordemParanormalService.calculateMaxPE(characterClass, pre, newNex)
+
+          // Atualizar objeto stats preservando valores atuais ou o que veio no request, mas forçando o novo MAX
+          newStats.pv = {
+            current: Math.min((newStats.pv?.current ?? (currentCharacter.stats as any)?.pv?.current ?? maxPV), maxPV),
+            max: maxPV
+          }
+          newStats.san = {
+            current: Math.min((newStats.san?.current ?? (currentCharacter.stats as any)?.san?.current ?? maxSAN), maxSAN),
+            max: maxSAN
+          }
+          newStats.pe = {
+            current: Math.min((newStats.pe?.current ?? (currentCharacter.stats as any)?.pe?.current ?? maxPE), maxPE),
+            max: maxPE
+          }
+
+          logger.info({ characterId: id, newNex, maxPV, maxSAN, maxPE }, 'Recalculated stats due to NEX update')
+        }
+
+        updateData.stats = newStats
       }
 
       // Atualizar level e xp (mantido para compatibilidade)
