@@ -43,7 +43,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Omit<VariantProps<typeof buttonVariants>, 'variant'> {
+  Omit<VariantProps<typeof buttonVariants>, 'variant'> {
   variant?: "default" | "shimmer" | "destructive" | "outline" | "secondary" | "ghost" | "link" | null | undefined
   asChild?: boolean
 }
@@ -67,7 +67,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const Comp = asChild ? Slot : motion.button
     const buttonClasses = cn(buttonVariants({ variant, size, className }))
-    
+
     // Se for Slot (asChild), não usar animações
     if (asChild) {
       return (
@@ -78,7 +78,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         />
       )
     }
-    
+
     return (
       <Comp
         className={buttonClasses}
@@ -90,7 +90,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       />
     )
   }
-)
+) as any
 Button.displayName = "Button"
 
 export { Button, buttonVariants }

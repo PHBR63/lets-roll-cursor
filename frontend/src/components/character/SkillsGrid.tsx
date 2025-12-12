@@ -1,172 +1,83 @@
-// @ts-nocheck
-import { useState, useMemo, memo } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Save } from 'lucide-react'
-import { ALL_SKILLS, SkillTraining, TRAINING_BONUS } from '@/types/ordemParanormal'
-import { SkillItem } from './SkillItem'
 import { Character, CharacterUpdateData } from '@/types/character'
+import { ALL_SKILLS, SkillTraining } from '@/types/ordemParanormal'
+import { cn } from '@/lib/utils'
+import { Dices, Book, AlertCircle, Eye, Hand, Shield } from 'lucide-react'
+import { ElementType } from 'react'
 
 interface SkillsGridProps {
   character: Character
   onUpdate: (updates: CharacterUpdateData) => void
 }
 
-/**
- * Grid de perícias do sistema Ordem Paranormal
- * Exibe todas as perícias com seus atributos base e níveis de treinamento
- */
-/**
- * Converte skill do formato antigo para o novo formato
- */
-function convertSkillToNewFormat(
-  skillName: string,
-  skillValue: { value: number; trained: boolean } | { attribute: string; training: SkillTraining; bonus: number }
-): { attribute: string; training: SkillTraining; bonus: number } | null {
-  // Se já está no formato novo, retorna como está
-  if ('attribute' in skillValue && 'training' in skillValue && 'bonus' in skillValue) {
-    return skillValue as { attribute: string; training: SkillTraining; bonus: number }
+export function SkillsGrid({ character }: SkillsGridProps) {
+  // Cast icons
+  const HandIcon = Hand as ElementType
+  const EyeIcon = Eye as ElementType
+  const AlertCircleIcon = AlertCircle as ElementType
+  const ShieldIcon = Shield as ElementType
+  const BookIcon = Book as ElementType
+  const DiceD20Icon = Dices as ElementType
+
+  const getSkillIcon = (skillName: string) => {
+    const l = skillName.toLowerCase()
+    if (l.includes('luta') || l.includes('pontaria') || l.includes('briga')) return <HandIcon className="w-5 h-5 text-red-400" />
+    if (l.includes('investigação') || l.includes('percepção')) return <EyeIcon className="w-5 h-5 text-blue-400" />
+    if (l.includes('ocultismo')) return <AlertCircleIcon className="w-5 h-5 text-purple-400" />
+    if (l.includes('fortitude') || l.includes('reflexos') || l.includes('vontade')) return <ShieldIcon className="w-5 h-5 text-yellow-400" />
+    if (l.includes('tecnologia') || l.includes('ciências')) return <BookIcon className="w-5 h-5 text-cyan-400" />
+    return <DiceD20Icon className="w-5 h-5 text-zinc-400" />
   }
 
-  // Se está no formato antigo, converte
-  if ('value' in skillValue && 'trained' in skillValue) {
-    const skillInfo = ALL_SKILLS[skillName]
-    if (!skillInfo) {
-      // Se a skill não existe em ALL_SKILLS, não pode converter
-      return null
-    }
-
-    // Converte trained (boolean) para training (SkillTraining)
-    const training: SkillTraining = skillValue.trained ? 'TRAINED' : 'UNTRAINED'
-    const bonus = TRAINING_BONUS[training]
-
-    return {
-      attribute: skillInfo.attribute,
-      training,
-      bonus,
-    }
-  }
-
-  // Formato desconhecido
-  return null
-}
-
-export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   const skills = character.skills || {}
-  const [localSkills, setLocalSkills] = useState<Record<string, { attribute: string; training: SkillTraining; bonus: number }>>(
-    Object.entries(skills).reduce((acc, [key, value]) => {
-      const converted = convertSkillToNewFormat(
-        key,
-        value as { value: number; trained: boolean } | { attribute: string; training: SkillTraining; bonus: number }
-      )
-      if (converted) {
-        acc[key] = converted
+
+  const getSkillValue = (skillName: string): number => {
+    const skill = skills[skillName]
+    if (!skill) return 0
+    const skillAny = skill as any
+    if (skillAny.value !== undefined) return skillAny.value || 0
+    if (skillAny.bonus !== undefined) return skillAny.bonus || 0
+    if (skillAny.training) {
+      switch (skillAny.training as SkillTraining) {
+        case 'TRAINED': return 5 // Matches definition in TRAINING_BONUS
+        case 'COMPETENT': return 10
+        case 'EXPERT': return 15
+        default: return 0 // UNTRAINED
       }
-      return acc
-    }, {} as Record<string, { attribute: string; training: SkillTraining; bonus: number }>)
-  )
-  const [hasChanges, setHasChanges] = useState(false)
-
-  /**
-   * Handler para atualizar nível de treinamento de uma perícia
-   */
-  const handleSkillChange = (skillName: string, training: SkillTraining) => {
-    const skillInfo = ALL_SKILLS[skillName]
-    if (!skillInfo) return
-
-    const bonus = TRAINING_BONUS[training]
-    const newSkills = {
-      ...localSkills,
-      [skillName]: {
-        attribute: skillInfo.attribute,
-        training,
-        bonus,
-      },
     }
-    setLocalSkills(newSkills)
-    setHasChanges(true)
+    return 0
   }
-
-  /**
-   * Salva alterações das perícias
-   */
-  const handleSave = () => {
-    // Converter para o formato esperado pelo CharacterUpdateData
-    onUpdate({ skills: localSkills as any })
-    setHasChanges(false)
-  }
-
-  /**
-   * Agrupa perícias por atributo (memoizado)
-   */
-  const skillsByAttribute = useMemo(() => {
-    const grouped: Record<string, string[]> = {
-      AGI: [],
-      FOR: [],
-      INT: [],
-      PRE: [],
-      VIG: [],
-    }
-
-    Object.keys(ALL_SKILLS).forEach((skillName) => {
-      const skillInfo = ALL_SKILLS[skillName]
-      grouped[skillInfo.attribute].push(skillName)
-    })
-
-    return grouped
-  }, [])
 
   return (
-    <div className="bg-card rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-white">Perícias</h2>
-        {hasChanges && (
-          <Button size="sm" onClick={handleSave} className="gap-2">
-            <Save className="w-4 h-4" />
-            Salvar
-          </Button>
-        )}
+    <div className="w-full">
+      <div className="flex items-center gap-2 mb-4 px-2">
+        <h3 className="text-base font-semibold text-white uppercase tracking-wider">Perícias</h3>
+        <div className="h-px bg-white/10 flex-1" />
       </div>
 
-      <div className="space-y-6">
-        {Object.entries(skillsByAttribute).map(([attribute, skillNames]) => (
-          <div key={attribute} className="space-y-2">
-            <Label className="text-primary font-semibold">
-              {attribute === 'AGI' && 'Agilidade'}
-              {attribute === 'FOR' && 'Força'}
-              {attribute === 'INT' && 'Intelecto'}
-              {attribute === 'PRE' && 'Presença'}
-              {attribute === 'VIG' && 'Vigor'}
-            </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-3">
-              {skillNames.map((skillName) => {
-                const skillInfo = ALL_SKILLS[skillName]
-                const currentSkill = localSkills[skillName] || {
-                  attribute: skillInfo.attribute,
-                  training: 'UNTRAINED' as SkillTraining,
-                  bonus: 0,
-                }
+      <div className="panel p-4">
+        <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          {Object.keys(ALL_SKILLS).map((skillName) => {
+            const value = getSkillValue(skillName)
+            const iconElement = getSkillIcon(skillName)
 
-                return (
-                  <SkillItem
-                    key={skillName}
-                    skillName={skillName}
-                    currentSkill={currentSkill}
-                    onSkillChange={handleSkillChange}
-                    character={character}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 text-xs text-muted-foreground">
-        <p>* Perícias marcadas com asterisco requerem treinamento para uso</p>
+            return (
+              <div key={skillName} className="flex flex-col items-center p-3 rounded-lg bg-black/20 border border-white/5 hover:bg-white/5 transition-colors group cursor-pointer">
+                <div className="mb-2 p-2 rounded-full bg-white/5 group-hover:bg-purple-500/20 transition-colors">
+                  {iconElement}
+                </div>
+                <span className="text-[10px] uppercase text-zinc-400 text-center leading-tight min-h-[2.5em] flex items-center justify-center">
+                  {skillName}
+                </span>
+                <div className="mt-1 w-full bg-black/40 rounded border border-white/10 text-center py-1">
+                  <span className={cn("text-sm font-bold", value > 0 ? "text-purple-300" : "text-zinc-500")}>
+                    {value > 0 ? `+${value}` : value}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
 }
-

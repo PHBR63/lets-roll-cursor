@@ -213,7 +213,14 @@
     animation: patternMove 80s linear infinite;
   }
 
+
+  /* Painel padrão do novo design system */
+  .panel {
+    @apply rounded-xl border border-white/20 bg-black/20 backdrop-blur-md shadow-xl transition-all hover:bg-black/30;
+  }
+
   /* Painel de vidro (Glassmorphism) */
+
   .glass-panel {
     @apply bg-card/30 backdrop-blur-md border border-white/10 shadow-lg;
   }
