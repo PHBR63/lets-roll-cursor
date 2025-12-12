@@ -112,7 +112,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
       if (response.ok) {
         loadInventory()
         onUpdate()
-        
+
         // Verificar sobrecarga após remover item
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
         try {
@@ -139,7 +139,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
   return (
     <div className="space-y-4">
       {/* Peso e Moedas */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-muted-foreground">Peso Total</Label>

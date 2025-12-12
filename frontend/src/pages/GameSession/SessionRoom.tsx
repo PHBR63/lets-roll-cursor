@@ -21,6 +21,8 @@ import { CampaignParticipant } from '@/types/campaign'
 import { InsanityAura } from '@/components/character/InsanityAura'
 import { Character } from '@/types/character'
 import { CampaignMoments } from '@/components/campaign/CampaignMoments'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useMediaQuery } from 'usehooks-ts'
 
 /**
  * Página principal da sala de sessão de jogo
@@ -36,6 +38,7 @@ export function SessionRoom() {
   const [error, setError] = useState<string | null>(null)
   const [characters, setCharacters] = useState<Character[]>([])
   const { handleErrorWithToast, handleResponseError } = useApiError()
+  const isMobile = useMediaQuery('(max-width: 768px)')
 
   useEffect(() => {
     if (campaignId && user) {
@@ -92,7 +95,7 @@ export function SessionRoom() {
     }
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-    
+
     // Tentar buscar sessão ativa
     const response = await fetch(
       `${apiUrl}/api/sessions?campaignId=${campaignId}&active=true`,
@@ -149,7 +152,7 @@ export function SessionRoom() {
       }
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      
+
       const response = await fetch(`${apiUrl}/api/sessions`, {
         method: 'POST',
         headers: {
@@ -187,7 +190,7 @@ export function SessionRoom() {
       if (!sessionData.session) return false
 
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
-      
+
       const response = await fetch(`${apiUrl}/api/campaigns/${campaignId}`, {
         headers: {
           Authorization: `Bearer ${sessionData.session.access_token}`,
@@ -231,16 +234,16 @@ export function SessionRoom() {
     const stats = char.stats || {}
     const san = stats.san || { current: 0, max: 0 }
     if (san.max === 0) return prev
-    
+
     const percentage = (san.current / san.max) * 100
     const severity = san.current <= 0 ? 4 : percentage <= 25 ? 3 : percentage <= 50 ? 2 : percentage <= 75 ? 1 : 0
-    
+
     if (!prev) return char
     const prevStats = prev.stats || {}
     const prevSan = prevStats.san || { current: 0, max: 0 }
     const prevPercentage = prevSan.max > 0 ? (prevSan.current / prevSan.max) * 100 : 100
     const prevSeverity = prevSan.current <= 0 ? 4 : prevPercentage <= 25 ? 3 : prevPercentage <= 50 ? 2 : prevPercentage <= 75 ? 1 : 0
-    
+
     return severity > prevSeverity ? char : prev
   }, null)
 
@@ -250,8 +253,8 @@ export function SessionRoom() {
 
       {/* Aura de Insanidade Fullscreen */}
       {hasSevereInsanity && mostInsaneCharacter && (
-        <InsanityAura 
-          character={mostInsaneCharacter} 
+        <InsanityAura
+          character={mostInsaneCharacter}
           mode="fullscreen"
           show={true}
         />
@@ -279,21 +282,52 @@ export function SessionRoom() {
           </div>
 
           <GameBoard sessionId={session?.id} campaignId={campaignId} />
-          
-          {/* Área inferior: Dice Roller, Histórico e Chat */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 p-2 md:p-4 border-t border-card-secondary bg-background">
-            <div className="bg-card border border-card-secondary rounded-lg p-3 md:p-4 min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] overflow-y-auto">
-              <DiceRoller sessionId={session?.id} campaignId={campaignId} />
-            </div>
-            <div className="bg-card border border-card-secondary rounded-lg min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] flex flex-col">
-              <div className="p-3 md:p-4 border-b border-card-secondary">
-                <h3 className="text-white font-semibold text-sm md:text-base">Histórico de Rolagens</h3>
+
+
+          {/* Área inferior: Dice Roller, Histórico e Chat (Responsivo) */}
+          <div className="p-2 md:p-4 border-t border-card-secondary bg-background">
+            {isMobile ? (
+              <Tabs defaultValue="chat" className="w-full">
+                <TabsList className="w-full mb-4">
+                  <TabsTrigger value="chat" className="flex-1">Chat</TabsTrigger>
+                  <TabsTrigger value="dice" className="flex-1">Dados</TabsTrigger>
+                  <TabsTrigger value="history" className="flex-1">Histórico</TabsTrigger>
+                </TabsList>
+                <TabsContent value="dice" className="mt-0">
+                  <div className="bg-card border border-card-secondary rounded-lg p-3 min-h-[350px]">
+                    <DiceRoller sessionId={session?.id} campaignId={campaignId} />
+                  </div>
+                </TabsContent>
+                <TabsContent value="history" className="mt-0">
+                  <div className="bg-card border border-card-secondary rounded-lg flex flex-col h-[350px]">
+                    <div className="p-3 border-b border-card-secondary">
+                      <h3 className="text-white font-semibold text-sm">Histórico de Rolagens</h3>
+                    </div>
+                    <RollHistory sessionId={session?.id} campaignId={campaignId} />
+                  </div>
+                </TabsContent>
+                <TabsContent value="chat" className="mt-0">
+                  <div className="bg-card border border-card-secondary rounded-lg flex flex-col h-[350px]">
+                    <ChatPanel sessionId={session?.id} campaignId={campaignId} />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="bg-card border border-card-secondary rounded-lg p-4 h-[400px] overflow-y-auto">
+                  <DiceRoller sessionId={session?.id} campaignId={campaignId} />
+                </div>
+                <div className="bg-card border border-card-secondary rounded-lg flex flex-col h-[400px]">
+                  <div className="p-4 border-b border-card-secondary">
+                    <h3 className="text-white font-semibold">Histórico de Rolagens</h3>
+                  </div>
+                  <RollHistory sessionId={session?.id} campaignId={campaignId} />
+                </div>
+                <div className="bg-card border border-card-secondary rounded-lg flex flex-col h-[400px]">
+                  <ChatPanel sessionId={session?.id} campaignId={campaignId} />
+                </div>
               </div>
-              <RollHistory sessionId={session?.id} campaignId={campaignId} />
-            </div>
-            <div className="bg-card border border-card-secondary rounded-lg min-h-[250px] md:min-h-[300px] max-h-[350px] md:max-h-[400px] flex flex-col">
-              <ChatPanel sessionId={session?.id} campaignId={campaignId} />
-            </div>
+            )}
           </div>
 
           {/* Seção Momentos da Sessão */}

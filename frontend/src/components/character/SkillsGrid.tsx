@@ -57,7 +57,7 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
   const [localSkills, setLocalSkills] = useState<Record<string, { attribute: string; training: SkillTraining; bonus: number }>>(
     Object.entries(skills).reduce((acc, [key, value]) => {
       const converted = convertSkillToNewFormat(
-        key, 
+        key,
         value as { value: number; trained: boolean } | { attribute: string; training: SkillTraining; bonus: number }
       )
       if (converted) {
@@ -139,7 +139,7 @@ export function SkillsGrid({ character, onUpdate }: SkillsGridProps) {
               {attribute === 'PRE' && 'Presença'}
               {attribute === 'VIG' && 'Vigor'}
             </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-3">
               {skillNames.map((skillName) => {
                 const skillInfo = ALL_SKILLS[skillName]
                 const currentSkill = localSkills[skillName] || {
