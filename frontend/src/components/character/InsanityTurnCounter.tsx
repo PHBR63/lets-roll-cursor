@@ -1,9 +1,9 @@
-// @ts-nocheck
+
 /**
  * Componente de Contador de Turnos em Estado de Insanidade
  * Rastreia quantos turnos o personagem está em estado de insanidade
  */
-import { useState, useEffect } from 'react'
+import { useEffect, ElementType } from 'react'
 import { useInsanityState } from '@/hooks/useInsanityState'
 import { Character } from '@/types/character'
 import { Badge } from '@/components/ui/badge'
@@ -26,16 +26,18 @@ interface InsanityTurnCounterProps {
  * Componente de Contador de Turnos de Insanidade
  * Mostra quantos turnos o personagem está em estado de insanidade
  */
-export function InsanityTurnCounter({ 
-  character, 
+export function InsanityTurnCounter({
+  character,
   onTurnCountChange,
-  className 
+  className
 }: InsanityTurnCounterProps) {
-  const stats = character.stats || {}
-  const san = stats.san || { current: 0, max: 0 }
-  
+  const san = character.stats?.san || { current: 0, max: 0 }
+
   const insanityState = useInsanityState(san.current, san.max)
-  
+
+  const AlertTriangleIcon = AlertTriangle as ElementType
+  const ClockIcon = Clock as ElementType
+
   // Buscar contador de turnos do conditionTimers do personagem
   const turnCount = (() => {
     const conditionTimers = character.conditionTimers || []
@@ -53,6 +55,9 @@ export function InsanityTurnCounter({
     return null
   }
 
+  /**
+   * Retorna a mensagem de aviso adequada baseada na contagem de turnos
+   */
   const getWarningMessage = () => {
     if (turnCount >= 10) {
       return 'Estado crítico! A mente está à beira do colapso permanente.'
@@ -72,18 +77,18 @@ export function InsanityTurnCounter({
         className
       )}
     >
-      <AlertTriangle className="w-5 h-5 text-red-500" />
+      <AlertTriangleIcon className="w-5 h-5 text-red-500" />
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-red-400" />
+          <ClockIcon className="w-4 h-4 text-red-400" />
           <span className="text-white font-semibold text-sm">
             Turnos em Insanidade: {turnCount}
           </span>
         </div>
         <p className="text-red-300 text-xs mt-1">{getWarningMessage()}</p>
       </div>
-      <Badge 
-        variant="destructive" 
+      <Badge
+        variant="destructive"
         className={cn(
           'text-xs',
           turnCount >= 10 && 'animate-pulse'

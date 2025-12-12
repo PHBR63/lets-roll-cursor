@@ -1,5 +1,5 @@
-// @ts-nocheck
-import { useState, useEffect, useMemo } from 'react'
+
+import { useState, useEffect, useMemo, ElementType } from 'react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,10 @@ interface InventoryPanelProps {
  * Exibe itens, peso total e moedas
  */
 export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
+  const AlertCircleIcon = AlertCircle as ElementType
+  const Trash2Icon = Trash2 as ElementType
+  const PlusIcon = Plus as ElementType
+  const PackageIcon = Package as ElementType
   const [inventory, setInventory] = useState<CharacterInventoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -122,13 +126,13 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
               Authorization: `Bearer ${session.session.access_token}`,
             },
           })
-        } catch (err) {
+        } catch {
           // Ignorar erro de verificação de sobrecarga
         }
       }
     } catch (error) {
       console.error('Erro ao remover item:', error)
-      toast.error('Erro ao remover item', 'Tente novamente.')
+      toast.error('Erro ao remover item', { description: 'Tente novamente.' })
     }
   }
 
@@ -145,7 +149,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
             <Label className="text-muted-foreground">Peso Total</Label>
             {overloaded && (
               <Badge variant="destructive" className="text-xs flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
+                <AlertCircleIcon className="w-3 h-3" />
                 Sobrecarregado
               </Badge>
             )}
@@ -185,7 +189,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
                 className="gap-2"
                 onClick={() => setShowEquipmentModal(true)}
               >
-                <Package className="w-4 h-4" />
+                <PackageIcon className="w-4 h-4" />
                 Ver Equipamentos
               </Button>
             )}
@@ -195,7 +199,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
               className="gap-2"
               onClick={() => setShowAddModal(true)}
             >
-              <Plus className="w-4 h-4" />
+              <PlusIcon className="w-4 h-4" />
               Adicionar Item
             </Button>
           </div>
@@ -237,7 +241,7 @@ export function InventoryPanel({ character, onUpdate }: InventoryPanelProps) {
                   onClick={() => handleRemoveItem(item.item_id)}
                   className="text-destructive hover:text-destructive"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2Icon className="w-4 h-4" />
                 </Button>
               </div>
             ))}
