@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
@@ -7,7 +7,7 @@ import { useApiError } from '@/hooks/useApiError'
 import { useRetry } from '@/hooks/useRetry'
 import { Character, CharacterUpdateData } from '@/types/character'
 import { getApiBaseUrl } from '@/utils/apiUrl'
-import { useToast } from '@/hooks/useToast'
+
 
 // New Layout Components
 import { CharacterSheetTopbar } from '@/components/character/layout/CharacterSheetTopbar'
@@ -28,7 +28,7 @@ export function CharacterSheet() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { handleErrorWithToast, handleResponseError } = useApiError()
-  const toast = useToast()
+
 
   const loadCharacterFn = async () => {
     if (!id || !user) return null
@@ -98,7 +98,7 @@ export function CharacterSheet() {
   if (error || !character) return <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">{error || 'Erro desconhecido'}</div>
 
   return (
-    <div className="min-h-screen bg-background text-foreground pattern-icosahedrons">
+    <div className="min-h-screen bg-background text-foreground">
       <SEOHead
         title={`${character.name} | Ficha`}
         description="Ficha de Personagem"
