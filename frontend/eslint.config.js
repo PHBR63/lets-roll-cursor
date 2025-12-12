@@ -60,6 +60,13 @@ export default [
         Response: 'readonly',
         RequestInit: 'readonly',
         React: 'readonly',
+
+        // Table globals
+        HTMLTableElement: 'readonly',
+        HTMLTableSectionElement: 'readonly',
+        HTMLTableRowElement: 'readonly',
+        HTMLTableCellElement: 'readonly',
+        HTMLTableCaptionElement: 'readonly',
       },
     },
     plugins: {

@@ -5,7 +5,6 @@ const Table = React.forwardRef<
     HTMLTableElement,
     React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <div className="relative w-full overflow-auto">
         <table
             ref={ref}
@@ -20,7 +19,6 @@ const TableHeader = React.forwardRef<
     HTMLTableSectionElement,
     React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
 ))
 TableHeader.displayName = "TableHeader"
@@ -29,7 +27,6 @@ const TableBody = React.forwardRef<
     HTMLTableSectionElement,
     React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <tbody
         ref={ref}
         className={cn("[&_tr:last-child]:border-0", className)}
@@ -42,7 +39,6 @@ const TableFooter = React.forwardRef<
     HTMLTableSectionElement,
     React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <tfoot
         ref={ref}
         className={cn(
@@ -58,7 +54,6 @@ const TableRow = React.forwardRef<
     HTMLTableRowElement,
     React.HTMLAttributes<HTMLTableRowElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <tr
         ref={ref}
         className={cn(
@@ -74,7 +69,6 @@ const TableHead = React.forwardRef<
     HTMLTableCellElement,
     React.ThHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <th
         ref={ref}
         className={cn(
@@ -90,7 +84,6 @@ const TableCell = React.forwardRef<
     HTMLTableCellElement,
     React.TdHTMLAttributes<HTMLTableCellElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <td
         ref={ref}
         className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
@@ -103,7 +96,6 @@ const TableCaption = React.forwardRef<
     HTMLTableCaptionElement,
     React.HTMLAttributes<HTMLTableCaptionElement>
 >(({ className, ...props }, ref) => (
-    // @ts-ignore
     <caption
         ref={ref}
         className={cn("mt-4 text-sm text-muted-foreground", className)}
